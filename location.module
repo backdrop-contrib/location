@@ -218,46 +218,47 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       
     case 'insert':
     case 'update':
-      $posted_location = $_POST['edit']['location'];
-      foreach ($posted_location as $posted_field => $posted_value) {
-        $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
-      }
-      $posted_location = location_form2api($posted_location);
+      if (isset($_POST['edit']['location']) && count($_POST['edit']['location'])) {
+        $posted_location = $_POST['edit']['location'];
+        foreach ($posted_location as $posted_field => $posted_value) {
+          $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
+        }
+        $posted_location = location_form2api($posted_location);
 
-      if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
-        if ($latlon = location_latlon_rough($posted_location)) {
-          $posted_location['lat'] = $latlon['lat'];
-          $posted_location['lon'] = $latlon['lon'];
+        if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
+          if ($latlon = location_latlon_rough($posted_location)) {
+            $posted_location['lat'] = $latlon['lat'];
+            $posted_location['lon'] = $latlon['lon'];
+          }
+        }
+      
+        if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
+           db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
+                  $node->nid, 
+                  (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
+                  (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
+                  (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
+                  (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
+                  (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
+                  (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
+                  (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
+                  $posted_location['lat'],
+                  $posted_location['lon']
+                );     
+        }
+        else {
+          db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+                  $node->nid, 
+                  (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
+                  (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
+                  (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
+                  (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
+                  (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
+                  (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
+                  (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country']
+                );
         }
       }
-      
-      if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-         db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
-                $node->nid, 
-                (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
-                (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
-                (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
-                (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
-                (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
-                (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-                (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
-                $posted_location['lat'],
-                $posted_location['lon']
-              );     
-      }
-      else {
-        db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-                $node->nid, 
-                (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
-                (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
-                (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
-                (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
-                (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
-                (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-                (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country']
-              );
-      }
-      
       break;
       
     case 'load':
