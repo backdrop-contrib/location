@@ -1,6 +1,8 @@
 <?php
 
-include_once 'modules/location/location.inc';
+define('LOCATION_PATH', drupal_get_path('module', 'location'));
+
+include_once LOCATION_PATH.'/location.inc';
 
 
 function location_menu($may_cache = FALSE) {

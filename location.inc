@@ -1,5 +1,7 @@
 <?php
 
+define('LOCATION_PATH', drupal_get_path('module', 'location'));
+
 /**
  * @file
  * An implementation of a universal API for location manipulation.  Provides functions for
@@ -7,7 +9,7 @@
  * some options are configured through an interface provided by location.module.
  */
 
-include_once 'modules/location/earth.inc';
+include_once LOCATION_PATH.'/earth.inc';
 _location_include_configured();
 
 /**
@@ -86,7 +88,7 @@ function theme_location($location = array()) {
       if (isset($location['province']) && strlen(trim($location['province']))) {
         $city_province_postal[] = $location['province'];
       }
-      
+
       if (isset($location['postal_code']) && strlen(trim($location['postal_code']))) {
         $city_province_postal[] = $location['postal_code'];
       }
@@ -1164,10 +1166,10 @@ function _location_supported_countries() {
   // '<ISO two-letter code>' => '<English name for country>'
   $countrycodes = _location_get_iso3166_list();
   $supported_countries = array();
-  if (is_dir('modules/location/supported') && $handle = opendir('modules/location/supported')) {
+  if (is_dir(LOCATION_PATH.'/supported') && $handle = opendir(LOCATION_PATH.'/supported')) {
     $matches = array();
     while ($file = readdir($handle)) {
-      if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file('modules/location/supported/'. $file)) {
+      if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file(LOCATION_PATH.'/supported/'. $file)) {
         $supported_countries[] = $matches[1];
         $matches = array();
       }
@@ -1261,7 +1263,7 @@ function _location_province_select_options($value = '', $required = FALSE, $form
       if (count($province_list)) {
         $options_list[$countrycodes[0] .'000'] = '[ ----- '. t('MAKE A SELECTION') .' ----- ]';
         foreach ($province_list as $province_code => $province_name) {
-          $options_list[$countrycodes[0] . $province_code] = $province_name;
+          $options_list[$countrycodes[0] . '-' . $province_code] = $province_name;
         }
       }
     }
@@ -1272,7 +1274,7 @@ function _location_province_select_options($value = '', $required = FALSE, $form
     foreach ($countrycodes as $country_name => $country_code) {
       // Load country specifice code .inc file if it exists.
       // For example, if country_code for U.S. == 'us', load location.us.inc
-      $include_file = 'modules/location/supported/location.'. $country_code .'.inc';
+      $include_file = LOCATION_PATH.'/supported/location.'. $country_code .'.inc';
       $province_listing_function = 'location_province_list_'. $country_code;
       if (function_exists($province_listing_function)) {
         $province_list = $province_listing_function();
@@ -1295,7 +1297,7 @@ function _location_province_select_options($value = '', $required = FALSE, $form
 function _location_include_configured() {
   $configured_country_codes = array_keys(location_configured_countries());
   foreach ($configured_country_codes as $country_code) {
-    $filename = 'modules/location/supported/location.'. $country_code .'.inc';
+    $filename = LOCATION_PATH.'/supported/location.'. $country_code .'.inc';
     if (file_exists($filename)) {
       include_once($filename);
     }
