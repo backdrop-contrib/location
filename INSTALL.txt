@@ -1,0 +1,36 @@
+Step 1
+------
+To use this project, feed the location.mysql to your database.  If your site
+is using a prefix for database table names, make sure to adjust accordingly.
+
+IMPORTANT:
+To support proximity searches and most useful features, you will need a postal codes
+database for each country for which you plan to use a file from the "supported/"
+directory. 
+
+As of this post, only U.S. postal codes are supported.  However, you will need a
+database of postal codes.  A database dump for a U.S. postal codes table can be
+found at http://trac.civicspacelabs.com/cgi-bin/trac.cgi/file/trunk/database/zipcodes.mysql
+
+Feed this dump to your database as well, adjusting for prefixes.  Careful, the
+postal code dump for the US is a few MB.
+
+Step 2
+------
+In the "modules/" directory, create a subdirectory called "location/" which itself
+contains a subdirectory called "supported/".
+
+Download "location.inc" to "location/"
+Download "location.module" to "location/"
+Download "earth.inc" to "location/"
+Download "supported/location.us.inc" to "location/supported/"
+(NOTE: "supported/location.ca.inc" for Canada is not yet complete).
+
+Step 3
+------
+Enable the location module on your site.
+Visit the settings page for location.module and enable features for U.S. (the only option as of now).
+Finally, go to the default workflow settings for each node type and enable (or require0 location collection
+on a field-by-field basis... it is encouraged that you enable postal codes and country fields for node types
+for which you want to enable proximity searches.
+

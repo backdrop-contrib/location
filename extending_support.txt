@@ -1,0 +1,228 @@
+This file is a PHP programmer's description of what needs to be done in order to extend the
+location system to support locationes from a new country.
+
+Let's suppose we want to extend the location system to support locationes from Belgium.  To this end,
+there are 2 tasks: 
+
+TASK #1
+---
+We use the lower-case of the country's two-letter ISO 3166 code to create a file, "location.be.inc", that 
+defines the necessary functions that will "hook" into the location system.  This way, when a high-level 
+function in the public location API receives a call that uses some Belgium specific function, the call 
+will be delegated to the appropriately named function in "location.be.inc".
+
+TASK #2
+---
+You need a way to determine the approximate latitude/longitude coordinates given a postal code in the
+new country.  This can be done in 2 ways:
+
+  (a) This could be a database table with a row for each postal code with columns for
+      -> the latitude coordinate of the approximate center of the postal code
+      -> the longiude coordinate of the approximate center of the postal code  
+      -> the city name "best" associated with the given row's postal code
+      -> the state/province name "best" associated with the given row's postal code
+      -> the postal code
+      
+  (b) For some countries, the postal code is a mathematical function of the location within a certain
+      quadrant or square-like region of a particular state/province or smaller subdivision.  In short, 
+      if your postal codes can be mapped to a latitude/longitude mathematically instead of requiring
+      costly or unavailable data, then it is advisable to use this dump to define your to-lat/lon mapping
+      function (specced below).
+      
+Most likely, you will be forced to go with option (a).  In a lot of countries, this data costs money! You cannot
+simply create a dump and then publish it on drupal.org unless the data is free to redistribute.  However, if you
+are interested in buying this data from some vendor and using it on your own site, you can do so but may have to
+acquire a new license for each seperate business or web site for which you wish to use postal code data if, in fact,
+you had to pay a fee or license for this data.
+
+This postalcode-to-lat/lon mapping is important if you want to enable location-based proximity searches of 
+anykind, but is not required.
+
+
+
+
+WHAT WOULD GO INTO location.be.inc
+---------------------------------
+This file will need to implement a handful of functions with the parameters and return values described below.
+
+It is possible to not implement all of these functions since the caller usually checks to see if the function
+exists before calling it, but it may limit the number of features the location system will be able to support
+for your country.
+
+For an example implementation of the functions described below, see "supported/location.us.inc".
+
+-------------------------------------------------------------------------------------------------
+function theme_location_be($location);                                                            |
+-------------------------------------------------------------------------------------------------
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+@return
+  A string of the themed location.  The entire location should be enclosed by '<dl class="location">' </dl> tags.
+  The different lines of the location should be enclosed by <dl> </dl> tags.  The idea is to allow country-specific
+  files to change the display of an location from the default theming done in theme_location() defined in location.inc
+
+-------------------------------------------------------------------------------------------------
+function location_nearby_postalcodes_be($minlon, $maxlon, $minlat, $maxlat, &$search_results);   |
+-------------------------------------------------------------------------------------------------
+Takes the 4 points of a square in the form of latitudes and longitudes and returns all postal codes
+whose approximate center fall within the square.
+ 
+@param $minlat 
+  The minimum latitude of the square-shaped area within which we are searching
+ 
+@param $maxlat
+  The longitude coordinate of a location
+
+@param $minlon
+  A range within which we are searching for matching zips 
+
+@param $maxlon 
+  A range within which we are searching for matching zips
+
+@param $search_results
+  The list of results compiled so far.  Other country-specific functions may have already added
+  results to this array, therefore it is important to pass this parameter by reference and modify
+  it.  Nothing will happen if you pass by value or return an array.
+  
+@return 
+  Nothing.  The function modifes the $search_results array that is passed by reference.
+  
+This function will typically query against a database table that maps postal codes to lat/lons.  It
+will add to the $search_results array an entry for each postal_code whose approximate central lat/lon
+fall within the max/min lat/lons given in the parameters.  The key for the entry in the array will be
+a concatenation of the lower-case 2-letter ISO code for the country and the postal code.  For example, 
+if Belgian postal code "xyz123" fell within the parameter coordinate range, then you would set, in the
+result array:
+
+  $search_results['be'. 'xyz123'] = array('city' => 'somecity', 'province' => 'some province', 'postal_code' => 'xyz123', 'lat' => lat-from-db, 'lon' => lon-from-db, 'country' => 'be');
+
+
+-------------------------------------------------------------------------------------------------
+function location_province_list_be();                                                            |
+-------------------------------------------------------------------------------------------------
+Returns an associative array where
+  -> the keys are the all-uppercase standard postal abbreviation for provinces, territories, and like subdivisions.
+  -> the values are the fully spelled names of the abbreviated names.
+  
+Preferrably, these will be sorted by the full name.
+
+
+
+
+-------------------------------------------------------------------------------------------------
+function location_map_link_be($location);                                                         |
+-------------------------------------------------------------------------------------------------
+Returns a deep-link to an online mapping service (e.g., "Yahoo! Maps", "MapQuest", or some other
+preferrably free service) given a full/partial location in the format described in public API
+document (location_API.txt).
+
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+
+@return
+  A URL with encoded HTTP GET variables to a free online-mapping service.  (Note: URL, not HTML link).
+  NULL if there is not even enough information to generate even a semi-useful link.  "Useful" may depend
+  entirely on the mapping service you choose to link to.  You are advised to experiment: usually, a
+  city/province combination is enough as is a postal code by itself, however, some services get confused
+  when all fields are supplied.  Some mapping services will be unable to map a city/province location
+  while they can't do anything with a postal code while others map postal codes fine, but can't do
+  anything useful with a city/province pair.
+
+  
+  
+  
+  
+--------------------------------------------------------------------------------------------------
+function location_driving_directions_link_be($locationA, $locationB);                               |
+--------------------------------------------------------------------------------------------------
+Returns a deep-link to an online mapping service (e.g., "Yahoo! Maps", "MapQuest", or some other
+preferrably free service) given full/partial locationes.  Depending on whether or not the parameter
+locationes are complete enough for the chosen service, this function will return either a deep-link
+directly to the driving direction or will provide a deep-link to a partially pre-filled form for
+driving directions on the site you choose to link to.
+  
+@param $locationA
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+    
+@param $locationB
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)    
+    
+@return
+  A URL (not HTML link) with HTTP GET variables tacked on to the end.  This URL either points to a
+  form for driving directions from $locationA to $locationB or a deep-link directly to the driving
+  directions depending on how complete the locationes are.
+
+  
+  
+
+  
+--------------------------------------------------------------------------------------------------
+function location_latlon_rough_be($location = array());                                            |
+-------------------------------------------------------------------------------------------------- 
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+    
+@return
+  An associative array where
+    'lat' => A floating point for the latitude of the approximate center of the postal_code in the given $location
+    'lon' => A floating point for the longitude of the approximate center of the postal code in the given $location
+  Returns NULL if the postal code doesn't make sense.
+
+Typically, this function will pull out the latitude/longitude of the approximate center of postal code
+in the given $location parameter.
+    
+
+
+
+--------------------------------------------------------------------------------------------------
+function location_latlon_exact_be($location = array());                                            |
+--------------------------------------------------------------------------------------------------
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+    
+@return
+  An associative array where
+    'lat' => A floating point for the latitude of the approximate center of the postal_code in the given $location
+    'lon' => A floating point for the longitude of the approximate center of the postal code in the given $location
+  Returns NULL if the postal code doesn't make sense.
+  
+Typically, this function will be implemented on top of a web-service for retrieving exact lat/lon information
+for a full location.  This function is not a necessity, but a sample implementation would be helpful for
+future users.  If not, it can always be added on a supply and demand basis.
+  
