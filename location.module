@@ -156,7 +156,16 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     $field_names = array('street' => 'Street location', 'city' => 'City', 'province' => 'State/Province', 'postal_code' => 'Postal code', 'country' => 'Country');
     $variable_prefix = 'location_';
     $variable_suffix = '_'. $node->type;
-    $default = ($node->type == 'event') ? 1 : 0;
+    $enabled = FALSE;
+    foreach (array_keys($field_names) as $field_name) {
+      if (variable_get($variable_prefix . $field_name . $variable_suffix, 0)) {
+        $enabled = TRUE;
+        break;
+      }
+    }
+    if (!$enabled && $op != 'settings') {
+      return;
+    } 
   }
   
   switch ($op) {
@@ -165,21 +174,18 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       // For the variable_get() params here, all the parameters of the form 'location_fieldname_' . $node->type can be condensed into a foreach
       // loop involving $field_names (set above).
       // But that would make it hard to read.
-      $form = form_radios(t('Street locationes'), 'location_street_'. $node->type, variable_get('location_street_'. $node->type, $default), array(t('Do not collect a street location for content of this type.'), t('Allow street locationes to be submitted for content of this type.'), t('Require street locationes to be submitted for content of this type.')));
-      $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, $default), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
-      $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, $default), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
-      $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, $default), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
-      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, $default), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')));
+      $form = form_radios(t('Street locationes'), 'location_street_'. $node->type, variable_get('location_street_'. $node->type, 0), array(t('Do not collect a street location for content of this type.'), t('Allow street locationes to be submitted for content of this type.'), t('Require street locationes to be submitted for content of this type.')));
+      $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, 0), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
+      $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, 0), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
+      $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, 0), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
+      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')));
       $form = form_group(t('Locative information'), $form);
       return array(t('Locations') => $form);
     case 'form post':
       $location_fields = array();
       $required_fields = array();
-      //$variable_prefix = 'location_';
-      //$variable_suffix = '_'. $node->type;
-      $default = ($node->type == 'event') ? 1 : 0;
       foreach (array_keys($field_names) as $field_name) {
-        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, $default);
+        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, 0);
         if ($workflow_setting) {
           $location_fields[] = $field_name;
           if ($workflow_setting == 2) {
@@ -187,20 +193,21 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           }
         }
       }
-      
+    
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
         return location_form($location_fields, $node->location ? $node->location : array(), $required_fields);
       }
       else {
         return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields);
       }
+    
       
     case 'validate':
       // For now, validation just makes sure that required fields have any value
       // If syntax specific checks are implemented for locationes in the future, they can be called as well.
       foreach (array_keys($field_names) as $field_name => $display_name) {
-        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, $default);
-        if (variable_get($variable_prefix . $field_name . $variable_suffix, $default) == 2) {
+        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, 0);
+        if (variable_get($variable_prefix . $field_name . $variable_suffix, 0) == 2) {
           if (isset($node->location[$field_name]) && !strlen(trim($node->location[$field_name]))) {
             form_set_error('location]['. $field_name, t('The field %field is required.', array('%field' => "<em>$display_name</em>")));
           }
@@ -260,7 +267,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
       if (count($location)) {
         foreach (array('street', 'city', 'postal_code', 'province', 'country') as $field_name) {
-          if (!(variable_get($variable_prefix . $field_name . $variable_suffix, $default))) {
+          if (!(variable_get($variable_prefix . $field_name . $variable_suffix, 0))) {
             unset($location[$field_name]);
           }
         }
