@@ -153,7 +153,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     // Set the default workflow setting for all location fields for an 'event' node: 1... optional
     // This will only be used if the user hasn't gone into the default workflow page for events and changed it to something else
     // for each field.
-    $field_names = array('street' => 'Street location', 'city' => 'City', 'province' => 'State/Province', 'postal_code' => 'Postal code', 'country' => 'Country');
+    $field_names = array('name' => 'Location name', 'street' => 'Street location', 'city' => 'City', 'province' => 'State/Province', 'postal_code' => 'Postal code', 'country' => 'Country');
     $variable_prefix = 'location_';
     $variable_suffix = '_'. $node->type;
     $enabled = FALSE;
@@ -174,13 +174,15 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       // For the variable_get() params here, all the parameters of the form 'location_fieldname_' . $node->type can be condensed into a foreach
       // loop involving $field_names (set above).
       // But that would make it hard to read.
-      $form = form_radios(t('Street locationes'), 'location_street_'. $node->type, variable_get('location_street_'. $node->type, 0), array(t('Do not collect a street location for content of this type.'), t('Allow street locationes to be submitted for content of this type.'), t('Require street locationes to be submitted for content of this type.')));
+      $form = form_radios(t('Location names'), 'location_name_'. $node->type, variable_get('location_name_'. $node->type, $default), array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.')));
+      $form .= form_radios(t('Street locations'), 'location_street_'. $node->type, variable_get('location_street_'. $node->type, $default), array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.')));
       $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, 0), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
       $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, 0), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
       $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, 0), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
       $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')));
       $form = form_group(t('Locative information'), $form);
       return array(t('Locations') => $form);
+    
     case 'form post':
       $location_fields = array();
       $required_fields = array();
@@ -192,8 +194,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             $required_fields[] = $field_name;
           }
         }
-      }
-    
+      }    
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
         return location_form($location_fields, $node->location ? $node->location : array(), $required_fields);
       }
@@ -204,7 +205,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       
     case 'validate':
       // For now, validation just makes sure that required fields have any value
-      // If syntax specific checks are implemented for locationes in the future, they can be called as well.
+      // If syntax specific checks are implemented for locations in the future, they can be called as well.
       foreach (array_keys($field_names) as $field_name => $display_name) {
         $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, 0);
         if (variable_get($variable_prefix . $field_name . $variable_suffix, 0) == 2) {
@@ -219,9 +220,10 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     case 'update':
       $posted_location = $_POST['edit']['location'];
       foreach ($posted_location as $posted_field => $posted_value) {
-        $posted_location[$posted_field] = strip_tags($posted_location[$posted_field]);
+        $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
       }
       $posted_location = location_form2api($posted_location);
+
       if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
         if ($latlon = location_latlon_rough($posted_location)) {
           $posted_location['lat'] = $latlon['lat'];
@@ -230,8 +232,9 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       }
       
       if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-         db_query("REPLACE INTO {location_node} (nid, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
+         db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
                 $node->nid, 
+                (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
                 (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
                 (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
                 (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
@@ -243,8 +246,9 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               );     
       }
       else {
-        db_query("REPLACE INTO {location_node} (nid, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')", 
+        db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
                 $node->nid, 
+                (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
                 (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
                 (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
                 (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
@@ -266,8 +270,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       }
 
       if (count($location)) {
-        foreach (array('street', 'city', 'postal_code', 'province', 'country') as $field_name) {
-          if (!(variable_get($variable_prefix . $field_name . $variable_suffix, 0))) {
+        foreach (array('name', 'street', 'city', 'postal_code', 'province', 'country') as $field_name) {
+          if (!(variable_get($variable_prefix . $field_name . $variable_suffix, 0)) && $field_name != 'country') {
             unset($location[$field_name]);
           }
         }
@@ -301,7 +305,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
 
 /**
- * Returns an array of countries whose locationes will be allowed entry
+ * Returns an array of countries whose locations will be allowed entry
  * into the site's location system.  The array returned is an associative
  * array where the keys are the ISO codes (see location.inc) and the values
  * are the shortened English names.
@@ -320,7 +324,7 @@ function location_get_configured_countries() {
 function location_settings() {
   $form  = '';
   // We actually need to do apply this variable in some kind of code somewhere in location_country_select_options() defined in location.inc
-  $form .= form_checkboxes('Enable all features for locationes from the following countries', 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locationes from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locationes in your system are from only a handful of the listed countries.'));
+  $form .= form_checkboxes('Enable all features for locations from the following countries', 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   
   

@@ -69,27 +69,33 @@ function theme_location($location = array()) {
   elseif (count($location)) {
     $output .= "\n";
     $output .= '<dl class="location">'."\n";
-    if (isset($location['street'])) {
+    if (isset($location['name']) && $location['name'] != '') {
+       $output .= '<dd>'. $location['name'] .'</dd>';
+    }
+
+    if (isset($location['street']) && $location['street'] != '') {
       $output .= '<dd>'. $location['street'] .'</dd>';
     }
     
-    if (isset($location['additional'])) {
+    if (isset($location['additional']) && $location['street'] != '') {
       $output .= '<dd>' . $location['additional'] . '</dd>';
     }
     
-    if (isset($location['city']) || isset($location['province']) || isset($location['postal_code'])) {
+    if ((isset($location['city']) && $location['city'] != '') || 
+        (isset($location['province']) && $location['province'] != '') || 
+        (isset($location['postal_code']) && $location['postal_code'] != '')) {
       $output .= '<dd>';
       
       $city_province_postal = array();
-      if (isset($location['city']) && strlen(trim($location['city']))) {
+      if (isset($location['city']) && $location['city'] != '') {
         $city_province_postal[] = $location['city'];
       }
       
-      if (isset($location['province']) && strlen(trim($location['province']))) {
+      if (isset($location['province']) && $location['province'] != '') {
         $city_province_postal[] = $location['province'];
       }
 
-      if (isset($location['postal_code']) && strlen(trim($location['postal_code']))) {
+      if (isset($location['postal_code']) && $location['postal_code'] != '') {
         $city_province_postal[] = $location['postal_code'];
       }
       
@@ -248,6 +254,13 @@ function location_distance_between($latlonA = array(), $latlonB = array(), $dist
 function location_form($fields = array(), $prefilled_values = array(), $required_fields = array(), $description = '', $form_name = 'location', $function = NULL) {
   $form = $description;
   if (count($fields)) {
+  
+    if (in_array('name', $fields)) {
+       $form .= '<div class="container-inline">';
+       $form .= form_textfield('Location Name', $form_name .'][name', isset($prefilled_values['name']) ? $prefilled_values['name'] : '', 64, 64, t('e.g. a place of business, venue, meeting point'), NULL, in_array('name', $required_fields));
+       $form .= "</div>\n";
+    }
+
     if (in_array('street', $fields)) {
       $form .= '<div class="container-inline">';
       $form .= form_textfield('Street', $form_name .'][street', isset($prefilled_values['street']) ? $prefilled_values['street'] : '', 64, 64, NULL, NULL, in_array('street', $required_fields));
@@ -285,6 +298,9 @@ function location_form($fields = array(), $prefilled_values = array(), $required
     
   }
   else {
+    $form .= '<div class="container-inline">';
+    $form .= form_textfield('Location Name', $form_name .'][name', isset($prefilled_values['name']) ? $prefilled_values['name'] : '', 64, 64, t('e.g. a place of business, venue, meeting point'), NULL, in_array('name', $required_fields));
+    $form .= "</div>\n";
     $form .= '<div class="container-inline">';
     $form .= form_textfield('Street', $form_name .'][street', isset($prefilled_values['street']) ? $prefilled_values['street'] : '', 64, 64, NULL, NULL, in_array('street', $required_fields));
     $form .= "</div>\n";

@@ -1,5 +1,6 @@
 CREATE TABLE location_node (
   nid int(10) unsigned NOT NULL default '0',
+  name varchar(255) default NULL,
   street varchar(255) default NULL,
   additional varchar(255) default NULL,
   city varchar(255) default NULL,
