@@ -187,7 +187,13 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           }
         }
       }
-      return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields);
+      
+      if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
+        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields);
+      }
+      else {
+        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields);
+      }
       
     case 'validate':
       // For now, validation just makes sure that required fields have any value
@@ -268,14 +274,20 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       return array('location' => $location);
       
     case 'view':
-      if (count($node->location)) {
-        $node->body .= theme('location', $node->location);
+      if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
+        if (count($node->location)) {
+          $node->body .= theme('location', location_form2api($node->location));
+        }
       }
-      if (!$teaser) {
-        drupal_set_html_head(location_geocode_meta_tags($node->location));
+      else {
+        if (count($node->location)) {
+          $node->body .= theme('location', $node->location);
+        }
+        if (!$teaser) {
+          drupal_set_html_head(location_geocode_meta_tags($node->location));
+        }
       }
       break;
-      
   }
 }
 
