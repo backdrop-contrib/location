@@ -179,7 +179,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, 0), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
       $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, 0), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
       $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, 0), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
-      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')));
+      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')), t('It is strongly recommened that you allow or require country names to be submitted since most location features depend on a country field.'));
       $form = form_group(t('Locative information'), $form);
       return array(t('Locations') => $form);
     
@@ -194,7 +194,11 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             $required_fields[] = $field_name;
           }
         }
-      }    
+      }
+      
+      if (!isset($node->location['country']) || $node->location['country'] == '') {
+        $node->location['country'] = variable_get('location_default_country', 'us');
+      }
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
         return location_form($location_fields, $node->location ? $node->location : array(), $required_fields);
       }
@@ -325,12 +329,10 @@ function location_get_configured_countries() {
 function location_settings() {
   $form  = '';
   // We actually need to do apply this variable in some kind of code somewhere in location_country_select_options() defined in location.inc
-  $form .= form_checkboxes('Enable all features for locations from the following countries', 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
+  $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
-  
-  
+  $form .= form_select(t('Default country selection'), 'location_default_country', variable_get('location_default_country', 'us'), _location_get_iso3166_list(), t('This will be the country that is automatically selected when a location form is served for a new location.'));
   //$form .= location_module_testing();
-  
   return $form;
 }
 
