@@ -36,8 +36,13 @@ function location_map_link($location = array(), $link_text = 'See map') {
   
   $map_link_function = 'location_map_link_'. $location['country'];
   if (function_exists($map_link_function)) {
-    if ($url = $map_link_function($location)) {
-      return '<a href="'. $url .'">'. $link_text ."</a>\n";
+    $map_links = $map_link_function($location);
+    if (count($map_links)) {
+      $links = array();
+      foreach ($map_links as $service_name => $url) {
+         $links[] = '<a href="'. $url .'">'. $service_name ."</a>\n";
+      }
+      return t('See map: ') . implode($links);
     }
     else {
       return NULL;

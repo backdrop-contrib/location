@@ -153,10 +153,15 @@ function _location_latlon_exact_us_geocoder($location = array()) {
  *   A URL with the appropriate HTTP GET params to driving directions
  */
 function location_map_link_us($location = array()) {
+  $map_links = array();
   // For now, just call the Yahoo function.  May want to make this configurable on some level
   // in order to maintain freedom of choice so users and site-admins don't have to be slaves
   // to Yahoo!.... not that I have anything personal against Yahoo!.
-  return location_map_link_us_yahoo($location);
+  if ($link = location_map_link_us_yahoo($location)) {
+    $map_links['Yahoo! Maps'] = $link;
+  }
+  
+  return $map_links;
 }
  
 
