@@ -222,47 +222,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       
     case 'insert':
     case 'update':
-      if (isset($_POST['edit']['location']) && count($_POST['edit']['location'])) {
-        $posted_location = $_POST['edit']['location'];
-        foreach ($posted_location as $posted_field => $posted_value) {
-          $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
-        }
-        $posted_location = location_form2api($posted_location);
-
-        if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
-          if ($latlon = location_latlon_rough($posted_location)) {
-            $posted_location['lat'] = $latlon['lat'];
-            $posted_location['lon'] = $latlon['lon'];
-          }
-        }
-      
-        if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-           db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
-                  $node->nid, 
-                  (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
-                  (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
-                  (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
-                  (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
-                  (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
-                  (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-                  (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
-                  $posted_location['lat'],
-                  $posted_location['lon']
-                );     
-        }
-        else {
-          db_query("REPLACE INTO {location_node} (nid, name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-                  $node->nid, 
-                  (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
-                  (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
-                  (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
-                  (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
-                  (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
-                  (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-                  (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country']
-                );
-        }
-      }
+      _location_save($edit, $node, 'node');
       break;
       
     case 'load':
@@ -324,7 +284,6 @@ function location_get_configured_countries() {
 /**
  * Implementation of hook_settings().
  *
- *
  */
 function location_settings() {
   $form  = '';
@@ -332,58 +291,115 @@ function location_settings() {
   $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   $form .= form_select(t('Default country selection'), 'location_default_country', variable_get('location_default_country', 'us'), _location_get_iso3166_list(), t('This will be the country that is automatically selected when a location form is served for a new location.'));
-  //$form .= location_module_testing();
+  
+  $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
   return $form;
 }
 
 
-function location_module_testing() {
-  $testing_output  = '______________________________________________________________________________________'. "<br/>\n";
-  $testing_output .= '------------------------------- TESTING location FUNCTIONS ----------------------------'. "<br/>\n";
-  $testing_output .= '______________________________________________________________________________________'. "<br/>\n";
-  //$testing_output .= 'Call to location_province_select_options(array(\'us\')) == ';
-  //$testing_output .= serialize(location_province_select_options(array('us')));
-  //$testing_output .= "<br/>\n<br/>\n<br/>\n";
-  $testing_output .= '<h2>THE location FORM</h2>'."<br/>\n";
-  $locationC = array('street' => '5493 Country View Dr', 'additional' => 'ANKUR RISHI HALL', 'city' => 'Richmond', 'province' => 'CA', 'postal_code' => 94803, 'country' => 'us');
-  $testing_output .= location_form(array('street' => array('required' => TRUE), 'city' => array('required' => TRUE), 'province' => array('required' => TRUE), 'postal_code' => array('required' => TRUE), 'country' => array('required' => TRUE)), location_api2form($locationC), 'Enter ye location! Arrrgh!', 'home_location');
-  $testing_output .= '<h2> A call to location_driving_directions_link()</h2><br/>'."\n";
-  //$locationA = array('street' => '5493 Country View Dr', 'additional' => '', 'city' => 'El Sobrante', 'state' => 'CA', 'country' => 'us', 'postal_code' => 94803);
-  $locationA = array('postal_code' => '94803', 'country' => 'us');
-  $locationB = array('street' => '2010 Broadway St', 'additional' => '', 'city' => 'Redwood City', 'province' => 'CA', 'country' => 'us', 'postal_code' => 94063);
-  $locationC = array('street' => '5493 Country View Dr', 'city' => 'Richmond', 'province' => 'CA','country' => 'us');
-  $testing_output .= 'Driving directions from Ankur\'s house to work: '. location_driving_directions_link($locationC, $locationB, 'Going to work!') ."<br/>\n";
-  $testing_output .= 'A map of CSL\'s office: '. location_map_link($locationB) ."<br/>\n";
-  $roundtable_vancouver = array('street' => '6942 Victoria Dr', 'city' => 'Vancouver', 'province' => 'BC', 'country' => 'ca', 'postal_code' => 'V5P3Y8');
-  $testing_output .= 'Find out '. location_driving_directions_link($locationB, $roundtable_vancouver, 'how to get from CSL to Round Table Pizza in Vancouver') . '!!!'."<br/>\n";
-  $testing_output .= 'Now get '. location_driving_directions_link($roundtable_vancouver, $locationB, 'directions back') .'from Canada!'."<br/>\n";
-  $testing_output .= '';
-  $testing_output .= '______________________________________________________________________________________'. "<br/>\n";
-  $testing_output .= '<h2>A CALL TO location_latlon_rough(94803)</h2>'."<br/>\n";
-  $latlon = location_latlon_rough(array('country' => 'us', 'postal_code' => 94803));
-  $testing_output .= '<h2>A CALL TO location_latlon_exact()</h2>'."<br/>\n";
-  $testing_output .= '$latlon = array(\'lat\' => '. $latlon['lat'] .', \'lon\' => '. $latlon['lon'] .')'. "<br/>\n";
-  $exact_latlon = location_latlon_exact($locationB);
-  $testing_output .= '<h2> CALLS TO location_proximity_form()</h2>'."<br/>\n";
-  $testing_output .= '<u>location_proximity_form() (no args)</u><br/>'."\n";
-  $testing_output .= location_proximity_form();
-  $testing_output .= '<u>location_proximity_form(\'Search\', \'Find all stuff near you!\', location_form(\'\', array(\'postal_code\' => array())))</u>'."<br/>\n";
-  $testing_output .= location_proximity_form(location_form(array('postal_code' => array()), 'Search', 'Find all stuff near you!', 'location_prox'));
-  $testing_output .= '<h2>A CALL TO location_nearby_postalcodes_bylocation()</h2>'."<br/>\n";
-  //$nearby_postalcodes = location_nearby_postalcodes_bylocation(array('country' => 'us','postal_code' => 94803), 200, 'mile');
-  $nearby_postalcodes = location_nearby_postalcodes_bylatlon($latlon['lon'], $latlon['lat'], 100, 'mile');
-  $testing_output .= 'call to location_nearby_postalcodes_bypostalcode(array(\'country\' => \'us\', \'postal_code\' => 94803), 100, \'mile\') returned:'."<br/>\n";
-
-  foreach ($nearby_postalcodes as $ranking => $postalcode_array) {
-    $testing_output .= '&nbsp;&nbsp;&nbsp;&nbsp;'. $ranking .'. '. $postalcode_array['postal_code'];
-    $testing_output .= isset($postalcode_array['city']) ? ('&nbsp;&nbsp;&nbsp;'. $postalcode_array['city']) : '';
-    $testing_output .= isset($postalcode_array['province']) ? (', '. $postalcode_array['province']) : '';
-    $testing_output .= '&nbsp;&nbsp;'. $postalcode_array['distance'] .' '. $postalcode_array['distance_unit'];
-    $testing_output .= "<br>\n";
+function _location_is_empty($location = array()) {
+  $fields = array('street', 'additional', 'city', 'province', 'postal_code', 'country');
+  foreach ($fields as $field) {
+    if (isset($location[$field]) && strlen(trim($location[$field]))) {
+      return FALSE;
+    }
   }
-  return $testing_output;
+  return TRUE;
 }
 
+function location_user($op, &$edit, &$user, $category = NULL) {
+  if (!variable_get('location_user', 0)) {
+    return;
+  }
+  
+  if ($op == 'form' && $category == 'account') {
+    return array(array('title' => '', 'data' => location_form(array('street', 'city', 'province', 'postal_code', 'country'), (isset($user->location) && !_location_is_empty($user->location)) ? location_api2form($user->location) : array('country' => variable_get('location_default_country', 'us')), array(), t('Enter as much of your address as you are comfortable with.  Your address will only be viewable by those who have the appropriate permissions.  The site will be able to automatically link you to driving directions and other features if it already knows your address.')), 'weight' => 0));
+  }
+  
+  if ($op == 'load') {
+    $res = db_query('SELECT * FROM location_user WHERE uid = %d', $user->uid);
+    if ($location = db_fetch_object($res)) {
+      $user->location = object2array($location);
+    }
+    else {
+      $user->location = array();
+    }
+  }
+  
+  if ($op == 'categories') {
+    return array(array('name' => 'location', 'title' => '', 'weight' => 0));
+  }
+  
+  if ($op == 'update' || $op == 'insert') {
+    _location_save($edit, $user, 'user');
+  }
+  
+  if ($op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid)) {
+    return array('' => theme('location', $user->location));
+  }
+  
+}
+
+/**
+ * Saves a location.  Needs a $user or $node object.
+ * 
+ * @param $edit
+ * The array 
+ */
+function _location_save(&$edit, &$user_or_node, $type = 'node') {
+
+  if ($type == 'node') {
+    $field = 'nid';    
+  }
+  elseif ($type == 'user') {
+    $field = 'uid';
+  }
+  else {
+    return;
+  }
+
+  if (isset($_POST['edit']['location']) && count($_POST['edit']['location'])) {
+    $posted_location = $_POST['edit']['location'];
+    foreach ($posted_location as $posted_field => $posted_value) {
+      $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
+    }
+    $posted_location = location_form2api($posted_location);
+
+    if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
+      if ($latlon = location_latlon_rough($posted_location)) {
+        $posted_location['lat'] = $latlon['lat'];
+        $posted_location['lon'] = $latlon['lon'];
+      }
+    }
+              
+    if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
+       db_query("REPLACE INTO {location_". $type ."} (". $field .", name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
+              $user_or_node->$field, 
+              (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
+              (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
+              (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
+              (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
+              (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
+              (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
+              (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
+              $posted_location['lat'],
+              $posted_location['lon']
+            );     
+    }
+    else {
+      db_query("REPLACE INTO {location_". $type ."} (". $field .", name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+              $user_or_node->$field, 
+              (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
+              (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
+              (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
+              (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
+              (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
+              (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
+              (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country']
+            );
+    }
+  }
+}
 
 
 ?>
