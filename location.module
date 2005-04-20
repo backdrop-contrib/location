@@ -32,12 +32,12 @@ function location_search_form_page() {
   
   $prefilled_values = array();
   if ($edit = $_POST['edit']) {
-    $prefilled_values['postal_code'] = $edit['location']['postal_code'];
-    $prefilled_values['country'] = $edit['location']['country'];
+    $prefilled_values['postal_code'] = trim($edit['location']['postal_code']);
+    $prefilled_values['country'] = trim($edit['location']['country']);
   }
   elseif (isset($_GET['postal_code']) || isset($_GET['country']) || isset($_GET['distance']) || isset($_GET['distance_unit'])) {
     $from_get = TRUE;
-    $prefilled_values['postal_code'] = isset($_GET['postal_code']) ? $_GET['postal_code'] : '';
+    $prefilled_values['postal_code'] = isset($_GET['postal_code']) ? trim($_GET['postal_code']) : '';
     $prefilled_values['country'] = isset($_GET['country']) ? $_GET['country'] : '';
     $prefilled_values['distance'] = isset($_GET['distance']) ? $_GET['distance'] : '';
     $prefilled_values['distance_unit'] = isset($_GET['distance_unit']) ? $_GET['distance_unit'] : '';
@@ -55,6 +55,7 @@ function location_search_form_page() {
   $form = form($form);
   $search_results = '';
   if ($edit) {
+    $start_time = microtime();
     $edit['location']['postal_code'] = trim($edit['location']['postal_code']);
     if (strlen($edit['location']['postal_code']) && strlen($edit['location']['country']) && $edit['location']['country'] != 'xx') {
       // DEBUG: commented code for testing/debugging purposes
@@ -74,6 +75,8 @@ function location_search_form_page() {
 
         $query_fragment = implode(', ', $query_fragment);
         $sql = 'SELECT n.nid AS nid, a.postal_code AS postal_code, a.city AS city, a.province AS province, a.country AS country, n.title AS title, n.teaser AS teaser, n.type AS type, n.created AS created, n.uid AS uid, u.name AS name, FIELD(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .') ORDER BY search_rank ASC, created DESC';
+        
+        $sql = 'SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.uid, u.name, FIELD(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .') ORDER BY search_rank ASC, created DESC';
 
         $count_sql = 'SELECT COUNT(*) FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .')';
 
@@ -83,26 +86,25 @@ function location_search_form_page() {
         
         while ($row = db_fetch_object($res)) {
           $city_index_key = $row->country . $row->postal_code;
-          $result_location = array('street' => strlen($row->street) ? $row->street : '',
-                                  'additional' => strlen($row->additional) ? $row->additional : '',
-                                  'city' => strlen($row->city) ? $row->city : $postal_codes[$city_index_key]['city'],
-                                  'province' => strlen($row->province) ? $row->province : $postal_codes[$city_index_key]['province'],
+          $result_location = array('street' => !empty($row->street) ? $row->street : '',
+                                  'additional' => !empty($row->additional) ? $row->additional : '',
+                                  'city' => !empty($row->city) ? $row->city : $postal_codes[$city_index_key]['city'],
+                                  'province' => !empty($row->province) ? $row->province : $postal_codes[$city_index_key]['province'],
                                   'postal_code' => $row->postal_code,
                                   'country' => $row->country,
                                   'distance' => $postal_codes[$city_index_key]['distance'],
-                                  'distance_unit' => $postal_codes[$city_index_key]['distance_unit']
                                  );
                                
-          $extra = t('Local to ') . $result_location['postal_code'] .', ' . $result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']] .' - '. $result_location['distance'] . ' ' . $result_location['distance_unit'] .' away.';
+          $extra = t('Local to ') . $result_location['postal_code'] .', ' . $result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']] .' - '. $result_location['distance'] . ' ' . $edit['location']['distance_unit'] .' away.';
           
           $extra = array();
-          $extra['location'] = t('Local to %place', array('%place' => l($result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']], 'search/location', array(), 'postal_code='. urlencode($result_location['postal_code']) . '&amp;country='. urlencode($result_location['country']) .'&amp;distance='. urlencode($edit['location']['distance']) .'&amp;distance_unit='. urlencode($edit['location']['distance_unit']))));
+          $extra['location'] = t('Local to %place', array('%place' => l($result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']], 'search/location', array(), 'postal_code='. urlencode($result_location['postal_code']) . '&country='. urlencode($result_location['country']) .'&distance='. urlencode($edit['location']['distance']) .'&distance_unit='. urlencode($edit['location']['distance_unit']))));
           if ($result_location['postal_code'] == $edit['location']['postal_code'] && $result_location['country'] == $edit['location']['country']) {
             $extra['distance'] = t('Result is <strong>also from %postal_code</strong>', array('%postal_code' => $result_location['postal_code']));
           }
           else {
             if (round($result_location['distance']) != 1) {
-              $distance_unit = ($result_location['distance_unit'] == 'km') ? t($distance_unit) : t('miles');
+              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t($distance_unit) : t('miles');
             }
             $extra['distance'] = t('Approximately %distance from %location', array('%distance' => '<strong>'. round($result_location['distance']) .' '. $distance_unit .'</strong>', '%location' => $edit['location']['postal_code']));
           }
@@ -119,7 +121,7 @@ function location_search_form_page() {
           $search_results .= theme('search_item', $item, $item->type);
         }
         
-        if (!strlen($search_results)) {
+        if (empty($search_results)) {
           $search_results .= theme('box', t('Your search yielded no results.'), '');
         }
         else {
@@ -142,6 +144,8 @@ function location_search_form_page() {
       }
     }
   }
+  $end_time = microtime();
+  print 'Time for this NODE search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
   print theme('page', $form . $search_results);
 }
 
