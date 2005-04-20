@@ -602,7 +602,13 @@ function location_nearby_postalcodes_bylocation($location, $distance, $distance_
 
   $search_results = _location_nearby_postalcodes($latlon['lon'], $latlon['lat'], $distance_float);
 
+  //DEBUG: commented code is for testing/debugging
+  //$format_start_time = microtime();
+  
   _location_format_search_result_distances($search_results, $distance_unit);
+  
+  //$format_end_time = microtime();
+  //print 'Time for FORMATTING to complete: '. _location_time_difference($format_end_time, $format_start_time) ."<br/>\n";
   
   // DEBUG: commented code is for testing/debugging purposes
   //$end_time = microtime();
@@ -805,13 +811,33 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
   foreach (array_keys(location_configured_countries()) as $code) {
     $postal_code_function = 'location_nearby_postalcodes_'. $code;
     if (function_exists($postal_code_function)) {
+      //DEBUG: commented code is for testing/debugging purposes  
+    
+      //$c_time_start = microtime();
+      
       $postal_code_function($lonrange[0], $lonrange[1], $latrange[0], $latrange[1], &$search_results);
+      
+      //$c_time_end = microtime();
+      //print 'Time for '. $postal_code_function .' search: '. _location_time_difference($c_time_end, $c_time_start) ."<br/>\n";
     }
   }
   
+  //DEBUG: commented code is for testing/debugging purposes
+  //$narrow_time_start = microtime();
+  
   _location_narrow_proximity_search_results($lon, $lat, $distance, $search_results);
   
+  //$narrow_time_end = microtime();
+  //print 'Time for NARROWING search: '. _location_time_difference($narrow_time_end, $narrow_time_start) ."<br/>\n";
+  
+  //DEBUG: commented code is for testing/debugging purposes
+  //$sort_time_start = microtime();
+  
   _location_sort_proximity_search_results($search_results);
+  
+  //$sort_time_end = microtime();
+  //print 'Time for SORTING search to complete: '. _location_time_difference($sort_time_end, $sort_time_start) ."<br/>\n";
+  
   //--------------------------------------------------------------------------------------------
   // This is the spot where search results are cached
   
@@ -1033,7 +1059,6 @@ function _location_format_search_result_distances(&$results_array, $distance_uni
   
   foreach ($results_array as $index => $single_result) {
     $results_array[$index]['distance'] = round($single_result['distance']/$conversion_factor, 1);
-    $results_array[$index]['distance_unit'] = $distance_unit;
   }
 }
 
