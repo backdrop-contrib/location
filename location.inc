@@ -742,13 +742,14 @@ function location_latlon_rough($location = array()) {
   if (!isset($location['country']) || !isset($location['postal_code'])) {
     return NULL;
   }
+  
   $latlon_function = 'location_latlon_rough_'. $location['country'];
   if (function_exists($latlon_function)) {
     return $latlon_function($location);
   }
-  // If there is no country specific function to determine the lat/lon
-  // of the given location, return an empty array.
-  return NULL;
+  else {
+    return NULL;
+  }
 }
  
 
@@ -803,41 +804,28 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
   // been configured into the system.  
   //------------------------------------------------------------------------------------------
   
-  $latrange = earth_latitude_range($lon, $lat, $distance);
-  $lonrange = earth_longitude_range($lon, $lat, $distance);
-  
   $search_results = array();
-
-  foreach (array_keys(location_configured_countries()) as $code) {
-    $postal_code_function = 'location_nearby_postalcodes_'. $code;
-    if (function_exists($postal_code_function)) {
-      //DEBUG: commented code is for testing/debugging purposes  
     
-      //$c_time_start = microtime();
-      
-      $postal_code_function($lonrange[0], $lonrange[1], $latrange[0], $latrange[1], &$search_results);
-      
-      //$c_time_end = microtime();
-      //print 'Time for '. $postal_code_function .' search: '. _location_time_difference($c_time_end, $c_time_start) ."<br/>\n";
+  $latrange = earth_latitude_range($lon, $lat, $distance);
+  $lonrange = earth_longitude_range($lon, $lat, $distance);  
+
+  //$query_start_time = microtime();
+  
+  $result = db_query('SELECT zip, city, state, country, '. earth_distance_sql($lon, $lat) .' as distance  FROM {zipcodes} WHERE latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f ORDER by distance', $latrange[0], $latrange[1], $lonrange[0], $lonrange[1]);
+  
+  while ($result_row = db_fetch_object($result)) {
+    if ($result_row->distance <= $distance) {
+      $search_results[$result_row->country . $result_row->zip] = array('city' => $result_row->city, 'province' => $result_row->state, 'distance' => $result_row->distance);
+    }
+    else {
+      break;
     }
   }
   
-  //DEBUG: commented code is for testing/debugging purposes
-  //$narrow_time_start = microtime();
+  //DEBUG: commented code for testing/debugging purposes
+  //$query_end_time = microtime();
   
-  _location_narrow_proximity_search_results($lon, $lat, $distance, $search_results);
-  
-  //$narrow_time_end = microtime();
-  //print 'Time for NARROWING search: '. _location_time_difference($narrow_time_end, $narrow_time_start) ."<br/>\n";
-  
-  //DEBUG: commented code is for testing/debugging purposes
-  //$sort_time_start = microtime();
-  
-  _location_sort_proximity_search_results($search_results);
-  
-  //$sort_time_end = microtime();
-  //print 'Time for SORTING search to complete: '. _location_time_difference($sort_time_end, $sort_time_start) ."<br/>\n";
-  
+  //print 'TOTAL TIME FOR _location_nearby_postalcodes() '. _location_time_difference($query_end_time, $query_start_time) ."<br/>\n";
   //--------------------------------------------------------------------------------------------
   // This is the spot where search results are cached
   
@@ -936,90 +924,6 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
   }
 }
 
-
-/**
- * Helper function: this function is intended to narrow down the search results from the queries
- *                  executed in the country-specific proximity functions called by 
- *                  location_nearby_postalcodes().  The reason for this is that the foreach ()
- *                  in location_nearby_postalcodes() returns results for postal_codes that fall within
- *                  a sqaure geographically centered about the search point where the sides of
- *                  the sqaure are (2*$distance) long.  This function is intended to carve out
- *                  the circle from that square by eliminating search results that are too far.
- *
- * @param $central_lon 
- *   The longitude coordinate of the point about which the search is done
- *
- * @param $central_lat
- *   The latitude coordinate of the point about which the search is done
- *
- * @param $distance 
- *   The search radius in meters that the search was done with
- *
- * @param $result_array
- *   The array returned by the foreach () in location_nearby_postalcodes() where the
- *      -> the keys are concatenations of the two-letter ISO country codes and the postal code
- *      -> the values are the search results returned by the country specific proximity search function
- *         These search results are in array form where
- *           -> the keys are the 'postal code' that has been returned
- *           -> the values are an associative array where
- *               'lat' => latitude of the search result
- *               'lon' => longitude of the search result
- *
- * @return
- *   Doesn't return anything.
- *   Modifies parameter '$result_array' where final array has 2 differences:
- *       (1) The search results in the _square_ created by the search-radius ($distance), BUT NOT in the _circle_ of the 
- *           search-radius are weeded out.
- *       (2) The associative array holding the 'lat' and 'lon' keys now contain a 'distance' key that points 
- *           to a float value in meters of the distance .
- *
- */
-function _location_narrow_proximity_search_results($central_lon, $central_lat, $max_distance, &$search_results) {
-  foreach ($search_results as $country_postal_code => $latlon) {
-    $distance = earth_distance($central_lon, $central_lat, $latlon['lon'], $latlon['lat']);
-    if ($distance > $max_distance) {
-      unset($search_results[$country_postal_code]);
-    }
-    else {
-      $search_results[$country_postal_code]['distance'] = $distance;
-      unset($search_results[$country_postal_code]['lat']);
-      unset($search_results[$country_postal_code]['lon']);
-    }
-  }
-}
-
-
-/**
- * Helper function: this function takes the $result_array AFTER it has been modified by
- *                  the helper function _location_narrow_proximity_search_results()
- *
- * @param $result_array
- *   The array returned by the foreach () in location_nearby_postalcodes() and then
- *   modified by _location_narrow_proximity_search_results() where the
- *     -> the keys are the two-letter ISO country codes and
- *     -> the values are the search results returned by the country specific proximity search function
- *        These search results are in associative array form where
- *          -> the keys are the 'postal code' that have been returned
- *          -> the values are an associative array where
- *              'lat'      => latitude of the search result
- *              'lon'      => longitude of the search result
- *              'distance' => float value in meters of the search result from the center of the search
- * @return
- *   An associative array where
- *     -> the keys are non-negative integer rankings of proximity starting from '1' for the closest
- *        postal code in the search results
- *     -> the values are themselves associative arrays where
- *          'lat'      => latitude of the search result
- *          'lon'      => longitude of the search result
- *          'distance' => float value in meters of the search result from the center of the search
- *          'country'  => the two-letter ISO code of the country
- */
-function _location_sort_proximity_search_results(&$search_results) {
-  uasort($search_results, '_location_compare_floats');
-  reset($search_results);
-}
-
-
 /**
  * Helper function: This function EXPECTS an array that has been returned by
  *                  _location_sort_proximity_search_results()
@@ -1063,33 +967,6 @@ function _location_format_search_result_distances(&$results_array, $distance_uni
 }
 
 /**
- * Helper function: Compares floats.  The name of this function is passed to a call to usort() in the function
- *                  _location_sort_proximity_search_results().
- *
- * @param $a
- *   A floating point number
- *
- * @param $b
- *   A floating point number
- *
- * @return
- *   0 if $a == $b
- *   -1 if $a < $b
- *   1 if $a > $b
- *   The params follow the API specified at http://www.php.net/usort
- *
- */
-function _location_compare_floats($a, $b) {
-  if ($a['distance'] == $b['distance']) {
-       return 0;
-   }
-   return ($a['distance'] < $b['distance']) ? -1 : 1;
-}
-
-
-
-
-/**
  * Currently, this is not a priority until there is an implementable use for exact longitude, 
  * latitude coordinates for an location.  The idea is that this call will eventually retrieve
  * information through a web-service.  Whereas location_latlon_rough() returns an approximate
@@ -1126,7 +1003,6 @@ function location_latlon_exact($location = array()) {
   }
   return NULL;
 }
-
 
 /**
  * @param $location
@@ -1165,7 +1041,6 @@ function location_geocode_meta_tags($location = array()) {
   }
   return $output;
 }
-
 
 /**
  * Returns an associative array of countries currently recognized by the
@@ -1234,7 +1109,6 @@ function _location_supported_countries() {
   return $supported_countries;
 }
 
-
 /**
  * Given a pre-selected value, whether or not the form-item is required, and an optional form name,
  * generates an HTML select for selecting a country in an location form.
@@ -1271,7 +1145,6 @@ function _location_country_select_options($value = '', $required = FALSE, $form_
   }
   return form_select('Country', $form_name .'][country', $value, $countrycodes, NULL, 0, FALSE, $required);
 }
-
 
 /**
  * The array that is returned is a complete list of state/provinces
