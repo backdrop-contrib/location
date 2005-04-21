@@ -13,30 +13,26 @@ will be delegated to the appropriately named function in "location.be.inc".
 
 TASK #2
 ---
-You need a way to determine the approximate latitude/longitude coordinates given a postal code in the
-new country.  This can be done in 2 ways:
+You need postal code data for your country.  This postal code data needs to be able to connect the
+base-length postal code (e.g., U.S. postal codes can be 9 digits, but we're only interested to the
+level of 5 digits and most people only know the 5-digit version) to a city, province/state, country (duh),
+and a latitude/longitude pair in degrees that represents the approximate center of the postal code's area.
+Ultimately, you will want to create a database dump that inserts these fields into specific columns:
+'zip' (for postal codes), 'city' (for city names), 'province' for (the standard state/province/country
+abbreviation), 'country' (for the lower-case of the country's two letter ISO code), 'latitude' (for the
+latitude in degree value, as opposed to radian value) and 'longitude' (for the degree value of the 
+longitude). 
 
-  (a) This could be a database table with a row for each postal code with columns for
-      -> the latitude coordinate of the approximate center of the postal code
-      -> the longiude coordinate of the approximate center of the postal code  
-      -> the city name "best" associated with the given row's postal code
-      -> the state/province name "best" associated with the given row's postal code
-      -> the postal code
-      
-  (b) For some countries, the postal code is a mathematical function of the location within a certain
-      quadrant or square-like region of a particular state/province or smaller subdivision.  In short, 
-      if your postal codes can be mapped to a latitude/longitude mathematically instead of requiring
-      costly or unavailable data, then it is advisable to use this dump to define your to-lat/lon mapping
-      function (specced below).
-      
-Most likely, you will be forced to go with option (a).  In a lot of countries, this data costs money! You cannot
-simply create a dump and then publish it on drupal.org unless the data is free to redistribute.  However, if you
-are interested in buying this data from some vendor and using it on your own site, you can do so but may have to
-acquire a new license for each seperate business or web site for which you wish to use postal code data if, in fact,
-you had to pay a fee or license for this data.
+
+In a lot of countries, this data costs money!  You cannot simply create a dump and then publish it on 
+drupal.org unless the data is free to redistribute.  However, if you are interested in buying this data 
+from some vendor and using it on your own site, you can do so but may have to acquire a new license for 
+each seperate business or web site for which you wish to use postal code data if, in fact, you had to 
+pay a fee or license for this data.
 
 This postalcode-to-lat/lon mapping is important if you want to enable location-based proximity searches of 
-anykind, but is not required.
+anykind for addresses in a particular country.  The module will still work fine without it, but will not
+be able to support searches based on postal codes.
 
 
 
@@ -67,41 +63,8 @@ function theme_location_be($location);                                          
   The different lines of the location should be enclosed by <dl> </dl> tags.  The idea is to allow country-specific
   files to change the display of an location from the default theming done in theme_location() defined in location.inc
 
--------------------------------------------------------------------------------------------------
-function location_nearby_postalcodes_be($minlon, $maxlon, $minlat, $maxlat, &$search_results);   |
--------------------------------------------------------------------------------------------------
-Takes the 4 points of a square in the form of latitudes and longitudes and returns all postal codes
-whose approximate center fall within the square.
- 
-@param $minlat 
-  The minimum latitude of the square-shaped area within which we are searching
- 
-@param $maxlat
-  The longitude coordinate of a location
 
-@param $minlon
-  A range within which we are searching for matching zips 
-
-@param $maxlon 
-  A range within which we are searching for matching zips
-
-@param $search_results
-  The list of results compiled so far.  Other country-specific functions may have already added
-  results to this array, therefore it is important to pass this parameter by reference and modify
-  it.  Nothing will happen if you pass by value or return an array.
   
-@return 
-  Nothing.  The function modifes the $search_results array that is passed by reference.
-  
-This function will typically query against a database table that maps postal codes to lat/lons.  It
-will add to the $search_results array an entry for each postal_code whose approximate central lat/lon
-fall within the max/min lat/lons given in the parameters.  The key for the entry in the array will be
-a concatenation of the lower-case 2-letter ISO code for the country and the postal code.  For example, 
-if Belgian postal code "xyz123" fell within the parameter coordinate range, then you would set, in the
-result array:
-
-  $search_results['be'. 'xyz123'] = array('city' => 'somecity', 'province' => 'some province', 'postal_code' => 'xyz123', 'lat' => lat-from-db, 'lon' => lon-from-db, 'country' => 'be');
-
 
 -------------------------------------------------------------------------------------------------
 function location_province_list_be();                                                            |
