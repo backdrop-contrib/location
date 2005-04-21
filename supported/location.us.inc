@@ -1,41 +1,6 @@
 <?php
 
 /**
- * Takes the 4 points of a square in the form of latitudes and longitudes and returns all postal codes
- * from all supported countries.
- * 
- * @param $minlat 
- *   The minimum latitude of the square-shaped area within which we are searching
- *
- * @param $maxlat
- *   The longitude coordinate of a location
- *
- * @param $minlon
- *   A range within which we are searching for matching zips 
- *
- * @param $maxlon 
- *   A range within which we are searching for matching zips
- *
- * @return 
- *   An associative array where
- *     -> the key values are of zipcodes whose approximate lat/lon coordinates fall within the square
- *        defined by the following 4 (x,y) points:
- *          upper-left point  = ($minlon, $maxlat)
- *          upper-right point = ($maxlon, $maxlat)
- *          lower-left point  = ($minlon, $minlat)
- *          lower-right point = ($maxlon, $minlat)
- *     -> the values are themselves associative arrays with the following "key => value" pairs:
- *          'lat' => latitude coordinate of zipcode key
- *          'lon' => longitude coordinate of zipcode key
- */
-function location_nearby_postalcodes_us($minlon, $maxlon, $minlat, $maxlat, &$search_results) {
-  $result = db_query('SELECT zip, latitude, longitude, city, state FROM {zipcodes} WHERE latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f', $minlat, $maxlat, $minlon, $maxlon);
-  while ($result_row = db_fetch_object($result)) {
-    $search_results['us' . $result_row->zip] = array('lat' => $result_row->latitude, 'lon' => $result_row->longitude, 'city' => $result_row->city, 'province' => $result_row->state);
-  }
-}
-
-/**
  * Returns a lat/lon pair of the approximate center of the given postal code in the given country
  *
  * @param $location
@@ -56,11 +21,15 @@ function location_latlon_rough_us($location = array()) {
   if (!isset($location['postal_code'])) {
     return NULL;
   }
-  $result = db_query('SELECT latitude, longitude FROM {zipcodes} WHERE zip = %d', $location['postal_code']);
-  if ($result_row = db_fetch_object($result)) {
-    return array('lat' => $result_row->latitude, 'lon' => $result_row->longitude);
+
+  $result = db_query("SELECT latitude, longitude FROM zipcodes WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5));
+  
+  if ($row = db_fetch_object($result)) {
+    return array('lat' => $row->latitude, 'lon' => $row->longitude);
   }
-  return NULL;
+  else {
+    return NULL;
+  }
 }
 
 /**
