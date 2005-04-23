@@ -140,7 +140,33 @@ driving directions on the site you choose to link to.
   directions depending on how complete the locationes are.
 
   
-  
+--------------------------------------------------------------------------------------------------
+function location_get_postalcode_data_be($location = array());                                            |
+-------------------------------------------------------------------------------------------------- 
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'city'         => the city of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => the international postal code for this location (REQUIRED)
+    
+@return
+  An associative array where
+    'lat' => A floating point for the latitude of the approximate center of the postal_code in the given $location
+    'lon' => A floating point for the longitude of the approximate center of the postal code in the given $location
+    'city' => The most appropriate city name for the given postal code in $location
+    'province' => The most appropriate province name for the given postal code in $location
+  Returns NULL if the postal code doesn't make sense.
+
+Typically, this function will pull out the latitude/longitude of the approximate center of postal code
+in the given $location parameter as well as other data.  The reason this can't be implemented at the
+non-country specific level in location.inc is that postal codes may be submitted in varying formats
+of varying precision while postal codes for this country in the database table may all be in a particular
+format.  It is up to this country specific function to examine $location['postal_code'] and format it
+appropriately so that it matches with a postal code in the postal codes table.
+
 
   
 --------------------------------------------------------------------------------------------------

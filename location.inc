@@ -50,6 +50,16 @@ function location_map_link($location = array(), $link_text = 'See map') {
   }
 }
 
+function location_get_postalcode_data($location = array()) {
+  $location['country'] = isset($location['country']) ? trim($location['country']) : NULL;
+  $location['postal_code'] = isset($location['postal_code']) ? trim($location['postal_code']) : NULL;
+  if (is_null($location['postal_code']) || is_null($location['country']) || empty($location['country']) || empty($location['postal_code']) || $location['postal_code'] == 'xx') {
+    return NULL;   
+  }
+  $country_specific_function = 'location_get_postalcode_data_'. $location['country'];
+  return $country_specific_function($location);
+}
+
 /**
  * Generates HTML for the passed location.
  *

@@ -239,11 +239,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       }
 
       if (count($location)) {
-        foreach (array('name', 'street', 'city', 'postal_code', 'province', 'country') as $field_name) {
-          if (!(variable_get($variable_prefix . $field_name . $variable_suffix, 0)) && $field_name != 'country') {
-            unset($location[$field_name]);
-          }
-        }
         if (isset($location['latitude'])) {
           $location['lat'] = $location['latitude'];
           $location['lon'] = $location['longitude'];
@@ -370,9 +365,11 @@ function _location_save(&$edit, &$user_or_node, $type = 'node') {
     $posted_location = location_form2api($posted_location);
 
     if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
-      if ($latlon = location_latlon_rough($posted_location)) {
+      if ($data = location_get_postalcode_data($posted_location)) {
         $posted_location['lat'] = $latlon['lat'];
         $posted_location['lon'] = $latlon['lon'];
+        $posted_location['city'] = (!isset($posted_location['city']) || strlen($posted_location['city']) == 0) ? $data['city'] : $posted_location['city'];
+        $posted_location['province'] = (!isset($posted_location['province']) || strlen($posted_location['province']) == 0) ? $data['province'] : $posted_location['province'];
       }
     }
               
