@@ -33,6 +33,40 @@ function location_latlon_rough_us($location = array()) {
 }
 
 /**
+ * Returns a lat/lon pair of the approximate center of the given postal code in the given country
+ *
+ * @param $location
+ *   An associative array $location where only postal code and country are necessary, but can have the keys:
+ *     'street'       => the street portion of the location
+ *     'supplemental' => additional street portion of the location
+ *     'province'     => the province, state, or territory
+ *     'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *     'postal_code'  => the international postal code for this location (REQUIRED)
+ *
+ * @return
+ *   An associative array where
+ *      'lat' => approximate latitude of the center of the postal code's area
+ *      'lon' => approximate longitude of the center of the postal code's area
+ *
+ */
+function location_get_postalcode_data_us($location = array()) {
+  $dash_index == strpos($location['postal_code'], '-');
+  // First we strip slash off if we're dealing with a 9-digit US zipcode
+  if ($dash_index === FALSE) {
+    $location['postal_code'] = substr($location['postal_code'], 0, $dash_index);
+  }
+  
+  // Now we pad the thing and query.
+  $res = db_query("SELECT * FROM zipcodes where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT));
+  if ($row = db_fetch_object($res)) {
+    return array('lat' => $row->latitude, 'lon' => $row->longitude, 'city' => $row->city, 'province' => $row->state, 'country' => $row->country);
+  }
+  else {
+    return NULL;
+  } 
+}
+
+/**
  * Parameters:
  *   An associative array $location where
  *     'street'       => the street portion of the location
