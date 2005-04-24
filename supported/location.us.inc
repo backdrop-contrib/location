@@ -22,7 +22,7 @@ function location_latlon_rough_us($location = array()) {
     return NULL;
   }
 
-  $result = db_query("SELECT latitude, longitude FROM zipcodes WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5));
+  $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5));
   
   if ($row = db_fetch_object($result)) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
@@ -57,7 +57,7 @@ function location_get_postalcode_data_us($location = array()) {
   }
   
   // Now we pad the thing and query.
-  $res = db_query("SELECT * FROM zipcodes where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT));
+  $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT));
   if ($row = db_fetch_object($res)) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude, 'city' => $row->city, 'province' => $row->state, 'country' => $row->country);
   }
