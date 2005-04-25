@@ -366,8 +366,8 @@ function _location_save(&$edit, &$user_or_node, $type = 'node') {
 
     if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
       if ($data = location_get_postalcode_data($posted_location)) {
-        $posted_location['lat'] = $latlon['lat'];
-        $posted_location['lon'] = $latlon['lon'];
+        $posted_location['lat'] = $data['lat'];
+        $posted_location['lon'] = $data['lon'];
         $posted_location['city'] = (!isset($posted_location['city']) || strlen($posted_location['city']) == 0) ? $data['city'] : $posted_location['city'];
         $posted_location['province'] = (!isset($posted_location['province']) || strlen($posted_location['province']) == 0) ? $data['province'] : $posted_location['province'];
       }
