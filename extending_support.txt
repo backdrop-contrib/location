@@ -48,7 +48,7 @@ for your country.
 For an example implementation of the functions described below, see "supported/location.us.inc".
 
 -------------------------------------------------------------------------------------------------
-function theme_location_be($location);                                                            |
+function theme_location_be($location, $hide);                                                            |
 -------------------------------------------------------------------------------------------------
 @param $location
   An associative array $location where
@@ -58,6 +58,8 @@ function theme_location_be($location);                                          
     'province'     => the province, state, or territory
     'country'      => lower-cased two-letter ISO code (REQUIRED)
     'postal_code'  => the international postal code for this location (REQUIRED)
+@param $hide
+  An linear array where the values are the location fields to suppress in the themed display.
 @return
   A string of the themed location.  The entire location should be enclosed by '<dl class="location">' </dl> tags.
   The different lines of the location should be enclosed by <dl> </dl> tags.  The idea is to allow country-specific

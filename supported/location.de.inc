@@ -13,7 +13,7 @@
 *
 * Returns: a link to driving directions
 */
-function location_map_link_de($location = array()) {
+function location_map_link_de($location = array(), $hide = array()) {
   $map_links = array();
   // For now, just call the tinfo function.  May want to make this configurable on some level
   // in order to maintain freedom of choice so users and site-admins don't have to be slaves

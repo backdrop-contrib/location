@@ -371,7 +371,7 @@ function location_province_list_us() {
                'ID' => 'Idaho',
                'IL' => 'Illinois',
                'IN' => 'Indiana',
-               'IW' => 'Iowa',
+               'IA' => 'Iowa',
                'KS' => 'Kansas',
                'KY' => 'Kentucky',
                'LA' => 'Louisiana',

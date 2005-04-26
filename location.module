@@ -45,17 +45,20 @@ function location_search_form_page() {
     $edit['location'] = $prefilled_values;
   }
   
-  $form = location_proximity_form(location_form(array('postal_code', 'country'), $prefilled_values, array('postal_code', 'country'), '', 'location', 'nearby_postalcodes_bylocation'),
+  $location_form = location_form(array('postal_code', 'country'), $prefilled_values, array('postal_code', 'country'), variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array(), '', 'location', 'nearby_postalcodes_bylocation');
+  
+  $form = location_proximity_form($location_form,
                                  t('Search for content within a specified geographical area.'), 
                                  '',
-                                 array('distance' => (isset($edit['location']['distance']) ? $edit['location']['distance'] : 25), 'distance_unit' => (isset($edit['location']['distance_unit']) ? $edit['location']['distance_unit'] : 'mile'))
+                                 array('distance' => (isset($edit['location']['distance']) ? $edit['location']['distance'] : 25), 'distance_unit' => (isset($edit['location']['distance_unit']) ? $edit['location']['distance_unit'] : 'mile')),
+                                 variable_get('location_search_distance_unit', 0) ? array('distance_unit' => variable_get('location_search_distance_unit', 0)) : array()
                                 );
 
   $form .= form_submit(t('Search'));
   $form = form($form);
   $search_results = '';
   if ($edit) {
-    $start_time = microtime();
+    //$start_time = microtime();
     $edit['location']['postal_code'] = trim($edit['location']['postal_code']);
     if (strlen($edit['location']['postal_code']) && strlen($edit['location']['country']) && $edit['location']['country'] != 'xx') {
       // DEBUG: commented code for testing/debugging purposes
@@ -104,7 +107,10 @@ function location_search_form_page() {
           }
           else {
             if (round($result_location['distance']) != 1) {
-              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t($distance_unit) : t('miles');
+              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t('km') : t('miles');
+            }
+            else {
+              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t('km') : t('mile');
             }
             $extra['distance'] = t('Approximately %distance from %location', array('%distance' => '<strong>'. round($result_location['distance']) .' '. $distance_unit .'</strong>', '%location' => $edit['location']['postal_code']));
           }
@@ -144,8 +150,8 @@ function location_search_form_page() {
       }
     }
   }
-  $end_time = microtime();
-  print 'Time for this NODE search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
+  //$end_time = microtime();
+  //print 'Time for this NODE search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
   print theme('page', $form . $search_results);
 }
 
@@ -203,11 +209,14 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       if (!isset($node->location['country']) || $node->location['country'] == '') {
         $node->location['country'] = variable_get('location_default_country', 'us');
       }
+      if (variable_get('location_suppress_country', 0)) {
+        $suppressed_values = array('country' => variable_get('location_default_country', 'us'));
+      }
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
-        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields);
+        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields, isset($suppressed_values) ? $suppressed_values : array());
       }
       else {
-        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields);
+        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, isset($suppressed_values) ? $suppressed_values : array());
       }
     
       
@@ -251,12 +260,21 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     case 'view':
       if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
         if (count($node->location)) {
-          $node->body .= theme('location', location_form2api($node->location));
+          $posted_location = location_form2api($node->location);
+          if (!isset($posted_location['city']) || strlen(trim($posted_location['city'])) == 0) {
+            $postal_data = location_get_postalcode_data($posted_location);
+            $posted_location['city'] = isset($postal_data['city']) ? $postal_data['city'] : '';
+          }
+          if (!isset($posted_location['province']) || strlen(trim($posted_location['province'])) == 0) {
+            $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_location);
+            $posted_location['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
+          }
+          $node->body .= theme('location', $posted_location, variable_get('location_suppress_country', 0) ? array('country') : array());
         }
       }
       else {
         if (count($node->location)) {
-          $node->body .= theme('location', $node->location);
+          $node->body .= theme('location', $node->location, variable_get('location_suppress_country', 0) ? array('country') : array());
         }
         if (!$teaser) {
           drupal_set_html_head(location_geocode_meta_tags($node->location));
@@ -286,12 +304,18 @@ function location_get_configured_countries() {
  */
 function location_settings() {
   $form  = '';
-  // We actually need to do apply this variable in some kind of code somewhere in location_country_select_options() defined in location.inc
-  $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   $form .= form_select(t('Default country selection'), 'location_default_country', variable_get('location_default_country', 'us'), _location_get_iso3166_list(), t('This will be the country that is automatically selected when a location form is served for a new location.'));
   
+  //print 'variable_get(\'location_search_distance_unit\', 0) == '. variable_get('location_search_distance_unit', 0) ."<br/>\n";
+  $form .= form_checkbox(t('Hide country selection'), 'location_suppress_country', 1, variable_get('location_suppress_country', 0), t('If your site is specific to a country and you would like to hide the country field on search forms and content creation forms, check this box.  Doing so will automatically assume the country to be the country you have chosen for the \'default country selection\' above.'));
+  
+  $form .= form_radios(t('Distance unit for location-based searches'), 'location_search_distance_unit', variable_get('location_search_distance_unit', 0), array(0 => t('Allow both miles and kilometers.'), 'mile' => t('Only allow a search-radius to be specified in miles'), 'km' => t('Only allow a search-radius to be specified in kilometers')), t('Select the distance unit that applies when users search for content by a specified location and search-radius.'));
+  
   $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
+  
+  $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
+  
   return $form;
 }
 

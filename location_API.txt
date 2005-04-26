@@ -13,8 +13,12 @@ FUNCTION SPECIFICATIONS DESCRIBED IN THIS FILE:
   location_nearby_postalcodes_bylatlon(): A function that searches for postal codes within a specified search-radius for
                   a specified latitude and longitude.
                   
+  location_get_postalcode_data(): A function that takes a (postalcode,country) pair an returns lat/lon, city, province.
+                  
   location_latlon_rough(): A function that returns the latitude and longitude of the specified postal-code/country pair.
-                  This latitude and longitude will be of the approximate center of the postal-code's area.
+                  This latitude and longitude will be of the approximate center of the postal-code's area.  This function
+                  will soon be removed from the API as it has been replaced by the more comprehensive
+                  location_get_postalcode_data() described above. [TO BE DEPRECATED]
                   
   location_latlon_exact(): A function that returns the latitude and longitude of the given full location.  Typically implemented
                   on top of a web-service. [TO BE IMPLEMENTED]
@@ -47,7 +51,7 @@ FUNCTION SPECIFICATIONS DESCRIBED IN THIS FILE:
   
 "[TO BE SPECIFIED]"   => Function spec has not been completed and may possibly be eliminated from spec.
 "[TO BE IMPLEMENTED]" => Function spec exists but is to be implemented in a future release.
-
+"[TO BE DEPRECATED]"  => This function will soon be removed from the API.
 ----------------------------------------------
 
 
