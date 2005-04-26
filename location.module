@@ -10,6 +10,9 @@ function location_menu($may_cache = FALSE) {
   if ($may_cache) {
     $items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_form_page', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
   }
+  else {
+    drupal_set_html_head(location_form_html_head());
+  }
   return $items;
 }
 
@@ -317,17 +320,6 @@ function location_settings() {
   $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   return $form;
-}
-
-
-function _location_is_empty($location = array()) {
-  $fields = array('street', 'additional', 'city', 'province', 'postal_code', 'country');
-  foreach ($fields as $field) {
-    if (isset($location[$field]) && strlen(trim($location[$field]))) {
-      return FALSE;
-    }
-  }
-  return TRUE;
 }
 
 function location_user($op, &$edit, &$user, $category = NULL) {

@@ -60,6 +60,16 @@ function location_get_postalcode_data($location = array()) {
   return $country_specific_function($location);
 }
 
+function _location_is_empty($location = array()) {
+  $fields = array('street', 'additional', 'city', 'province', 'postal_code', 'country');
+  foreach ($fields as $field) {
+    if (isset($location[$field]) && strlen(trim($location[$field]))) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 /**
  * Generates HTML for the passed location.
  *
@@ -471,33 +481,34 @@ function location_api2form($location = array()) {
  */
 function location_proximity_form($location_form = '', $label = '', $description = '', $prefilled_values = array(), $suppressed_values = array(), $form_name = 'location') {
   //$form  = $description;
-  $form .= '<div class="container-inline">';
-  $form .= t('Search within ');
+  $search_params_form .= '<div class="container-inline">';
+  $search_params_form .= t('Search within ');
   if (in_array('distance', array_keys($suppressed_values))) {
-    form_hidden($form_name .'][distance', $suppressed_values['distance']);
+    $search_params_form .= form_hidden($form_name .'][distance', $suppressed_values['distance']);
   }
   else {
-    $form .= form_select('', $form_name .'][distance', (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25), array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250), '');
+    $search_params_form .= form_select('', $form_name .'][distance', (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25), array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250), '');
   }
   
   if (in_array('distance_unit', array_keys($suppressed_values))) {
-    $form .= ($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km');
-    $form .= form_hidden($form_name .'][distance_unit', $suppressed_values['distance_unit']);
+    $search_params_form .= ($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km');
+    $search_params_form .= form_hidden($form_name .'][distance_unit', $suppressed_values['distance_unit']);
   }
   else {
-    $form .= form_select('', $form_name .'][distance_unit', (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'), array('mile' => 'miles', 'km' => 'km'));
+    $search_params_form .= form_select('', $form_name .'][distance_unit', (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'), array('mile' => 'miles', 'km' => 'km'));
   }
   if ($location_form != '') {
-    $form .= t(' of:');
+    $search_params_form .= t(' of:');
   }
-  $form .= "</div>\n";
-  $form .= "\n".'<div style="margin-left: 220px">'."\n";
-  $form .= $location_form;
-  $form .= "\n</div>\n";
-  return form_group($label, $form, $description);
+  $search_params_form .= '</div>';
+  return theme('table', NULL, array(array($search_params_form, $location_form)));
+  //return form_group($label, $form, $description);
   //return $label . $form . $description;
 }
 
+function location_form_html_head() {
+  return '<style type="text/css">@import url('. drupal_get_path('module', 'location') .'/location.css);</style>';
+}
 
 /**
  * A helper function that tells you whether all the fields of an location are full (excluding the 'additional' field.
@@ -1276,6 +1287,7 @@ function _location_include_configured() {
 // ISO 3166-1 alpha-2
 function _location_get_iso3166_list() {
   return array('ad' => 'Andorra',
+               'ac' => 'Ascension Island',
                'ae' => 'United Arab Emirates',
                'af' => 'Afghanistan',
                'ag' => 'Antigua and Barbuda',
@@ -1354,7 +1366,7 @@ function _location_get_iso3166_list() {
                'gd' => 'Grenada',
                'ge' => 'Georgia',
                'gf' => 'French Guiana',
-               'gd' => 'Ghana',
+               'gh' => 'Ghana',
                'gi' => 'Gibraltar',
                'gl' => 'Greenland',
                'gm' => 'Gambia',
@@ -1477,6 +1489,7 @@ function _location_get_iso3166_list() {
                'sr' => 'Suriname',
                'st' => 'Sao Tome and Principe',
                'sv' => 'El Salvador',
+               'sw' => 'Sweden',
                'sy' => 'Syria',
                'sz' => 'Swaziland',
                'tc' => 'Turks and Caicos Islands',
