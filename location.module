@@ -347,6 +347,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   
   if ($op == 'update' || $op == 'insert') {
     _location_save($edit, $user, 'user');
+    unset($edit['location']);
   }
   
   if ($op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid)) {
