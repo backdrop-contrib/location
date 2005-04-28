@@ -29,7 +29,11 @@ function location_help($section) {
   }
 }
 
-
+/**
+ * Serves a search-by-location page for nodes.
+ * On $_POST, displays searh form + search results.
+ * Otherwise, just displays search form.
+ */
 function location_search_form_page() {
   $from_get = FALSE; // boolean to remember if variables came from a get
   
@@ -158,7 +162,10 @@ function location_search_form_page() {
   print theme('page', $form . $search_results);
 }
 
-
+/**
+ * Implementation of hook_nodeapi().
+ *
+ */
 function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   
   if ($op == 'validate' || $op == 'settings' || $op == 'validate' || $op == 'form post' || $op == 'insert' || $op == 'load' || $op == 'view') {
@@ -261,33 +268,33 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       return array('location' => $location);
       
     case 'view':
-      if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
-        if (count($node->location)) {
-          $posted_location = location_form2api($node->location);
-          if (!isset($posted_location['city']) || strlen(trim($posted_location['city'])) == 0) {
-            $postal_data = location_get_postalcode_data($posted_location);
-            $posted_location['city'] = isset($postal_data['city']) ? $postal_data['city'] : '';
+      if (variable_get('location_display_location', 1)) {
+        if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
+          if (count($node->location)) {
+            $posted_location = location_form2api($node->location);
+            if (!isset($posted_location['city']) || strlen(trim($posted_location['city'])) == 0) {
+              $postal_data = location_get_postalcode_data($posted_location);
+              $posted_location['city'] = isset($postal_data['city']) ? $postal_data['city'] : '';
+            }
+            if (!isset($posted_location['province']) || strlen(trim($posted_location['province'])) == 0) {
+              $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_location);
+              $posted_location['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
+            }
+            $node->body .= theme('location', $posted_location, variable_get('location_suppress_country', 0) ? array('country') : array());
           }
-          if (!isset($posted_location['province']) || strlen(trim($posted_location['province'])) == 0) {
-            $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_location);
-            $posted_location['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
+        }
+        else {
+          if (count($node->location)) {
+            $node->body .= theme('location', $node->location, variable_get('location_suppress_country', 0) ? array('country') : array());
           }
-          $node->body .= theme('location', $posted_location, variable_get('location_suppress_country', 0) ? array('country') : array());
-        }
-      }
-      else {
-        if (count($node->location)) {
-          $node->body .= theme('location', $node->location, variable_get('location_suppress_country', 0) ? array('country') : array());
-        }
-        if (!$teaser) {
-          drupal_set_html_head(location_geocode_meta_tags($node->location));
+          if (!$teaser) {
+            drupal_set_html_head(location_geocode_meta_tags($node->location));
+          }
         }
       }
       break;
   }
 }
-
-
 
 /**
  * Returns an array of countries whose locations will be allowed entry
@@ -314,6 +321,8 @@ function location_settings() {
   $form .= form_checkbox(t('Hide country selection'), 'location_suppress_country', 1, variable_get('location_suppress_country', 0), t('If your site is specific to a country and you would like to hide the country field on search forms and content creation forms, check this box.  Doing so will automatically assume the country to be the country you have chosen for the \'default country selection\' above.'));
   
   $form .= form_radios(t('Distance unit for location-based searches'), 'location_search_distance_unit', variable_get('location_search_distance_unit', 0), array(0 => t('Allow both miles and kilometers.'), 'mile' => t('Only allow a search-radius to be specified in miles'), 'km' => t('Only allow a search-radius to be specified in kilometers')), t('Select the distance unit that applies when users search for content by a specified location and search-radius.'));
+  
+  $form .= form_radios(t('Toggle location display'), 'location_display_location', variable_get('location_display_location', 1), array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations locations.')), t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take over them.'));
   
   $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
   
@@ -350,7 +359,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     unset($edit['location']);
   }
   
-  if ($op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid)) {
+  if ($op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1)) {
     return array('' => theme('location', $user->location));
   }
   
