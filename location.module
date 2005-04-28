@@ -374,8 +374,8 @@ function _location_save(&$edit, &$user_or_node, $type = 'node') {
     return;
   }
 
-  if (isset($_POST['edit']['location']) && count($_POST['edit']['location'])) {
-    $posted_location = $_POST['edit']['location'];
+  if (isset($edit['location']) && count($edit['location'])) {
+    $posted_location = $edit['location'];
     foreach ($posted_location as $posted_field => $posted_value) {
       $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
     }
