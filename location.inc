@@ -89,6 +89,9 @@ function _location_is_empty($location = array()) {
  *   An HTML string with special tags for locations.
  */
 function theme_location($location = array(), $hide = array()) {
+  if (_location_nothing_to_show($location, $hide)) {
+    return '';
+  }
   $output = '';
   $country_specific_function = 'theme_location_'. (isset($location['country']) ? $location['country'] : '');
   if (function_exists($country_specific_function)) {
@@ -148,6 +151,15 @@ function theme_location($location = array(), $hide = array()) {
     $output = form_group(t('Location'), $output);
   }
   return $output;
+}
+
+function _location_nothing_to_show($location = array(), $hide = array()) {
+  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
+    if (isset($location[$field]) && strlen(trim($location[$field])) && !in_array($field, $hide)) {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 
 /**
