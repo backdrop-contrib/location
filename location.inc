@@ -61,7 +61,7 @@ function location_get_postalcode_data($location = array()) {
 }
 
 function _location_is_empty($location = array()) {
-  $fields = array('street', 'additional', 'city', 'province', 'postal_code', 'country');
+  $fields¹ã•rray('street', 'additional', 'city', 'province', 'postal_code', 'country');
   foreach ($fields as $field) {
     if (isset($location[$field]) && strlen(trim($location[$field]))) {
       return FALSE;
@@ -330,7 +330,7 @@ function location_form($fields = array(), $prefilled_values = array(), $required
       }
       else {
         $form .= '<div class="container-inline">';
-        $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), $form_name);
+        $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL, $form_name);
         $form .= "</div>\n";
       }
     }
@@ -368,7 +368,7 @@ function location_form($fields = array(), $prefilled_values = array(), $required
     $form .= form_textfield('City', $form_name .'][city', isset($prefilled_values['city']) ? $prefilled_values['city'] : '', 64, 64, NULL, NULL, in_array('city', $required_fields));
     $form .= "</div>\n";
     $form .= '<div class="container-inline">';
-    $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), $form_name);
+    $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL, $form_name);
     $form .= "</div>\n";
     $form .= '<div class="container-inline">';
     $form .= form_textfield('Postal Code', $form_name .'][postal_code', isset($prefilled_values['postal_code']) ? $prefilled_values['postal_code'] : '', 16, 16, NULL, NULL, in_array('postal_code', $required_fields));
@@ -594,7 +594,7 @@ function _location_is_full($location = array()) {
  *   directions themselves if enough fields are filled for each location.
  */
 function location_driving_directions_link($locationA = array(), $locationB = array(), $link_text = 'Get directions') {
-  if (!isset($locationA['country']) || !isset($locationB['country'])) {
+  if (!isset($locationA['country']) |DpùÕsset($locationB['country'])) {
     return '';
   }
   
