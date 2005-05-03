@@ -245,7 +245,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       
     case 'insert':
     case 'update':
-      _location_save($edit, $node, 'node');
+      _location_save($node->location ? $node->location : array(), $node, 'node');
       break;
       
     case 'load':
@@ -355,7 +355,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'update' || $op == 'insert') {
-    _location_save($edit, $user, 'user');
+    _location_save($user->location ? $user->location : array(), $user, 'user');
     unset($edit['location']);
   }
   
@@ -368,11 +368,10 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 /**
  * Saves a location.  Needs a $user or $node object.
  * 
- * @param $edit
+ * @param $posted_location
  * The array 
  */
-function _location_save(&$edit, &$user_or_node, $type = 'node') {
-
+function _location_save($posted_location, &$user_or_node, $type = 'node') {
   if ($type == 'node') {
     $field = 'nid';    
   }
@@ -383,8 +382,7 @@ function _location_save(&$edit, &$user_or_node, $type = 'node') {
     return;
   }
 
-  if (isset($edit['location']) && count($edit['location'])) {
-    $posted_location = $edit['location'];
+  if (isset($posted_location) && count($posted_location)) {
     foreach ($posted_location as $posted_field => $posted_value) {
       $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
     }

@@ -300,7 +300,6 @@ function location_distance_between($latlonA = array(), $latlonB = array(), $dist
  */
 function location_form($fields = array(), $prefilled_values = array(), $required_fields = array(), $suppressed_values = array(), $description = '', $form_name = 'location', $function = NULL) {
   $form = $description;
-  
   if (count($fields)) {
     if (in_array('name', $fields)) {
        $form .= '<div class="container-inline">';
@@ -1242,25 +1241,29 @@ function _location_country_select_options($value = '', $required = FALSE, $form_
  *
  */
 function _location_province_select_options($value = '', $required = FALSE, $country = NULL, $form_name = 'location') {
-  $countrycodes = location_configured_countries();
   $options_list = array();
   $options_list[''] = '';
   $options_list['xx'] = t('NOT LISTED');
   if (count($countrycodes) == 1 || $country) {
-    $countrycodes = array_keys($countrycodes);
-    $province_listing_function = is_null($country) ? 'location_province_list_'. $countrycodes[0] : 'location_province_list_'. $country;
+    if (!$country) {
+      $countrycodes = location_configured_countries();
+      $countrycodes = array_keys($countrycodes);
+      $country = $countrycodes[0];
+    }
+    $province_listing_function = 'location_province_list_'. $country;
     // Trying to return options in case of only 1 country is configured into system or if $country != null
     if (function_exists($province_listing_function)) {
       $province_list = $province_listing_function();
       if (count($province_list)) {
-        $options_list[$countrycodes[0] .'000'] = '[ ----- '. t('MAKE A SELECTION') .' ----- ]';
+        $options_list[$country .'000'] = '[ ----- '. t('MAKE A SELECTION') .' ----- ]';
         foreach ($province_list as $province_code => $province_name) {
-          $options_list[$countrycodes[0] . '-' . $province_code] = $province_name;
+          $options_list[$country . '-' . $province_code] = $province_name;
         }
       }
     }
   }
   else {
+    $countrycodes = location_configured_countries();
     $countrycodes = array_flip($countrycodes);
     foreach ($countrycodes as $country_name => $country_code) {
       // Load country specifice code .inc file if it exists.
