@@ -223,10 +223,10 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
       
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
-        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields, isset($suppressed_values) ? $suppressed_values : array());
+        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields, $suppressed_values);
       }
       else {
-        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, isset($suppressed_values) ? $suppressed_values : array());
+        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, $suppressed_values);
       }
     
       
@@ -337,7 +337,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'form' && $category == 'account') {
-    return array(array('title' => '', 'data' => location_form(array('street', 'city', 'province', 'postal_code', 'country'), (isset($user->location) && !_location_is_empty($user->location)) ? location_api2form($user->location) : array('country' => variable_get('location_default_country', 'us')), array(), t('Enter as much of your address as you are comfortable with.  Your address will only be viewable by those who have the appropriate permissions.  The site will be able to automatically link you to driving directions and other features if it already knows your address.')), 'weight' => 0));
+    return array(array('title' => '', 'data' => location_form(array('street', 'city', 'province', 'postal_code', 'country'), (isset($user->location) && !_location_is_empty($user->location)) ? location_api2form($user->location) : array('country' => variable_get('location_default_country', 'us')), array(), array(), t('Enter as much of your address as you are comfortable with.  Your address will only be viewable by those who have the appropriate permissions.  The site will be able to automatically link you to driving directions and other features if it already knows your address.')), 'weight' => 0));
   }
   
   if ($op == 'load') {
