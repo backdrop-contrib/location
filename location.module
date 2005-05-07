@@ -78,16 +78,11 @@ function location_search_form_page() {
       // Want to get just the postal_codes and implode them into a portion of the final query      
       // Want to be able to key each postal_codes distance from the search point.  Keying done by country/postal_code combination.
       if (count($postal_codes)) {
-        $query_fragment = array_keys($postal_codes);
-        foreach($query_fragment as $key => $value) {
-          $query_fragment[$key] = "'". $value ."'";
-        }
-
-        $query_fragment = implode(', ', $query_fragment);
+        $query_fragment = "'". implode(array_keys($postal_codes), ',') ."'";
         
-        $sql = 'SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.uid, u.name, FIELD(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .') ORDER BY search_rank ASC, created DESC';
+        $sql = 'SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.uid, u.name, FIND_IN_SET(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0 ORDER BY search_rank ASC, created DESC';
 
-        $count_sql = 'SELECT COUNT(*) FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .')';
+        $count_sql = 'SELECT COUNT(*) FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0';
 
         $res = pager_query($sql, 15, 0, $count_sql);
 
