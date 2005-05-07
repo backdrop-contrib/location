@@ -84,7 +84,6 @@ function location_search_form_page() {
         }
 
         $query_fragment = implode(', ', $query_fragment);
-        $sql = 'SELECT n.nid AS nid, a.postal_code AS postal_code, a.city AS city, a.province AS province, a.country AS country, n.title AS title, n.teaser AS teaser, n.type AS type, n.created AS created, n.uid AS uid, u.name AS name, FIELD(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .') ORDER BY search_rank ASC, created DESC';
         
         $sql = 'SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.uid, u.name, FIELD(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE CONCAT(a.country, a.postal_code) IN ('. $query_fragment .') ORDER BY search_rank ASC, created DESC';
 
