@@ -287,6 +287,17 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
       }
       break;
+    case 'rss item':
+      $items = array();
+      if (!is_null($node->location['lat']) && !is_null($node->location['lon'])) {
+        $items[] = array('key' => 'geo:Point', 'value' => "<geo:lat>\n  ". $node->location['lat'] ."</geo:lat>\n  <geo:long>". $node->location['lon'] ."</geo:long>\n");
+        $items[] = array('key' => 'icbm:latitude', 'value' => $node->location['lat']);
+        $items[] = array('key' => 'icbm:longitude', 'value' => $node->location['lon']);
+        $items[] = array('key' => 'latitude', 'value' => $node->location['lat']);
+        $items[] = array('key' => 'longitude', 'value' => $node->location['lon']);
+      }
+      return $items;
+      break;
   }
 }
 
