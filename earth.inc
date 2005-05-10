@@ -97,7 +97,7 @@ function earth_distance_sql($longitude, $latitude) {
   $coslat = cos($lat);
   $sinlong = sin($long);
   $sinlat = sin($lat);
-  return "(ACOS($coslat*COS(RADIANS(latitude))*($coslong*COS(RADIANS(longitude)) + $sinlong*SIN(RADIANS(longitude))) + $sinlat*SIN(RADIANS(latitude)))*$radius)";
+  return "(IFNULL(ACOS($coslat*COS(RADIANS(latitude))*($coslong*COS(RADIANS(longitude)) + $sinlong*SIN(RADIANS(longitude))) + $sinlat*SIN(RADIANS(latitude))), 0.00000)*$radius)";
 }
 
 function earth_longitude_range($longitude, $latitude, $distance) {
