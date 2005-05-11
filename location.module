@@ -84,7 +84,26 @@ function location_search_form_page() {
 
         $count_sql = 'SELECT COUNT(*) FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0';
 
+        $count_display_sql = 'SELECT COUNT(*) as result_count FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0';
+        
         $res = pager_query($sql, 15, 0, $count_sql);
+
+        $count = db_fetch_object(db_query($count_display_sql));
+        
+        if ($count->result_count) {
+          $page_count = db_num_rows($res);
+          $results_offset = isset($_GET['from']) ? $_GET['from'] : 0;
+          $postal_data = location_get_postalcode_data($edit['location']);
+          $search_results_message = t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $count->result_count, '%c' => '<em>'. $edit['location']['postal_code'] .'</em> ('. $postal_data['city'] . ', '. $postal_data['province'] .')'));
+        }
+        else {
+          if (isset($_POST['edit']) && !isset($_GET['from'])) {
+            $search_results .= theme('box', t('Your search yielded no results.'), '');
+            print theme('page', $form . $search_results);
+            return;
+          }
+        }
+        
 
         $country_index = location_configured_countries();
         
@@ -132,7 +151,7 @@ function location_search_form_page() {
           $search_results .= theme('box', t('Your search yielded no results.'), '');
         }
         else {
-          $search_results = '<dl class="search-results">'. theme('box', t('Search results'), $search_results) .'</dl>';
+          $search_results = '<dl class="search-results">'. theme('box', $search_results_message, $search_results) .'</dl>';
           $search_results .= theme('pager', NULL, 15, 0, $edit['location']);
         }
         
