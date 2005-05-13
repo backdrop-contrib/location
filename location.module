@@ -330,6 +330,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
  */
 function location_get_configured_countries() {
   $configured_countries = variable_get('location_configured_countries', array());
+  $configured_countries = is_array($configured_countries) ? $configured_countries : array();
   return $configured_countries;
 }
 
@@ -339,9 +340,26 @@ function location_get_configured_countries() {
  *
  */
 function location_settings() {
+  
+  $supported_countries = _location_supported_countries();
+
+  $default_country = variable_get('location_default_country', '');
+  
+  $configured_countries = location_get_configured_countries();
+  
+  $iso_list_sorted = _location_get_iso3166_list();
+  array_multisort($iso_list_sorted);
+  $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
+  
+  if ($default_country && in_array($default_country, array_keys($supported_countries)) && !in_array($default_country, $configured_countries)) {
+    variable_get('location_configured_countries', array());
+    $configured_countries[] = $default_country;
+    variable_set('location_configured_countries', $configured_countries);
+  }
+
   $form  = '';
   
-  $form .= form_select(t('Default country selection'), 'location_default_country', variable_get('location_default_country', 'us'), _location_get_iso3166_list(), t('This will be the country that is automatically selected when a location form is served for a new location.'));
+  $form .= form_select(t('Default country selection'), 'location_default_country', variable_get('location_default_country', 'us'), $iso_list_sorted, t('This will be the country that is automatically selected when a location form is served for a new location.'));
   
   //print 'variable_get(\'location_search_distance_unit\', 0) == '. variable_get('location_search_distance_unit', 0) ."<br/>\n";
   $form .= form_checkbox(t('Hide country selection'), 'location_suppress_country', 1, variable_get('location_suppress_country', 0), t('If your site is specific to a country and you would like to hide the country field on search forms and content creation forms, check this box.  Doing so will automatically assume the country to be the country you have chosen for the \'default country selection\' above.'));
@@ -352,7 +370,7 @@ function location_settings() {
   
   $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
   
-  $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), _location_supported_countries(), t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
+  $form .= form_checkboxes(t('Enable all features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), $supported_countries, t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   return $form;
 }
