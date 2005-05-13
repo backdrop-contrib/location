@@ -1123,6 +1123,7 @@ function location_geocode_meta_tags($location = array()) {
  */
 function location_configured_countries() {
   $configured_countries = variable_get('location_configured_countries', array()); // <integer index> => <ISO code>
+  $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
   $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
   $configured_countries_associative = array();
   foreach ($configured_countries as $country_code) {
@@ -1151,14 +1152,17 @@ function location_configured_countries() {
  */
 function _location_supported_countries() {
   // '<ISO two-letter code>' => '<English name for country>'
-  $countrycodes = _location_get_iso3166_list();
+  $iso_list = _location_get_iso3166_list();
+  $iso_keys = array_keys($iso_list);
   $supported_countries = array();
   if (is_dir(LOCATION_PATH.'/supported') && $handle = opendir(LOCATION_PATH.'/supported')) {
     $matches = array();
     while ($file = readdir($handle)) {
       if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file(LOCATION_PATH.'/supported/'. $file)) {
-        $supported_countries[] = $matches[1];
-        $matches = array();
+        if (in_array($matches[1], $iso_keys)) {
+          $supported_countries[] = $matches[1];
+          $matches = array();
+        }
       }
     }
   }
@@ -1168,9 +1172,9 @@ function _location_supported_countries() {
   // replace with the name of the country, where the key pointing to it
   // is the two-letter ISO code for the country
   foreach ($supported_countries as $code => $index) {
-    $supported_countries[$code] = $countrycodes[$code];
+    $supported_countries[$code] = $iso_list[$code];
   }
-
+  array_multisort($supported_countries);;
   // Return an array where key = <ISO code for country> and values = <English name for country>
   return $supported_countries;
 }
