@@ -189,13 +189,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     $field_names = array('name' => 'Location name', 'street' => 'Street location', 'city' => 'City', 'province' => 'State/Province', 'postal_code' => 'Postal code', 'country' => 'Country');
     $variable_prefix = 'location_';
     $variable_suffix = '_'. $node->type;
-    $enabled = FALSE;
-    foreach (array_keys($field_names) as $field_name) {
-      if (variable_get($variable_prefix . $field_name . $variable_suffix, 0)) {
-        $enabled = TRUE;
-        break;
-      }
-    }
+    $enabled = variable_get('location_'. $node->type, 0);
+    
     if (!$enabled && $op != 'settings') {
       return;
     } 
@@ -203,16 +198,15 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   
   switch ($op) {
     case 'settings':
-      // When $op == 'settings', $node really equals a string for the node-type's name
-      // For the variable_get() params here, all the parameters of the form 'location_fieldname_' . $node->type can be condensed into a foreach
-      // loop involving $field_names (set above).
-      // But that would make it hard to read.
-      $form = form_radios(t('Location names'), 'location_name_'. $node->type, variable_get('location_name_'. $node->type, $default), array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.')));
+      $form  = form_checkbox(t('Enable for locations'), 'location_'. $node->type, 1, variable_get('location_'. $node->type, 0), t('Enable the submission of a location for content of this node type.  By checking this box and selecting fields for collection below, users will be able to add a full or partial address to each node of this type (depending on which fields you enable or require here).'));
+      $form .= '<div style="margin-left: 40px">';
+      $form .= form_radios(t('Location names'), 'location_name_'. $node->type, variable_get('location_name_'. $node->type, $default), array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.')));
       $form .= form_radios(t('Street locations'), 'location_street_'. $node->type, variable_get('location_street_'. $node->type, $default), array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.')));
       $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, 0), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
       $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, 0), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
       $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, 0), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
-      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(t('Do not collect country names for content of this type.'), t('Allow country names to be submitted for content of this type.'), t('Require country names to be submitted for content of this type.')), t('It is strongly recommened that you allow or require country names to be submitted since most location features depend on a country field.'));
+      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')), t('The selection of a country can be hidden and/or forced to a default country selection by going to the %location_settings and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('%location_settings' => l(t('location settings page'), 'admin/settings/location'))));
+      $form .= '</div>';
       $form = form_group(t('Locative information'), $form);
       return array(t('Locations') => $form);
     
