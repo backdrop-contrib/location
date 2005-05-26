@@ -403,7 +403,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'load') {
-    $res = db_query('SELECT * FROM location_user WHERE uid = %d', $user->uid);
+    $res = db_query('SELECT * FROM {location_user} WHERE uid = %d', $user->uid);
     if ($location = db_fetch_object($res)) {
       $user->location = object2array($location);
     }
