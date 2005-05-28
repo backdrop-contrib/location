@@ -229,7 +229,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $form .= form_radios(t('City names'), 'location_city_'. $node->type, variable_get('location_city_'. $node->type, 0), array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.')));
       $form .=  form_radios('State/Province names', 'location_province_'. $node->type, variable_get('location_province_'. $node->type, 0), array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.')));
       $form .= form_radios('Postal codes', 'location_postal_code_'. $node->type, variable_get('location_postal_code_'. $node->type, 0), array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.')));
-      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 0), array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')), t('The selection of a country can be hidden and/or forced to a default country selection by going to the %location_settings and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('%location_settings' => l(t('location settings page'), 'admin/settings/location'))));
+      $form .= form_radios('Country names', 'location_country_'. $node->type, variable_get('location_country_'. $node->type, 1), array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')), t('The selection of a country can be hidden and/or forced to a default country selection by going to the %location_settings and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('%location_settings' => l(t('location settings page'), 'admin/settings/location'))));
       $form .= '</div>';
       $form = form_group(t('Locative information'), $form);
       return array(t('Locations') => $form);
@@ -238,7 +238,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $location_fields = array();
       $required_fields = array();
       foreach (array_keys($field_names) as $field_name) {
-        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, 0);
+        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, $field_name == 'country' ? 1 : 0);
         if ($workflow_setting) {
           $location_fields[] = $field_name;
           if ($workflow_setting == 2) {
@@ -265,7 +265,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       // For now, validation just makes sure that required fields have any value
       // If syntax specific checks are implemented for locations in the future, they can be called as well.
       foreach (array_keys($field_names) as $field_name => $display_name) {
-        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, 0);
+        $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, $field_name == 'country' ? 1 : 0);
         if (variable_get($variable_prefix . $field_name . $variable_suffix, 0) == 2) {
           if (isset($node->location[$field_name]) && !strlen(trim($node->location[$field_name]))) {
             form_set_error('location]['. $field_name, t('The field %field is required.', array('%field' => "<em>$display_name</em>")));
@@ -347,8 +347,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
  * are the shortened English names.
  */
 function location_get_configured_countries() {
-  $configured_countries = variable_get('location_configured_countries', array());
-  $configured_countries = is_array($configured_countries) ? $configured_countries : array();
+  $configured_countries = variable_get('location_configured_countries', array('us'));
+  $configured_countries = is_array($configured_countries) ? $configured_countries : array('us');
   return $configured_countries;
 }
 
@@ -370,7 +370,7 @@ function location_settings() {
   $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
   
   if ($default_country && in_array($default_country, array_keys($supported_countries)) && !in_array($default_country, $configured_countries)) {
-    variable_get('location_configured_countries', array());
+    variable_get('location_configured_countries', array('us'));
     $configured_countries[] = $default_country;
     variable_set('location_configured_countries', $configured_countries);
   }
@@ -403,7 +403,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'load') {
-    $res = db_query('SELECT * FROM {location_user} WHERE uid = %d', $user->uid);
+    $res = db_query('SELECT * FROM location_user WHERE uid = %d', $user->uid);
     if ($location = db_fetch_object($res)) {
       $user->location = object2array($location);
     }
