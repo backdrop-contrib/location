@@ -1122,7 +1122,7 @@ function location_geocode_meta_tags($location = array()) {
  * configured the site to actually use that country's include file. 
  */
 function location_configured_countries() {
-  $configured_countries = variable_get('location_configured_countries', array()); // <integer index> => <ISO code>
+  $configured_countries = variable_get('location_configured_countries', array('us')); // <integer index> => <ISO code>
   $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
   $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
   $configured_countries_associative = array();
