@@ -24,3 +24,6 @@ CREATE TABLE zipcodes (
   KEY longitude (longitude),
   KEY country (country)
 ) TYPE=MyISAM;
+
+ALTER TABLE zipcodes DROP PRIMARY KEY;
+ALTER TABLE zipcodes ADD PRIMARY KEY (country, zip);
