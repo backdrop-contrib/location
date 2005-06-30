@@ -37,7 +37,7 @@ function location_help($section) {
                  <li>use a database dump for a U.S. postal codes table that can be found at <a href = "http://trac.civicspacelabs.com/cgi-bin/trac.cgi/file/trunk/database/zipcodes.mysql" title = "zipcode database">zipcode database</a>.</li>
                </ul>
                <p>For more information, read the configuration and customization handbook <a href="http://drupal.org/handbook/modules/Location" title="Location page"> Location page</a></p>', 
-               array('%administercontenttypeslocativeinformation' => url('/admin/node/configure/types'), '%administerlocation' => url('/admin/settings/location'))
+               array('%administercontenttypeslocativeinformation' => url('admin/node/configure/types'), '%administerlocation' => url('admin/settings/location'))
              );
   }
 }
