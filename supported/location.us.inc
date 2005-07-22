@@ -164,6 +164,14 @@ function location_map_link_us($location = array()) {
     $map_links['Yahoo! Maps'] = $link;
   }
   
+  if ($link = location_map_link_us_google($location)) {
+    $map_links['Google Maps'] = $link;
+  }
+ 
+  if ($link = location_map_link_us_mapquest($location)) {
+    $map_links['MapQuest'] = $link;
+  }
+   
   return $map_links;
 }
  
@@ -181,6 +189,48 @@ function location_map_link_us_yahoo($location = array()) {
 }
 
 
+function location_map_link_us_google($location = array()) {
+  $query_params = array();
+  
+  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
+    if (isset($location[$field])) {
+      $query_params[] = $location[$field];
+    }
+  }
+  
+  if (count($query_params)) {
+    return ('http://maps.google.com?q='. urlencode(implode(", ", $query_params)));
+  }
+  else {
+    return NULL;
+  }
+}
+
+function location_map_link_us_mapquest($location = array()) {
+  /*searchtype=address&country=US&addtohistory=&searchtab=home&address=5493+Country+View+Dr&city=El+Sobrante&state=CA&zipcode=94803*/
+  if (isset($location['street'])) {
+    $get_query .= 'address='. urlencode($location['street']) .'&amp;';
+  }
+  
+  if (isset($location['city'])) {
+    $get_query .= 'city='. urlencode($location['city']) .'&amp;';
+  }
+  
+  if (isset($location['province'])) {
+    $get_query .= 'state='. urlencode($location['province']) .'&amp;';
+  }
+  
+  if (isset($location['postal_code'])) {
+    $get_query .= 'zipcode='. urlencode($location['postal_code']);
+  }
+  if (strlen($get_query)) {
+    return 'http://www.mapquest.com/maps/map.adp?searchtype=address&amp;country=US&amp;'. $get_query;
+  }
+  else {
+    return NULL;
+  }
+  
+}
 
 /**
  * Parameters:

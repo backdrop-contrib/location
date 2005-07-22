@@ -42,7 +42,7 @@ function location_map_link($location = array(), $link_text = 'See map') {
       foreach ($map_links as $service_name => $url) {
          $links[] = '<a href="'. $url .'">'. $service_name ."</a>\n";
       }
-      return t('See map: ') . implode($links);
+      return t('See map: ') . implode($links, ", ");
     }
     else {
       return NULL;
