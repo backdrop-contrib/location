@@ -177,11 +177,9 @@ function location_get_postalcode_data_de($location = array()) {
   // Now we pad the thing and query.
   $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT));
   if ($row = db_fetch_object($res)) {
-    print "location_get_postalcode_data_de() returning something for given location!<br/>\n";
     return array('lat' => $row->latitude, 'lon' => $row->longitude, 'city' => $row->city, 'province' => $row->state, 'country' => $row->country);
   }
   else {
-    print "location_get_postalcode_data_de() NOT returning anything for given location!<br/>\n";
     return NULL;
   } 
 }
