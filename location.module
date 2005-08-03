@@ -93,11 +93,11 @@ function location_search_form_page() {
       if (count($postal_codes)) {
         $query_fragment = "'". implode(array_keys($postal_codes), ',') ."'";
         
-        $sql = 'SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.uid, u.name, FIND_IN_SET(CONCAT(country, postal_code), '. $query_fragment .') AS search_rank FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0 ORDER BY search_rank ASC, created DESC';
+        $sql = "SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, n.teaser, n.type, n.created, n.nid, u.name, FIND_IN_SET(CONCAT(country, postal_code), ". $query_fragment .") AS search_rank FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0 ORDER BY search_rank ASC, created DESC";
 
-        $count_sql = 'SELECT COUNT(*) FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0';
+        $count_sql = "SELECT COUNT(*) FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
 
-        $count_display_sql = 'SELECT COUNT(*) as result_count FROM {location_node} a INNER JOIN {node} n ON a.nid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), '. $query_fragment .') > 0';
+        $count_display_sql = "SELECT COUNT(*) as result_count FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
         
         $res = pager_query($sql, 15, 0, $count_sql);
 
@@ -269,7 +269,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       break;
       
     case 'load':
-      $res = db_query('SELECT * FROM {location_node} WHERE nid = %d', $node->nid);
+      $res = db_query("SELECT * FROM {location} WHERE type = 'node' AND oid = %d", $node->nid);
       $location = array();
       if ($node_location = db_fetch_object($res)) {
         //$location = object2array($node_location);
@@ -392,7 +392,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'load') {
-    $res = db_query('SELECT * FROM {location_user} WHERE uid = %d', $user->uid);
+    $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND oid = %d", $user->uid);
     if ($location = db_fetch_object($res)) {
       $user->location = object2array($location);
     }
@@ -421,16 +421,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
  * The array 
  */
 function _location_save($posted_location, &$user_or_node, $type = 'node') {
-  if ($type == 'node') {
-    $field = 'nid';    
-  }
-  elseif ($type == 'user') {
-    $field = 'uid';
-  }
-  else {
-    return;
-  }
-
+  $field = ($type == 'node' ? 'nid': 'uid');
   if (isset($posted_location) && count($posted_location)) {
     foreach ($posted_location as $posted_field => $posted_value) {
       $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
@@ -447,7 +438,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
     }
               
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-       db_query("REPLACE INTO {location_". $type ."} (". $field .", name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')", 
+       db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')",
+              $type, 
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
               (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
@@ -461,7 +453,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );     
     }
     else {
-      db_query("REPLACE INTO {location_". $type ."} (". $field .", name, street, additional, city, province, postal_code, country) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+      db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+              $type,
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
               (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
