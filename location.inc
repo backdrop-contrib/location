@@ -57,7 +57,12 @@ function location_get_postalcode_data($location = array()) {
     return NULL;   
   }
   $country_specific_function = 'location_get_postalcode_data_'. $location['country'];
-  return $country_specific_function($location);
+  if (function_exists($country_specific_function)) {
+    return $country_specific_function($location);
+  }
+  else {
+    return NULL;
+  }
 }
 
 function _location_is_empty($location = array()) {
