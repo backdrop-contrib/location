@@ -3,7 +3,7 @@ Step 1
 To use this project, feed the location.mysql to your database.  If your site
 is using a prefix for database table names, make sure to adjust accordingly.
 
-  mysql -u username -ppassword -h localhost database-name < location.mysql
+  mysql -u username -ppassword -h localhost database-name < modules/location/location.mysql
 
 where "username", "password" are the username/loging and "database-name" are
 the parameters to login to your Drupal site's database.  You can leave out
@@ -14,22 +14,23 @@ different machine.
 IMPORTANT:
 To support proximity searches and most useful features, you will need a postal codes
 database for each country for which you plan to use a file from the "supported/"
-directory. 
+directory. The database structure can be loaded from the database/zipcodes.mysql 
+file, and the data can be loaded from database/zipcodes.CC.mysql (where CC is the 
+two-letter country code).
 
-As of this post, only U.S. and German postal codes are supported.  However, you will
-need a database of postal codes.  A single zipcodes table holds all the
-zipcodes.  To create the zipcodes table using the database/zipcodes.mysql file
-from within the location tarball:
+As of this post, only U.S. and German postal codes are supported.  A single zipcodes 
+table holds all the zipcodes.  To create the zipcodes table using the database/zipcodes.mysql 
+file from within the location tarball:
 
-  mysql -u username -ppassword -h localhost database-name < zipcodes.mysql
+  mysql -u username -ppassword -h localhost database-name < modules/location/database/zipcodes.mysql
 
 To make use of the U.S. postalcodes:
 
-  mysql -u username -ppassword -h localhost database-name < zipcodes.us.mysql
+  mysql -u username -ppassword -h localhost database-name < modules/location/database/zipcodes.us.mysql
 
 To make use of the German postal codes:
 
-  mysql -u username -ppassword -h localhoost database-name < zipcodes.de.mysql
+  mysql -u username -ppassword -h localhoost database-name < modules/location/database/zipcodes.de.mysql
 
 Feed these dumps to your database as well, adjusting for prefixes.  Careful, the
 postal code dump for the US is a few MB.
@@ -39,11 +40,10 @@ Step 2
 In the "modules/" directory, create a subdirectory called "location/" which itself
 contains a subdirectory called "supported/".
 
-Download "location.inc" to "location/"
-Download "location.module" to "location/"
-Download "earth.inc" to "location/"
-Download "supported/location.us.inc" to "location/supported/"
-(NOTE: "supported/location.ca.inc" for Canada is not yet complete).
+Download "location.inc" to "modules/location/"
+Download "location.module" to "modules/location/"
+Download "earth.inc" to "modules/location/"
+Download "supported/location.us.inc" to "modules/location/supported/" (for support of US locations)
 
 Step 3
 ------
