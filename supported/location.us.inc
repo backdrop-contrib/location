@@ -120,22 +120,11 @@ function _location_latlon_exact_us_geocoder($location = array()) {
   else {
     return NULL;
   }
+
+  $result = xmlrpc('http://rpc.geocoder.us/service/xmlrpc', 'geocode', $location_string);
   
-  $message = new xmlrpcmsg('geocode', array(new xmlrpcval($location_string, 'string')));
-  
-  $client = new xmlrpc_client('/service/xmlrpc', 'rpc.geocoder.us', 80);
-  
-  $result = $client->send($message);
-  
-  //match latitude/longitude and return if present
-  $xml_response = $result->serialize();
-  $matches = array();
-  if (preg_match('/<member><name>lat<\/name>\n<value><double>([^<]+)<\/double><\/value>.*/', $result->serialize(), $matches)) {
-    $lat = floatval($matches[1]);
-    if (preg_match('/<member><name>long<\/name>\n<value><double>([^<]+)<\/double><\/value>.*/', $result->serialize(), $matches)) {
-      return array('lon' => $lat, 'lon' => floatval($matches[1]));
-    }
-    return NULL;
+  if (is_array($result) && is_array($result[0]) && isset($result[0]['lat']) && is_numeric($result[0]['lat']) && isset($result[0]['long']) && is_numeric($result[0]['long'])) {
+    return array('lat' => $result[0]['lat'], 'lon' => $result[0]['long']);
   }
   return NULL;
 }
