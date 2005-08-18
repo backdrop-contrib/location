@@ -10,7 +10,7 @@ CREATE TABLE location (
   country char(2) default NULL,
   latitude decimal(10,6) default NULL,
   longitude decimal(10,6) default NULL,
-  exact tinyint(1) default '0',
+  source tinyint(4) default '0',
   PRIMARY KEY  (type,oid)
 ) TYPE=MyISAM;
 
