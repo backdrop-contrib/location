@@ -23,6 +23,7 @@ $access_check = TRUE;
 
 $sql_updates = array(0  => '',
                      1  => 'Mid 4.6 upgrade -- Merge location_user and location_node tables into location',
+                     2  => "Mid 4.6 upgrade II -- Rename column 'exact' to 'source'"
                     );
 
 if (!ini_get("safe_mode")) {
@@ -152,7 +153,9 @@ function location_update_1() {
   db_query("RENAME TABLE {location_node} TO {location}");
 }
 
-
+function location_update_2() {
+  db_query("ALTER TABLE {location} CHANGE COLUMN exact source tinyint(4) default '0'");
+}
 
 
 ?>

@@ -2,9 +2,17 @@
 
 define('LOCATION_PATH', drupal_get_path('module', 'location'));
 
+define('LOCATION_LATLON_UNDEFINED', 0);
+define('LOCATION_LATLON_USER_SUBMITTED', 1);
+define('LOCATION_LATLON_GEOCODED_APPROX', 2);
+define('LOCATION_LATLON_GEOCODED_EXACT', 3);
+
 include_once LOCATION_PATH.'/location.inc';
 
-
+/**
+ * Implementation of hook_menu.
+ *
+ */
 function location_menu($may_cache = FALSE) {
   $items = array();
   if ($may_cache) {
@@ -14,6 +22,10 @@ function location_menu($may_cache = FALSE) {
     drupal_set_html_head(location_form_html_head());
   }
   return $items;
+}
+
+function location_perm() {
+  return array('submit latitude/longitude');
 }
 
 /**
@@ -194,7 +206,7 @@ function location_search_form_page() {
  */
 function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   
-  if ($op == 'validate' || $op == 'settings' || $op == 'validate' || $op == 'form post' || $op == 'insert' || $op == 'load' || $op == 'view') {
+  if ($op == 'validate' || $op == 'settings' || $op == 'form post' || $op == 'insert' || $op == 'load' || $op == 'view') {
     // Determine strings that can be used in more than one place below.
     // Set the default workflow setting for all location fields for an 'event' node: 1... optional
     // This will only be used if the user hasn't gone into the default workflow page for events and changed it to something else
@@ -224,6 +236,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       return array(t('Locations') => $form);
     
     case 'form post':
+      $form = '';
       $location_fields = array();
       $required_fields = array();
       foreach (array_keys($field_names) as $field_name) {
@@ -243,14 +256,27 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
       
       if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
-        return location_form($location_fields, $node->location ? $node->location : array(), $required_fields, $suppressed_values);
+        $form .= location_form($location_fields, $node->location ? $node->location : array(), $required_fields, $suppressed_values);
       }
       else {
-        return location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, $suppressed_values);
+        $form .= location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, $suppressed_values);
       }
     
+      if (user_access('submit latitude/longitude')) {
+        $form .= "<br/>\n";
+        if ($node->nid || isset($node->location['previous_source'])) {
+          $form .= form_hidden('location][previous_source', $node->location['source']);
+          $form .= form_hidden('location][previous_latitude', $node->location['latitude']);
+          $form .= form_hidden('location][previous_longitude', $node->location['longitude']);
+        }
+
+        $form .= location_latlon_form('location', t('If you wish to supply your own latitude/longitude you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->location ? location_api2form($node->location) : array());
+      }
+      
+      return $form;
       
     case 'validate':
+      $valid = TRUE;
       // For now, validation just makes sure that required fields have any value
       // If syntax specific checks are implemented for locations in the future, they can be called as well.
       foreach (array_keys($field_names) as $field_name => $display_name) {
@@ -258,14 +284,126 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         if (variable_get($variable_prefix . $field_name . $variable_suffix, 0) == 2) {
           if (isset($node->location[$field_name]) && !strlen(trim($node->location[$field_name]))) {
             form_set_error('location]['. $field_name, t('The field %field is required.', array('%field' => "<em>$display_name</em>")));
+            $valid = FALSE;
+          }
+        }
+        $node->location[$field_name] = trim($node->location[$field_name]);
+      }
+      if (user_access('submit latitude/longitude')) {
+        if ((!strlen(trim($node->location['latitude'])) && strlen(trim($node->location['longitude']))) ||
+            (strlen(trim($node->location['latitude'])) && !strlen(trim($node->location['longitude'])))) {
+          form_set_error('location][latitude', t('You must fill out both longitude and latitude or'));
+          form_set_error('location][longitude', t('you must leave them both blank.'));
+          $valid = FALSE;
+        }
+        elseif (strlen(trim($node->location['latitude'])) && strlen(trim($node->location['longitude']))) {
+          if (!is_numeric($node->location['latitude']) || $node->location['latitude'] > 90.0 || $node->location['latitude'] < -90.0) {
+            form_set_error('location][latitude', t('Your latitude must be a numeric value between -90.0 and 90.0.'));
+            $valid = FALSE;
+          }
+            
+          if (!is_numeric($node->location['longitude']) || $node->location['longitude'] > 180.0 || $node->location['longitude'] < -180.0) {
+            form_set_error('location][longitude', t('Your longitude must be a numeric value between -180.0 and 180.0.'));
+            $valid = FALSE;
+          }
+        }
+        
+        if ($valid) {
+          $node->location['latitude'] = trim($node->location['latitude']);
+          $node->location['longitude'] = trim($node->location['longitude']);
+          // At this point, we know that the user has permission to submit lat/lons and that the 
+          // submitted lat/lons are either blank or valid numbers.  Now, we need to find out determine
+          // the source of these lat/lons since they can either be prefilled from postalcode data
+          // or manually entered by the user.
+          if (!empty($node->location['latitude']) && !empty($node->location['longitude'])) {
+            if (($data = location_get_postalcode_data($node->location)) &&
+                bccomp(floatval($node->location['latitude']), floatval($data['lat'])) == 0 &&
+                bccomp(floatval($node->location['longitude']), floatval($data['lon'])) == 0) {
+              $node->location['lat'] = $node->location['latitude'];
+              $node->location['lon'] = $node->location['longitude'];
+              $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
+            }
+            else {
+              print "<h1>Not equal!</h1>";
+              $node->location['lat'] = $node->location['latitude'];
+              $node->location['lon'] = $node->location['longitude'];
+              $node->location['source'] = LOCATION_LATLON_USER_SUBMITTED;
+            }
+          }
+          else {
+            if ($data = location_get_postalcode_data($node->location)) {
+              $node->location['latitude'] = $data['lat'];
+              $node->location['longitude'] = $data['lon'];
+              $node->location['lat'] = $data['lat'];
+              $node->location['lon'] = $data['lon'];
+              $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
+            }
+            else {
+              unset($node->location['latitude']);
+              unset($node->location['longitude']);
+              unset($node->location['lat']);
+              unset($node->location['lon']);
+              $node->location['source'] = LOCATION_LATLON_UNDEFINED;
+            }
           }
         }
       }
+      else {
+        // If the user does NOT have permission to explicitly set a lat/lon for the given location, we still want to check
+        // whether this location was previously assigned a lat/lon manually or whether it was determined via geocoding.
+        // If the lat/lon was determined from geocoding, then we will want to update the lat/lon using postal codes.
+        // If the lat/lon was user-submitted, then we don't want to allow the current editor to change the lat/lon
+        if ($node->nid) {
+          $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND oid = %d", $node->nid);
+          if ($location = db_fetch_object($result)) {
+            if ($location->source != LOCATION_LATLON_USER_SUBMITTED) {
+              if ($data = location_get_postalcode_data($node->location)) {
+                $node->location['lat'] = $data['lat'];
+                $node->location['lon'] = $data['lon'];
+                $node->location['latitude'] = $data['lat'];
+                $node->location['longitude'] = $data['lon'];
+                $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
+              }
+              else {
+                unset($node->location['lat']);
+                unset($node->location['lon']);
+                unset($node->location['latitude']);
+                unset($node->location['longitude']);
+                $node->location['source'] = LOCATION_LATLON_UNDEFINED;
+              }
+            }
+          }
+        }
+        elseif ($data = location_get_postalcode_data($node->location)) {
+          $node->location['lat'] = $data['lat'];
+          $node->location['lon'] = $data['lon'];
+          $node->location['latitude'] = $data['lat'];
+          $node->location['longitude'] = $data['lon'];
+          $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
+        }
+        else {
+          unset($node->location['lat']);
+          unset($node->location['lon']);
+          unset($node->location['latitude']);
+          unset($node->location['longitude']);
+          $node->location['source'] = LOCATION_LATLON_UNDEFINED;          
+        }
+      }
+      
       break;
       
     case 'insert':
     case 'update':
-      _location_save($node->location ? $node->location : array(), $node, 'node');
+        // If no city and/or province were supplied in the address (whether the user left it blank or whether the user did not have the option
+        // of entering them) then we want to use the data we have based strictly on the postal code.
+        $node->location = location_form2api($node->location);
+        if ($data = location_get_postalcode_data($node->location)) {
+          $node->location['city'] = (!isset($node->location['city']) || strlen($node->location['city']) == 0) ? $data['city'] : $node->location['city'];
+          $node->location['province'] = (!isset($node->location['province']) || strlen($node->location['province']) == 0) ? $data['province'] : $node->location['province'];
+        }
+        //----------------------------------------------------------------------------
+        _location_save($node->location ? $node->location : array(), $node, 'node');
+      //}
       break;
       
     case 'load':
@@ -281,8 +419,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         if (isset($location['latitude'])) {
           $location['lat'] = $location['latitude'];
           $location['lon'] = $location['longitude'];
-          unset($location['latitude']);
-          unset($location['longitude']);
         }
       }
       return array('location' => $location);
@@ -423,22 +559,8 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 function _location_save($posted_location, &$user_or_node, $type = 'node') {
   $field = ($type == 'node' ? 'nid': 'uid');
   if (isset($posted_location) && count($posted_location)) {
-    foreach ($posted_location as $posted_field => $posted_value) {
-      $posted_location[$posted_field] = trim(strip_tags($posted_location[$posted_field]));
-    }
-    $posted_location = location_form2api($posted_location);
-
-    if (isset($posted_location['postal_code']) && isset($posted_location['country'])) {
-      if ($data = location_get_postalcode_data($posted_location)) {
-        $posted_location['lat'] = $data['lat'];
-        $posted_location['lon'] = $data['lon'];
-        $posted_location['city'] = (!isset($posted_location['city']) || strlen($posted_location['city']) == 0) ? $data['city'] : $posted_location['city'];
-        $posted_location['province'] = (!isset($posted_location['province']) || strlen($posted_location['province']) == 0) ? $data['province'] : $posted_location['province'];
-      }
-    }
-              
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-       db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f')",
+       db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
               $type, 
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
@@ -449,11 +571,12 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
               (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
               (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
               $posted_location['lat'],
-              $posted_location['lon']
+              $posted_location['lon'],
+              $posted_location['source']
             );     
     }
     else {
-      db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+      db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
               $type,
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
@@ -462,11 +585,11 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
               (!isset($posted_location['city']) || is_null($posted_location['city'])) ? '' : $posted_location['city'],
               (!isset($posted_location['province']) || is_null($posted_location['province'])) ? '' : $posted_location['province'],
               (!isset($posted_location['postal_code']) || is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-              (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country']
+              (!isset($posted_location['country']) || is_null($posted_location['country'])) ? NULL : $posted_location['country'],
+              $posted_location['source']
             );
     }
   }
 }
-
 
 ?>
