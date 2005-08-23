@@ -289,6 +289,20 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
         $node->location[$field_name] = trim($node->location[$field_name]);
       }
+      
+      // Check if the (province, country) pair is valid
+      if (isset($node->location['province']) && !empty($node->location['province']) && $node->location['province'] != 'xx' &&
+          isset($node->location['country']) && !empty($node->location['country']) && $node->location['country'] != 'xx') {
+        $province_list_function = 'location_province_list_'. $node->location['country'];
+        if (function_exists($province_list_function)) {
+          $translated_location = location_form2api($node->location);
+          if (!in_array($translated_location['province'], array_keys($province_list_function()))) {
+            form_set_error('location][province', t('Please make sure to select a state/province from the country you have selected.'));
+          }
+        }
+      }
+      
+      // Check if submitted lat/lon are valid
       if (user_access('submit latitude/longitude')) {
         if ((!strlen(trim($node->location['latitude'])) && strlen(trim($node->location['longitude']))) ||
             (strlen(trim($node->location['latitude'])) && !strlen(trim($node->location['longitude'])))) {
