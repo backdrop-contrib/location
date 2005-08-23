@@ -560,7 +560,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
   $field = ($type == 'node' ? 'nid': 'uid');
   if (isset($posted_location) && count($posted_location)) {
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-       db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
+       db_query("DELETE FROM {location} WHERE type = '%s' AND oid = %d", $type, $user_or_node->$field);
+       db_query("INSERT INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
               $type, 
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
@@ -576,7 +577,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );     
     }
     else {
-      db_query("REPLACE INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
+      db_query("DELETE FROM {location} WHERE type = '%s' AND oid = %d", $type, $user_or_node->$field);
+      db_query("INSERT INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
               $type,
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
