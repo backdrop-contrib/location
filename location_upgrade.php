@@ -116,9 +116,7 @@ function location_upgrade($update_n) {
 
 function location_upgrade_info() {
   $output = "<ul>\n";
-  $output .= "<li>Use this script to <strong>fix and update permissions you've set with location</strong>.  You don't need this script when installing the location.module from scratch.</li>"."\n";
-  $output .= "<li>In versions of location prior to 4.6, there was an issue with users not being able to find and see in listing the nodes that they didn't have permissions to see, but still being able to go directly to the URL of an off-limits node and view it.  This database upgrade is a way of correcting that problem.</li>"."\n";
-  $output .= "<li>There is also the first update after the initial 4.6 release for this module that corrects a bug preventing location\'s ability to work with the flexinode module.</li>\n";
+  $output .= "<li>Use this script to <strong>update the database schema for changes to the location module</strong>.  You don't need this script when installing the location.module from scratch.</li>"."\n";
   $output .= "</ul>"."\n";
   return $output;
 }
