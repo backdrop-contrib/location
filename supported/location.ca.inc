@@ -1,33 +1,6 @@
 <?php
 
 
-
-
-/**
- * Parameters:
- *   -> $locationA is an associative array that represents a full location where
- *        'street'       => the street portions of the location
- *        'supplemental' => additional street portion of the location
- *        'province'     => the province, state, or territory
- *        'country'      => lower-cased two-letter ISO code (REQUIRED)
- *   -> $locationB is associative array that represents a full location in the same way that
- *       parameter $locationB does.
- *
- * Returns: a link to driving directions
- */
-function location_map_link_ca($location = array()) {
-  $map_links = array();
-  // For now, just call the Yahoo function.  May want to make this configurable on some level
-  // in order to maintain freedom of choice so users and site-admins don't have to be slaves
-  // to Yahoo!.... not that I have anything personal against Yahoo!.
-  if ($link = location_map_link_ca_yahoo($location)) { 
-    $map_links['Yahoo! Maps'] = $link;
-  }
-    
-  return $map_links;
-}
- 
-
 function location_map_link_ca_yahoo($location = array()) {
   $get_query = '?';
   if (isset($location['street'])) {
@@ -38,6 +11,60 @@ function location_map_link_ca_yahoo($location = array()) {
   }
   $get_query .= 'country='. urlencode($location['country']);
   return ('http://ca.maps.yahoo.com/maps_result'. $get_query);
+}
+
+function location_map_link_ca_google($location = array()) {
+  $query_params = array();
+  
+  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
+    if (isset($location[$field])) {
+      $query_params[] = $location[$field];
+    }
+  }
+  
+  if (count($query_params)) {
+    return ('http://maps.google.ca?q='. urlencode(implode(", ", $query_params)));
+  }
+  else {
+    return NULL;
+  }
+}
+
+function location_map_link_ca_mapquest($location = array()) {
+  if (isset($location['street'])) {
+    $get_query .= 'address='. urlencode($location['street']) .'&amp;';
+  }
+  
+  if (isset($location['city'])) {
+    $get_query .= 'city='. urlencode($location['city']) .'&amp;';
+  }
+  
+  if (isset($location['province'])) {
+    $get_query .= 'state='. urlencode($location['province']) .'&amp;';
+  }
+  
+  if (isset($location['postal_code'])) {
+    $get_query .= 'zipcode='. urlencode($location['postal_code']);
+  }
+  
+  if (strlen($get_query)) {
+    return 'http://www.mapquest.com/maps/map.adp?searchtype=address&amp;country=CA&amp;'. $get_query;
+  }
+  else {
+    return NULL;
+  }
+}
+
+function location_map_link_ca_providers() {
+  return array('google' => array('name' => 'Google Maps', 'url' => 'http://maps.google.ca', 'tos' => 'http://www.google.ca/help/terms_local.html'),
+               'yahoo' => array('name' => 'Yahoo! Maps', 'url' => 'http://ca.maps.yahoo.com' , 'tos' => 'http://help.yahoo.com/help/ca/maps/maps-25.html'),
+               'mapquest' => array('name' => 'MapQuest', 'url' => 'http://www.mapquest.com', 'tos' => 'http://www.mapquest.com/features/main.adp?page=legal')
+              );
+}
+
+
+function location_map_link_ca_default_providers() {
+  return array('google');
 }
 
 /**

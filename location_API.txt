@@ -13,7 +13,8 @@ FUNCTION SPECIFICATIONS DESCRIBED IN THIS FILE:
   location_nearby_postalcodes_bylatlon(): A function that searches for postal codes within a specified search-radius for
                   a specified latitude and longitude.
                   
-  location_get_postalcode_data(): A function that takes a (postalcode,country) pair an returns lat/lon, city, province.
+  location_get_postalcode_data(): A function that takes a (postalcode,country) pair an returns lat/lon, city, province.  This
+                  function is meant to replace location_latlon_rough(); see below.
                   
   location_latlon_rough(): A function that returns the latitude and longitude of the specified postal-code/country pair.
                   This latitude and longitude will be of the approximate center of the postal-code's area.  This function
@@ -23,8 +24,8 @@ FUNCTION SPECIFICATIONS DESCRIBED IN THIS FILE:
   location_latlon_exact(): A function that returns the latitude and longitude of the given full location.  Typically implemented
                   on top of a web-service. [TO BE IMPLEMENTED]
 
-  location_map_link(): A function that returns, given an location, a deep-link to Yahoo! Maps or some online mapping site 
-                  depending on implementation at the country-level.
+  location_map_link(): A function that returns, based on the site configuration, either NULL or 1 or more deep-links to mapping
+                   web sites for the parameter location array.
   
   location_driving_directions_link(): A function that returns, given 2 locationes, a deep-link to Yahoo! Maps or some other site 
                   that provides driving directions.  The site chosen depends on the implementation at the country-level.
@@ -60,16 +61,16 @@ IMPORTANT NOTES:
 ----------------
 Formats
 ---
-In the following API, an 'location' is merely an associative array with the following keys:
+In the following API, a 'location' is merely an associative array with the following keys:
   'street'      => A string for the street portion of an location
   'additional'  => A string for the additional street portion of an location
   'province'    => An upper-case, standard postal abbreviation of a state/province/territory
   'postal_code' => A string or integer for the postal code
   'country'     => The lower-case of the ISO 3166 two-letter alpha code (e.g., 'us' for U.S., 'ca' for Canada).
   
-For locationes that are passed to location_form() for the $prefilled_values parameter, the same format applies
+For locations that are passed to location_form() for the $prefilled_values parameter, the same format applies
 except that the 'province' field is the concatenation of the country code, '-', and the province abbreviation.
-For example, 'CA' is the value for California for all purposes, but when passing this in an location for prefilled
+For example, 'CA' is the value for California for all purposes, but when passing this in a location for prefilled
 values, it should be 'us-CA'.  There are two functions to help convert back and forth between these formats:
 location_form2api() and location_api2form().  These are described further below.
 
@@ -167,11 +168,30 @@ Takes a latitude, longitude, and a distance, and returns all postal_codes within
          'distance_unit' => The unit of distance specified by 'distance'
 
 
-
-         
-         
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function location_latlon_rough($location = array());                                                     +
+function location_get_postalcode_data($location = array());                                            +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Takes a location and uses the combination of postal code and country to return an array that gives the
+city, province, and lat/lon dat for that postal code.
+
+@param $location
+  An associative array $location where
+    'street'       => the street portion of the location
+    'additional' => additional street portion of the location
+    'province'     => the province, state, or territory
+    'country'      => lower-cased two-letter ISO code (REQUIRED)
+    'postal_code'  => international postal code (REQUIRED)
+    
+@return
+  NULL if data cannot be found.
+  Otherwise, an associative array where
+    'lat' => is a floating point of the latitude coordinate of this location
+    'lon' => is a floating point of the longitude coordinate of this location
+    'city' => is a string for the city this postalcode is in (or the most recognized city at the given postal)
+    'province' => the province of the given postal code.         
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function location_latlon_rough($location = array());                                                   +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Takes an location and returns a "rough" latitude/longitude pair based on the postal code
@@ -230,8 +250,8 @@ to retrieve exact lat/lon coordinates.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function location_map_link($location = array(), $link_text = 'See map');                                 +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
-call is delegated based on the 'country' value in the $location parameter.
+Get deep-links to a mapping services such as Yahoo! Maps or MapQuest (actual providers depend on configuration
+of location module) given a location.  The call is delegated based on the 'country' value in the $location parameter.
 
 @param $location
   An associative array where
@@ -243,8 +263,10 @@ call is delegated based on the 'country' value in the $location parameter.
      'postal_code'  => The international postal code for the location
 
 @return
-  A link to a map provided by a third-party.  The idea is to encode the appropriate
-  parameters as HTTP GET variables to the URL.
+  NULL if there are not mapping providers configured for the country or if no links could be generated.
+  A string of the form "See map: Yahoo! Maps, MapQuest" where Yahoo! Maps and Mapquest are links to the 
+  given location and can be replaced with other options (e.g., Google) available in the location module settings.
+  The idea is to encode the appropriate parameters as HTTP GET variables to the URL.
 
 
 

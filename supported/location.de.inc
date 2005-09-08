@@ -45,6 +45,14 @@ function _location_map_link_de_tinfo($location = array()) {
 }
 
 
+function location_map_link_de_providers() {
+  return array('tinfo' => array('name' => 'T-Info', 'url' => 'http://www.t-info.de/map/index.jsp', 'tos' => 'http://www.t-info.de/map/application?origin=note.jsp&event=bea.portal.framework.internal.refresh&pageid=TermsOfUse&portal.content_id=30600'));
+}
+
+function location_map_link_de_default_providers() {
+  return array();
+}
+
 /**
 * Parameters:
 *   -> $locationA is an associative array that represents a full location where

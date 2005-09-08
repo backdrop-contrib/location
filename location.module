@@ -17,6 +17,8 @@ function location_menu($may_cache = FALSE) {
   $items = array();
   if ($may_cache) {
     $items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_form_page', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
+    $items[] = array('path' => 'admin/settings/location/main', 'title' => t('main settings'), 'type' => MENU_DEFAULT_LOCAL_TASK);
+    $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK);
   }
   else {
     drupal_set_html_head(location_form_html_head());
@@ -198,6 +200,68 @@ function location_search_form_page() {
   //$end_time = microtime();
   //print 'Time for this NODE search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
   print theme('page', $form . $search_results);
+}
+
+/**
+ * 
+ *
+ */
+function location_map_link_options_page() {
+  global $conf;
+
+  if ($edit = $_POST['edit']) {
+    if ($_POST['op'] == t('Save configuration')) {
+      foreach (location_configured_countries() as $country_iso => $country_name) {
+        $providers = array();
+        if (isset($edit['location_map_link_'. $country_iso])) {
+          foreach ($edit['location_map_link_'. $country_iso] as $name => $selected) {
+            if ($selected) {
+              $providers[] = $name;
+            }
+          }
+          variable_set('location_map_link_'. $country_iso, $providers);
+        }
+      }
+      drupal_set_message(t('The configuration options have been saved.'));
+    }
+    elseif ($_POST['op'] == t('Reset to defaults')) {
+      db_query("DELETE FROM {variable} WHERE name LIKE 'location_map_link_%'");
+      cache_clear_all('variables');
+      foreach (location_configured_countries() as $country_iso => $country_name) {
+        unset($conf['location_map_link_'. $country_iso]);
+      }
+      drupal_set_message(t('The configuration options have been reset to their default values.'));
+    }
+  }
+  $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
+  $rows = array();
+  foreach (location_configured_countries() as $country_iso => $country_name) {
+    $row = array();
+    $row[0] = $country_name;
+    $row[1] = '';
+    $provider_function = 'location_map_link_'. $country_iso .'_providers';
+    $default_provider_function = 'location_map_link_'. $country_iso .'_default_providers';
+    $checked = variable_get('location_map_link_'. $country_iso, function_exists($default_provider_function) ? $default_provider_function() : array());
+    if (function_exists($provider_function)) {
+      foreach ($provider_function() as $name => $details) {
+        //$row[1] .= '<a href="'. $details['url'] .'">'. $details['name'] .'</a> <strong> / </strong> <a href="'. $details['tos'] .'">Terms of Use</a><br/>'."\n";
+        $row[1] .= form_checkbox('<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)',
+                                 'location_map_link_'. $country_iso .']['. $name,
+                                 1,
+                                 in_array($name, $checked)
+                                );
+      }
+    }
+    else {
+      $row[1] = array('align' => 'center', 'data' => t('None supported'));
+    }
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+  $output .= form_submit(t('Save configuration'));
+  $output .= form_submit(t('Reset to defaults'));
+  $output = form($output);
+  print theme('page', $output);
 }
 
 /**

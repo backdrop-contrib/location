@@ -48,7 +48,7 @@ for your country.
 For an example implementation of the functions described below, see "supported/location.us.inc".
 
 -------------------------------------------------------------------------------------------------
-function theme_location_be($location, $hide);                                                            |
+function theme_location_be($location, $hide);                                                    |
 -------------------------------------------------------------------------------------------------
 @param $location
   An associative array $location where
@@ -81,7 +81,7 @@ Preferrably, these will be sorted by the full name.
 
 
 -------------------------------------------------------------------------------------------------
-function location_map_link_be($location);                                                         |
+function location_map_link_be($location);                                                       |
 -------------------------------------------------------------------------------------------------
 Returns a deep-link to an online mapping service (e.g., "Yahoo! Maps", "MapQuest", or some other
 preferrably free service) given a full/partial location in the format described in public API
@@ -106,11 +106,48 @@ document (location_API.txt).
   anything useful with a city/province pair.
 
   
-  
-  
-  
 --------------------------------------------------------------------------------------------------
-function location_driving_directions_link_be($locationA, $locationB);                               |
+function location_map_link_be_providers();                                                       |
+--------------------------------------------------------------------------------------------------
+Returns an array of mapping services to which the generation of deep-links is supported.  "Supported"
+means that the function for that particular mapping service has been defined.  For example, if the
+location.be.inc file for Belgium has functions for taking a location and generating a deep-link to
+Yahoo! Maps and google, this function will return that list in an array that give additional info.
+
+See location.us.inc for an example.
+
+@return
+  An associative array where
+    --> The keys are single words (no spaces) that identify a function in the same file for returning
+        a deep link.  For example, 'yahoo' means location_map_link_be_yahoo().  'google' means
+        location_map_link_be_google().
+    --> The values are themselves associative arrays with 3 expected keys:
+          'name' => The name of the mapping service.  In the case of Yahoo, it would be 'Yahoo! Maps'
+          'url'  => The full URL of the main page of the mapping service (i.e., the home page)
+          'tos'  => The full URL of the Terms Of Service for the mapping service.
+          
+--------------------------------------------------------------------------------------------------
+function location_map_link_be_default_providers();                                                |
+--------------------------------------------------------------------------------------------------
+Returns an array of 'default' mapping services.  It may happen that the site administrator has not
+yet made it to the settings page for selecting mapping providers.  In this case, we want to tell
+the location modules which one to use as defaults.  To help the site admin avoid being in violation
+of each mapping services's Terms of Service, we return a linear array whose values are the appropriately
+selected keys in the array returned the location_map_link_xx_providers() function.
+
+@return
+  A linear array with the one-word, no-spaced identifiers used to identify the mapping function.  These
+  should only be for the mapping services with relatively lenient and permissive Terms of Service.
+
+  
+IMPORTANT: For more information on how to add support for deep-links, you are encouraged to see
+the examples in modules/location/supported/location.us.inc.  If you need extra help, please feel
+free to submit a question on the issues queue for this project at: http://drupal.org/project/issues/location
+Replies will be prompt.
+
+
+--------------------------------------------------------------------------------------------------
+function location_driving_directions_link_be($locationA, $locationB);                            |
 --------------------------------------------------------------------------------------------------
 Returns a deep-link to an online mapping service (e.g., "Yahoo! Maps", "MapQuest", or some other
 preferrably free service) given full/partial locationes.  Depending on whether or not the parameter
@@ -167,7 +204,8 @@ in the given $location parameter as well as other data.  The reason this can't b
 non-country specific level in location.inc is that postal codes may be submitted in varying formats
 of varying precision while postal codes for this country in the database table may all be in a particular
 format.  It is up to this country specific function to examine $location['postal_code'] and format it
-appropriately so that it matches with a postal code in the postal codes table.
+appropriately so that it matches with a postal code in the postal codes table.  This 'hook' is meant
+to be a replacement for the location_get_latlon_rough_xx hook, described next.
 
 
   

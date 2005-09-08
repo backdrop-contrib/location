@@ -129,41 +129,6 @@ function _location_latlon_exact_us_geocoder($location = array()) {
   return NULL;
 }
 
-/**
- * @param $locationA
- *   An associative array that represents a full location where
- *      'street'       => the street portions of the location
- *      'supplemental' => additional street portion of the location
- *      'province'     => the province, state, or territory
- *      'country'      => lower-cased two-letter ISO code (REQUIRED)
- *
- * @param $locationB 
- *   An associative array that represents a full location in the same way that
- *   parameter $locationB does.
- *
- * @return 
- *   A URL with the appropriate HTTP GET params to driving directions
- */
-function location_map_link_us($location = array()) {
-  $map_links = array();
-  // For now, just call the Yahoo function.  May want to make this configurable on some level
-  // in order to maintain freedom of choice so users and site-admins don't have to be slaves
-  // to Yahoo!.... not that I have anything personal against Yahoo!.
-  if ($link = location_map_link_us_yahoo($location)) {
-    $map_links['Yahoo! Maps'] = $link;
-  }
-  
-  if ($link = location_map_link_us_google($location)) {
-    $map_links['Google Maps'] = $link;
-  }
- 
-  if ($link = location_map_link_us_mapquest($location)) {
-    $map_links['MapQuest'] = $link;
-  }
-   
-  return $map_links;
-}
- 
 
 function location_map_link_us_yahoo($location = array()) {
   $get_query = '?';
@@ -196,7 +161,6 @@ function location_map_link_us_google($location = array()) {
 }
 
 function location_map_link_us_mapquest($location = array()) {
-  /*searchtype=address&country=US&addtohistory=&searchtab=home&address=5493+Country+View+Dr&city=El+Sobrante&state=CA&zipcode=94803*/
   if (isset($location['street'])) {
     $get_query .= 'address='. urlencode($location['street']) .'&amp;';
   }
@@ -218,7 +182,40 @@ function location_map_link_us_mapquest($location = array()) {
   else {
     return NULL;
   }
-  
+}
+
+/**
+ * @return 
+ *   An array where 
+ *     -> the key is the word that helps identify the name of function that builds the link.  For example, a key of 'yahoo' means the name of the
+ *        the function that builds a link to a map on Yahoo! Maps would be 'location_map_link_us_yahoo'
+ *     -> the value is itself an array with 3 key/value pairs:
+ *          'name' => points to the name of the mapping service.  For 'yahoo', this would be 'Yahoo! Maps'
+ *          'url' => the url of the main page of the mapping service.  For 'yahoo', this would be 'http://maps.yahoo.com'
+ *          'tos' => the url of the page that explains the map providers Terms of Service, or Terms of Use. For 'yahoo', this would be
+ *                   'http://help.yahoo.com/help/us/maps/maps-24.html'
+ */
+function location_map_link_us_providers() {
+  return array('google' => array('name' => 'Google Maps', 'url' => 'http://maps.google.com', 'tos' => 'http://www.google.com/help/terms_local.html'),
+               'yahoo' => array('name' => 'Yahoo! Maps', 'url' => 'http://maps.yahoo.com', 'tos' => 'http://help.yahoo.com/help/us/maps/maps-24.html'),
+               'mapquest' => array('name' => 'MapQuest', 'url' => 'http://www.mapquest.com', 'tos' => 'http://www.mapquest.com/features/main.adp?page=legal')
+              );
+}
+
+
+/**
+ * @return
+ *   An array of values that work as keys to the array returned by location_map_link_us_providers.  The idea is that if the
+ *   administrator of the site has not yet had a chance to visit the "Map Links" subtab on the location module's settings page,
+ *   that we can provide deep-linking to a relatively safe default.  By 'relatively safe', we mean that the Terms Of Service of
+ *   the provider of the maps are flexible enough for most parties.
+ *
+ *   For the case of the U.S., 'google' has relatively flexible Terms Of Service, whereas Yahoo! Maps and MapQuest have more
+ *   restrictive Terms Of Service.
+ *
+ */
+function location_map_link_us_default_providers() {
+  return array('google');
 }
 
 /**

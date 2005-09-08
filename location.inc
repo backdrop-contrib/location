@@ -29,6 +29,7 @@ _location_include_configured();
  *   A link to a map provided by a third-party.  The idea is to encode the appropriate
  *   parameters as HTTP GET variables to the URL.
  */
+/*
 function location_map_link($location = array(), $link_text = 'See map') {
   if (!isset($location['country'])) {
     return '';
@@ -49,6 +50,35 @@ function location_map_link($location = array(), $link_text = 'See map') {
     }
   }
 }
+*/
+
+function location_map_link($location = array(), $link_text = 'See map') {
+  if (!isset($location['country']) && $location['country'] != 'xx') {
+    return '';
+  }
+
+  $default_func = 'location_map_link_'. $location['country'] .'_default_providers';
+  $providers_func = 'location_map_link_'. $location['country'] .'_providers';
+  $providers = function_exists($providers_func) ? $providers_func() : array();
+  $selected_providers = variable_get('location_map_link_'. $location['country'], function_exists($default_func) ? $default_func() : array());
+
+  $links = array();
+  foreach ($selected_providers as $mapper) {
+    $link_func = 'location_map_link_'. $location['country'] .'_'. $mapper;
+    if (function_exists($link_func)) {
+      if ($link = $link_func($location)) {
+        $links[] = '<a href="'. $link .'">'. $providers[$mapper]['name'] .'</a>';
+      }
+    }
+  }
+  if (count($links)) {
+    return t('See map: ') . implode($links, ", ");
+  }
+  else {
+    return NULL;
+  }
+}
+
 
 function location_get_postalcode_data($location = array()) {
   $location['country'] = isset($location['country']) ? trim($location['country']) : NULL;
