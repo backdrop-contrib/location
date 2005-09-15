@@ -395,8 +395,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           // or manually entered by the user.
           if (!empty($node->location['latitude']) && !empty($node->location['longitude'])) {
             if (($data = location_get_postalcode_data($node->location)) &&
-                bccomp(floatval($node->location['latitude']), floatval($data['lat'])) == 0 &&
-                bccomp(floatval($node->location['longitude']), floatval($data['lon'])) == 0) {
+                _location_floats_are_equal(floatval($node->location['latitude']), floatval($data['lat'])) &&
+                _location_floats_are_equal(floatval($node->location['longitude']), floatval($data['lon']))) {
               $node->location['lat'] = $node->location['latitude'];
               $node->location['lon'] = $node->location['longitude'];
               $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
@@ -670,6 +670,17 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );
     }
   }
+}
+
+/**
+ * Helper function for seeing if two floats are equal.  We could use other functions, but all
+ * of them belong to libraries that do not come standard with PHP out of the box.
+ */
+
+function _location_floats_are_equal($x, $y) { 
+  $x = floatval($x);
+  $y = floatval($y);
+  return (abs(max($x, $y) - min($x, $y)) < pow(10, -6));
 }
 
 ?>
