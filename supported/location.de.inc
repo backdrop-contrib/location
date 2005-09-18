@@ -20,11 +20,10 @@ function location_map_link_de($location = array(), $hide = array()) {
   // to tinfo!.... not that I have anything personal against tinfo!.
   if ($link = _location_map_link_de_tinfo($location)) {
     $map_links['T-info'] = $link;
-  }
-  
-  return $map_links;
 }
 
+  return $map_links;
+}
 
 function _location_map_link_de_tinfo($location = array()) {
   $get_query = '?';
@@ -193,4 +192,38 @@ function location_get_postalcode_data_de($location = array()) {
 }
  
  
+function location_province_list_de() {
+  return array(
+/* I just made this list by hand. The two letter abbreviations are from the
+ * query, run against the zipcodes.de.mysql data
+ * 
+ * SELECT DISTINCT state FROM zipcodes WHERE country = 'de'
+ * 
+ * whereas the state names were taken from a website. The matching
+ * was done by my best guessing :-)
+ * The website listed Bremen, Sachsen and Sachsen-Anhalt as states,
+ * which means that the website knows one more state than the database does.
+ * So, someone German please clean up this list.
+  */
+  
+//     ?   => 'Bremen',
+//     ?   => 'Sachsen',
+//     ?   => 'Sachsen-Anhalt',
+    'BB' => 'Brandenburg',   
+    'TH' => 'Thüringen',
+//    'ST' => ?
+    'MV' => 'Mecklenburg-Vorpommern',
+    'HH' => 'Hamburg',
+    'NI' => 'Niedersachsen',
+    'SH' => 'Schleswig-Holstein',
+//    'HB' => ?
+    'NW' => 'Nordrhein-Westfalen',
+    'HE' => 'Hessen',
+    'RP' => 'Rheinland-Pfalz',
+    'BY' => 'Bayern',
+    'SL' => 'Saarland',
+    'BW' => 'Baden-Württemberg',
+    'BE' => 'Berlin'
+    );
+}  
 ?>
