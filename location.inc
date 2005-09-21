@@ -381,7 +381,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
       }
       else {
         $form .= '<div class="container-inline">';
-        $value = isset($prefilled_values['country']) ? $prefilled_values['country'] : '';
         $form .= _location_country_select_options(isset($prefilled_values['country']) ? $prefilled_values['country'] : '', in_array('country', $required_fields), $form_name, $function);
         $form .= "</div>\n";
       }
