@@ -2739,7 +2739,7 @@ INSERT INTO zipcodes VALUES ('07055','Passaic','NJ','40.857384','-74.128990',-5,
 INSERT INTO zipcodes VALUES ('07057','Wallington','NJ','40.852931','-74.109250',-5,1,'us');
 INSERT INTO zipcodes VALUES ('07058','Pine Brook','NJ','40.871299','-74.343310',-5,1,'us');
 INSERT INTO zipcodes VALUES ('07059','Warren','NJ','40.633652','-74.500800',-5,1,'us');
-INSERT INTO zipcodes VALUES ('07060','Plainfield','NJ','40.620102','-74.424810',-5,1,'us');
+INSERT INTO zipcodes VALUES ('07060','North Plainfield','NJ','40.620102','-74.424810',-5,1,'us');
 INSERT INTO zipcodes VALUES ('07061','Plainfield','NJ','40.665651','-74.299692',-5,1,'us');
 INSERT INTO zipcodes VALUES ('07062','Plainfield','NJ','40.631252','-74.403830',-5,1,'us');
 INSERT INTO zipcodes VALUES ('07063','Plainfield','NJ','40.604252','-74.446120',-5,1,'us');
