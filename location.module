@@ -402,7 +402,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
             }
             else {
-              print "<h1>Not equal!</h1>";
               $node->location['lat'] = $node->location['latitude'];
               $node->location['lon'] = $node->location['longitude'];
               $node->location['source'] = LOCATION_LATLON_USER_SUBMITTED;
