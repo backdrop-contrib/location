@@ -7,6 +7,10 @@ define('LOCATION_LATLON_USER_SUBMITTED', 1);
 define('LOCATION_LATLON_GEOCODED_APPROX', 2);
 define('LOCATION_LATLON_GEOCODED_EXACT', 3);
 
+define('LOCATION_USER_DONT_COLLECT', 0);
+define('LOCATION_USER_COLLECT', 1);
+define('LOCATION_USER_CIVICRM_ONLY', 2);
+
 include_once LOCATION_PATH.'/location.inc';
 
 /**
@@ -561,6 +565,8 @@ function location_get_configured_countries() {
  */
 function location_settings() {
   
+  $user_setting = _location_effective_user_setting();
+
   $supported_countries = _location_supported_countries();
 
   $default_country = variable_get('location_default_country', '');
@@ -588,23 +594,39 @@ function location_settings() {
   
   $form .= form_radios(t('Toggle location display'), 'location_display_location', variable_get('location_display_location', 1), array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations locations.')), t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take over them.'));
   
-  $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
-  
+  if (!module_exist('civicrm')) {
+    $form .= form_radios('User locations', 'location_user', variable_get('location_user', 0), array('Disable', 'Enable'), t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.'));
+  }
+  else {
+    $form .= form_item(t('User locations'), '', t('You have enabled the CiviCRM module.  This means that CiviCRM will collect user locations for you.  To make sure you will be able to use location module features with these user addresses, you should make sure the CiviCRM \'address\' profile is marked as active.  If you are using CivicSpace, this comes activated on a default install.  If you installed CiviCRM on a seperate Drupal installation, please consult the documentation in the README file for the location module.'));
+  }
+      
   $form .= form_checkboxes(t('Enable all <em>available</em> features for locations from the following countries'), 'location_configured_countries', location_get_configured_countries(), $supported_countries, t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'));
   
   return $form;
 }
 
+function _location_effective_user_setting() {
+  if (module_exist('civicrm')) {
+    return LOCATION_USER_CIVICRM_ONLY;
+  }
+  else {
+    return variable_get('location_user', LOCATION_USER_DONT_COLLECT);
+  }
+}
+
 function location_user($op, &$edit, &$user, $category = NULL) {
-  if (!variable_get('location_user', 0)) {
+  $user_setting = _location_effective_user_setting();
+  
+  if ($user_setting == LOCATION_USER_DONT_COLLECT) {
     return;
   }
   
-  if ($op == 'form' && $category == 'account') {
+  if ($op == 'form' && $category == 'account' && $user_setting == LOCATION_USER_COLLECT) {
     return array(t('location') => array('title' => t('Location'), 'data' => location_form(array('street', 'city', 'province', 'postal_code', 'country'), (isset($user->location) && !_location_is_empty($user->location)) ? location_api2form($user->location) : array('country' => variable_get('location_default_country', 'us')), array(), array(), t('Enter as much of your address as you are comfortable with.  Your address will only be viewable by those who have the appropriate permissions.  The site will be able to automatically link you to driving directions and other features if it already knows your address.')), 'weight' => 1));
   }
   
-  if ($op == 'load') {
+  if ($op == 'load' && $user_setting != LOCATION_USER_DONT_COLLECT) {
     $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND oid = %d", $user->uid);
     if ($location = db_fetch_object($res)) {
       $user->location = object2array($location);
@@ -613,15 +635,44 @@ function location_user($op, &$edit, &$user, $category = NULL) {
       $user->location = array();
     }
   }
-  
 
-  
   if ($op == 'update' || $op == 'insert') {
+    if ($user_setting == LOCATION_USER_CIVICRM_ONLY) {
+      // There was no location form. We need to map CiviCRM fields to location fields.
+      $edit['location'] = array();
+      $edit['location']['street'] = isset($edit['street_address']) ? $edit['street_address'] : '';
+      $edit['location']['additional'] = isset($edit['supplemental_address_1']) ? $edit['supplemental_address_1'] : '';
+      if (isset($edit['supplemental_address_2'])) {
+        $edit['location']['additional'] .= $edit['supplemental_address_2'];
+      }
+      $edit['location']['city'] =  isset($edit['city']) ? $edit['city'] : '';
+      $edit['location']['postal_code'] = isset($edit['postal_code']) ? $edit['postal_code'] : '';
+      db_set_active('civicrm');
+      if (isset($edit['state_province_id'])) {
+        $province_id = db_result(db_query('SELECT abbreviation FROM {civicrm_state_province} WHERE id = %d', $edit['state_province_id']));
+        $edit['location']['province'] = strtoupper($province_id);
+      }
+      if (isset($edit['country_id'])) {
+        $state_id = db_result(db_query('SELECT iso_code FROM {civicrm_country} WHERE id = %d', $edit['country_id']));
+        $edit['location']['country'] = strtolower($state_id);
+      }
+      db_set_active();
+    }
+    if ($data = location_get_postalcode_data($edit['location'])) {
+      $edit['location']['source'] = LOCATION_LATLON_GEOCODED_APPROX;
+      $edit['location']['lat'] = $data['lat'];
+      $edit['location']['lon'] = $data['lon'];
+    }
+    else {
+      unset($edit['location']['lat']);
+      unset($edit['location']['lon']);
+      $edit['location']['source'] = LOCATION_LATLON_UNDEFINED;
+    }
     _location_save($edit['location'] ? $edit['location'] : array(), $user, 'user');
     unset($edit['location']);
   }
   
-  if ($op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1)) {
+  if ($user_setting == LOCATION_USER_COLLECT && $op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1)) {
     return array('' => theme('location', $user->location));
   }
   
