@@ -72,7 +72,7 @@ function location_map_link($location = array(), $link_text = 'See map') {
     }
   }
   if (count($links)) {
-    return t('See map: ') . implode($links, ", ");
+    return t($link_text) . ':' . implode($links, ", ");
   }
   else {
     return NULL;
