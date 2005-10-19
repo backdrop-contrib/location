@@ -446,6 +446,7 @@ function location_form2api($location = array()) {
   }
 
   $translated = array();
+  $location = is_array($location) ? $location : array();
   foreach ($location as $key => $value) {
     $value = trim($value);
     if ($key == 'province') {
