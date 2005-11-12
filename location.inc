@@ -52,7 +52,7 @@ function location_map_link($location = array(), $link_text = 'See map') {
 }
 */
 
-function location_map_link($location = array(), $link_text = 'See map') {
+function location_map_link($location = array(), $link_text = 'See map: ') {
   if (!isset($location['country']) && $location['country'] != 'xx') {
     return '';
   }
@@ -72,7 +72,7 @@ function location_map_link($location = array(), $link_text = 'See map') {
     }
   }
   if (count($links)) {
-    return t($link_text) . ':' . implode($links, ", ");
+    return t($link_text) . implode($links, ", ");
   }
   else {
     return NULL;
