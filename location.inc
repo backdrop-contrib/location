@@ -29,29 +29,6 @@ _location_include_configured();
  *   A link to a map provided by a third-party.  The idea is to encode the appropriate
  *   parameters as HTTP GET variables to the URL.
  */
-/*
-function location_map_link($location = array(), $link_text = 'See map') {
-  if (!isset($location['country'])) {
-    return '';
-  }
-  
-  $map_link_function = 'location_map_link_'. $location['country'];
-  if (function_exists($map_link_function)) {
-    $map_links = $map_link_function($location);
-    if (count($map_links)) {
-      $links = array();
-      foreach ($map_links as $service_name => $url) {
-         $links[] = '<a href="'. $url .'">'. $service_name ."</a>\n";
-      }
-      return t('See map: ') . implode($links, ", ");
-    }
-    else {
-      return NULL;
-    }
-  }
-}
-*/
-
 function location_map_link($location = array(), $link_text = 'See map: ') {
   if (!isset($location['country']) && $location['country'] != 'xx') {
     return '';
@@ -177,14 +154,9 @@ function theme_location($location = array(), $hide = array()) {
     
     $output .= '</dl>';
   }
-  
-  $output .= location_map_link($location, t('See map'));
-  
-  if (strlen($output)) {
-    //$output = theme('box', t('Location:'), $output);
-    //$output = form_item('Location', $output, NULL);
-    $output = form_group(t('Location'), $output);
-  }
+
+  $output .= location_map_link($location);
+
   return $output;
 }
 
@@ -334,92 +306,129 @@ function location_distance_between($latlonA = array(), $latlonB = array(), $dist
  *        Note that in both cases, the first and third argument can take the same array since all the fields are being required.
  */
 function location_form($fields = array(), $prefilled_values = array(), $required_fields = array(), $suppressed_values = array(), $description = '', $form_name = 'location', $function = NULL) {
-  $form = $description;
-  if (count($fields)) {
-    if (in_array('name', $fields)) {
-       $form .= '<div class="container-inline">';
-       $form .= form_textfield('Location Name', $form_name .'][name', isset($prefilled_values['name']) ? $prefilled_values['name'] : '', 64, 64, t('e.g. a place of business, venue, meeting point'), NULL, in_array('name', $required_fields));
-       $form .= "</div>\n";
-    }
-
-    if (in_array('street', $fields)) {
-      $form .= '<div class="container-inline">';
-      $form .= form_textfield('Street', $form_name .'][street', isset($prefilled_values['street']) ? $prefilled_values['street'] : '', 64, 64, NULL, NULL, in_array('street', $required_fields));
-      $form .= "</div>\n";
-      $form .= '<div class="container-inline">';
-      $form .= form_textfield('Additional', $form_name .'][additional', isset($prefilled_values['additional']) ? $prefilled_values['additional'] : '', 64, 64);
-      $form .= "</div>\n";
-    }
-    
-
-    if (in_array('city', $fields)) {
-      $form .= '<div class="container-inline">';
-      $form .= form_textfield('City', $form_name .'][city', isset($prefilled_values['city']) ? $prefilled_values['city'] : '', 64, 64, NULL, NULL, in_array('city', $required_fields));
-      $form .= "</div>\n";
-    }
-    
-    if (in_array('province', $fields)) {
-      if (in_array('province', array_keys($suppressed_values))) {
-        $form .= form_hidden($form_name .'][province', $suppressed_values['province']);
-      }
-      else {
-        $form .= '<div class="container-inline">';
-        $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL, $form_name);
-        $form .= "</div>\n";
-      }
-    }
-    
-    if (in_array('postal_code', $fields)) {
-      $form .= '<div class="container-inline">';
-      $form .= form_textfield('Postal Code', $form_name .'][postal_code', isset($prefilled_values['postal_code']) ? $prefilled_values['postal_code'] : '', 16, 16, NULL, NULL, in_array('postal_code', $required_fields));
-      $form .= "</div>\n";
-    }
-    
-    if (in_array('country', $fields)) {
-      if (in_array('country', array_keys($suppressed_values))) {
-        $form .= form_hidden($form_name .'][country', $suppressed_values['country']);
-      }
-      else {
-        $form .= '<div class="container-inline">';
-        $form .= _location_country_select_options(isset($prefilled_values['country']) ? $prefilled_values['country'] : '', in_array('country', $required_fields), $form_name, $function);
-        $form .= "</div>\n";
-      }
-    }
-    
+  if (count($fields) == 0) {
+    $fields = array('name', 'street', 'city', 'province', 'postal_code', 'country');
   }
-  else {
-    $form .= '<div class="container-inline">';
-    $form .= form_textfield('Location Name', $form_name .'][name', isset($prefilled_values['name']) ? $prefilled_values['name'] : '', 64, 64, t('e.g. a place of business, venue, meeting point'), NULL, in_array('name', $required_fields));
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= form_textfield('Street', $form_name .'][street', isset($prefilled_values['street']) ? $prefilled_values['street'] : '', 64, 64, NULL, NULL, in_array('street', $required_fields));
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= form_textfield('Additional', $form_name .'][additional', isset($prefilled_values['additional']) ? $prefilled_values['additional'] : '', 64, 64);
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= form_textfield('City', $form_name .'][city', isset($prefilled_values['city']) ? $prefilled_values['city'] : '', 64, 64, NULL, NULL, in_array('city', $required_fields));
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL, $form_name);
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= form_textfield('Postal Code', $form_name .'][postal_code', isset($prefilled_values['postal_code']) ? $prefilled_values['postal_code'] : '', 16, 16, NULL, NULL, in_array('postal_code', $required_fields));
-    $form .= "</div>\n";
-    $form .= '<div class="container-inline">';
-    $form .= _location_country_select_options(isset($prefilled_values['country']) ? $prefilled_values['country'] : '', in_array('country', $required_fields), $form_name);
-    $form .= "</div>\n";
+
+  $form = array();
+  $form['description'] = array(
+      '#type' => 'markup',
+      '#value' => $description
+      );
+
+  if (in_array('name', $fields)) {
+    $form['name'] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => "</div>\n",
+        '#type' => 'textfield',
+        '#title' => t('Location name'),
+        '#default_value' => isset($prefilled_values['name']) ? $prefilled_values['name'] : '',
+        '#size' => 64,
+        '#maxlength' => 64,
+        '#description' => t('e.g. a place of business, venue, meeting point'),
+        '#attributes' => NULL,
+        '#required' => in_array('name', $required_fields)
+        );
+  }
+  if (in_array('street', $fields)) {
+    $form['street'] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => "</div>\n",
+        '#type' => 'textfield',
+        '#title' => t('Street'),
+        '#default_value' => isset($prefilled_values['street']) ? $prefilled_values['street'] : '',
+        '#size' => 64,
+        '#maxlength' => 64,
+        '#required' => in_array('street', $required_fields)
+        );
+    $form['additional'] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => "</div>\n",
+        '#type' => 'textfield',
+        '#title' => t('Additional'),
+        '#default_value' => isset($prefilled_values['additional']) ? $prefilled_values['additional'] : '',
+        '#size' => 64,
+        '#maxlength' => 64
+        );
+  }
+  if (in_array('city', $fields)) {
+    $form['city'] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => "</div>\n",
+        '#type' => 'textfield',
+        '#title' => t('City'),
+        '#default_value' => isset($prefilled_values['city']) ? $prefilled_values['city'] : '',
+        '#size' => 64,
+        '#maxlength' => 64,
+        '#description' => NULL,
+        '#attributes' => NULL,
+        '#required' => in_array('city', $required_fields)
+        );
+  }
+  if (in_array('province', $fields)) {
+    if (in_array('province', array_keys($suppressed_values))) {
+      $form['province'] = array(
+          '#type' => 'hidden',
+          '#value' => $suppressed_values['province']
+          );
+    }
+    else {
+      $form['province'] = _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL);
+      $form['province']['#prefix'] = '<div class="container-inline">';
+      $form['province']['#suffix'] = "</div>\n";
+    }
+  }
+  if (in_array('postal_code', $fields)) {
+    $form['postal_code'] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => "</div>\n",
+        '#type' => 'textfield',
+        '#title' => t('Postal code'),
+        '#default_value' => isset($prefilled_values['postal_code']) ? $prefilled_values['postal_code'] : '',
+        '#size' => 16,
+        '#maxlength' => 16,
+        '#required' => in_array('postal_code', $required_fields)
+        );
+  }
+  if (in_array('country', $fields)) {
+    if (in_array('country', array_keys($suppressed_values))) {
+      $form['country'] = array(
+          '#type' => 'hidden',
+          '#value' => $suppressed_values['country']
+          );
+    }
+    else {
+      $form['country'] = _location_country_select_options(isset($prefilled_values['country']) ? $prefilled_values['country'] : '', in_array('country', $required_fields), $function);
+      $form['country']['#prefix'] = '<div class="container-inline">';
+      $form['country']['#suffix'] = "</div>\n";
+    }
   }
   
   return $form;
 }
 
-function location_latlon_form($form_name = 'location', $description = '', $prefilled_values = array()) {
-  $form  = '<div class="container-inline">';
-  $form .= form_textfield('Latitude', $form_name .'][latitude', isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '', 64, 64);
-  $form .= form_textfield('Longitude', $form_name .'][longitude', isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '', 64, 64);
-  $form .= '</div>';
-  $form = form_group('', $form, $description);
+function location_latlon_form($description = '', $prefilled_values = array()) {
+  $form = array();
+  $form[] = array(
+      '#type' => 'markup',
+      '#value' => $description,
+      );
+  $form['latitude'] = array(
+      '#prefix' => '<div class="container-inline">',
+      '#type' => 'textfield',
+      '#title' => t('Latitude'),
+      '#default_value' => isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '',
+      '#size' => 64,
+      '#maxlength' => 64
+      );
+  $form['longitude'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Longitude'),
+      '#default_value' => isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '',
+      '#size' => 64,
+      '#maxlength' => 64,
+      '#suffix' => '</div>'
+      );
   return $form;
 }
 
@@ -497,19 +506,6 @@ function location_api2form($location = array()) {
  * a search-point extracted from a contact table or some other location source specified by 
  * the programmer calling this function.
  *
- * @param $location_form           
- *   An optional location form, preferably generated by location_form().  If the script processing this
- *   form also needs a user-supplied location, this parameter is used to specify a form for collecting the
- *   search-point about which this search is being done.  If the caller does not supply a form, it is
- *   assumed that the caller already has a search point in mind and that this will be made clear in
- *   the $description parameter.
- *
- * @param $label
- *   The label you want to apply to the form group that is returned (passed as $legend param to form_group()).
- * 
- * @param $description
- *   A text description of what is being searched for (e.g., 'Find all upcoming events near you.')
- *
  * @param $prefilled_values
  *   An associative array for prefilled values for the proximity search parameters, where 
  *     'distance' => is the prefilled int value to be selected for the distance scalar
@@ -522,43 +518,58 @@ function location_api2form($location = array()) {
  *     'distance' => a preselected positive integer for the distance
  *     'distance_unit' => a preselected unit for the distance, one of either 'km' or 'mile'
  *
- * @param $form_name
- *   An additional parameter to help prevent HTML input name collisions.  If the caller is using this
- *   function to generate more than 1 location proximity form on a page, then the generated name for 
- *   each HTML input's "name" attribute will be $form_name.  Allowing the caller to pass $form_name allows 
- *   the caller the flexibility of using more than one location proximity search form on one page.
- *
  * @return
  *   An HTML form (generated by Drupal form functions) that lets users specify proximity search parameters that include distance,
  *   the unit of distance, and a search-point if the optional $location_form parameter is passed.  If one is not passed,
  *   the caller of this function will be assumed to already have one.  
  *
  */
-function location_proximity_form($location_form = '', $label = '', $description = '', $prefilled_values = array(), $suppressed_values = array(), $form_name = 'location') {
-  //$form  = $description;
-  $search_params_form .= '<div class="container-inline">';
-  $search_params_form .= t('Search within ');
+function location_proximity_form($prefilled_values = array(), $suppressed_values = array(), $form_name = 'location') {
+  $form[] = array(
+      '#prefix' => '<div class="container-inline">',
+      '#type' => 'markup',
+      '#value' => t('Search within ')
+      );
   if (in_array('distance', array_keys($suppressed_values))) {
-    $search_params_form .= form_hidden($form_name .'][distance', $suppressed_values['distance']);
+    $form['distance'] = array(
+        '#type' => 'hidden',
+        '#value' => $suppressed_values['distance']
+        );
   }
   else {
-    $search_params_form .= form_select('', $form_name .'][distance', (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25), array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250), '');
+    $form['distance'] = array(
+        '#type' => 'select',
+        '#title' => '',
+        '#default_value' => (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25),
+        '#options' => array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250),
+        '#description' => ''
+        );
   }
   
   if (in_array('distance_unit', array_keys($suppressed_values))) {
-    $search_params_form .= ($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km');
-    $search_params_form .= form_hidden($form_name .'][distance_unit', $suppressed_values['distance_unit']);
+    $form[] = array(
+        '#type' => 'markup',
+        '#value' => ($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km')
+      );
+    $form['distance_unit'] = array(
+        '#type' => 'hidden',
+        '#value' => $suppressed_values['distance_unit']
+        );
   }
   else {
-    $search_params_form .= form_select('', $form_name .'][distance_unit', (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'), array('mile' => 'miles', 'km' => 'km'));
+    $form['distance_unit'] = array(
+        '#type' => 'select',
+        '#title' => '',
+        '#default_value' => (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'),
+        '#options' => array('mile' => 'miles', 'km' => 'km')
+        );
   }
-  if ($location_form != '') {
-    $search_params_form .= t(' of:');
-  }
-  $search_params_form .= '</div>';
-  return theme('table', NULL, array(array($search_params_form, $location_form)));
-  //return form_group($label, $form, $description);
-  //return $label . $form . $description;
+  $form[] = array(
+      '#type' => 'markup',
+      '#value' => t(' of:'),
+      '#suffix' => '</div>'
+      );
+  return $form;
 }
 
 function location_form_html_head() {
@@ -1166,12 +1177,14 @@ function location_geocode_meta_tags($location = array()) {
  * configured the site to actually use that country's include file. 
  */
 function location_configured_countries() {
-  $configured_countries = variable_get('location_configured_countries', array('us')); // <integer index> => <ISO code>
+  $configured_countries = variable_get('location_configured_countries', array('us' => 1)); // <integer index> => <ISO code>
   $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
   $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
   $configured_countries_associative = array();
-  foreach ($configured_countries as $country_code) {
-    $configured_countries_associative[$country_code] = $supported_countries[$country_code];
+  foreach ($configured_countries as $country_code => $enabled) {
+    if ($enabled) {
+      $configured_countries_associative[$country_code] = $supported_countries[$country_code];
+    }
   }
   // With array_flip() temporarily make array so that we have <English name> => <ISO code>
   // We want to do this so we can do a ksort() by ISO code. Regular sort() destroys index values 
@@ -1242,7 +1255,7 @@ function _location_supported_countries() {
  *   If 'location' is passed as the $form_name, then the HTML "name" attribute for the generated form element
  *   will be "edit[location][country]".
  */
-function _location_country_select_options($value = '', $required = FALSE, $form_name = 'location', $function = NULL) {
+function _location_country_select_options($value = '', $required = FALSE, $function = NULL) {
   $value = strlen($value) ? $value : 'us';
   if ($function) {
     $function = ($function == 'nearby_postalcodes_bylocation' || 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
@@ -1257,7 +1270,16 @@ function _location_country_select_options($value = '', $required = FALSE, $form_
   else {
     $countrycodes = array_merge(array('' => '', 'xx' => 'NOT LISTED'), _location_get_iso3166_list());
   }
-  return form_select('Country', $form_name .'][country', $value, $countrycodes, NULL, 0, FALSE, $required);
+  return array(
+      '#type' => 'select',
+      '#title' => t('Country'),
+      '#default_value' => $value,
+      '#options' => $countrycodes,
+      '#description' => NULL,
+      '#extra' => 0,
+      '#multiple' => FALSE,
+      '#required' => $required
+      );
 }
 
 /**
@@ -1288,7 +1310,7 @@ function _location_country_select_options($value = '', $required = FALSE, $form_
  *     -> the values are the full name of the province
  *
  */
-function _location_province_select_options($value = '', $required = FALSE, $country = NULL, $form_name = 'location') {
+function _location_province_select_options($value = '', $required = FALSE, $country = NULL) {
   $options_list = array();
   $options_list[''] = '';
   $options_list['xx'] = t('NOT LISTED');
@@ -1329,7 +1351,15 @@ function _location_province_select_options($value = '', $required = FALSE, $coun
       }
     }
   }
-  return form_select('State/Province', $form_name .'][province', $value, $options_list, NULL, 0, FALSE, $required);
+  return array(
+      '#type' => 'select',
+      '#title' => t('State/Province'),
+      '#default_value' => $value,
+      '#options' => $options_list,
+      '#extra' => 0,
+      '#multiple' => FALSE,
+      '#required' => $required
+      );
 }
 
 /**
@@ -1344,7 +1374,7 @@ function _location_include_configured() {
       include_once($filename);
     }
   }
-}    
+}
 
 // The following is an array of all countrycode => country-name pairs as layed out in
 // ISO 3166-1 alpha-2
