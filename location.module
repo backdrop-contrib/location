@@ -417,7 +417,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       $valid = TRUE;
       // For now, validation just makes sure that required fields have any value
       // If syntax specific checks are implemented for locations in the future, they can be called as well.
-      foreach (array_keys($field_names) as $field_name => $display_name) {
+      foreach ($field_names as $field_name => $display_name) {
         $workflow_setting = variable_get($variable_prefix . $field_name . $variable_suffix, $field_name == 'country' ? 1 : 0);
         if (variable_get($variable_prefix . $field_name . $variable_suffix, 0) == 2) {
           if (isset($node->location[$field_name]) && !strlen(trim($node->location[$field_name]))) {
