@@ -759,11 +759,11 @@ function location_user($op, &$edit, &$user, $category = NULL) {
       $edit['location']['postal_code'] = isset($edit['postal_code']) ? $edit['postal_code'] : '';
       db_set_active('civicrm');
       if (isset($edit['state_province_id'])) {
-        $province_id = db_result(db_query('SELECT abbreviation FROM {civicrm_state_province} WHERE id = %d', $edit['state_province_id']));
+        $province_id = db_result(db_query('SELECT abbreviation FROM civicrm_state_province WHERE id = %d', $edit['state_province_id']));
         $edit['location']['province'] = strtoupper($province_id);
       }
       if (isset($edit['country_id'])) {
-        $state_id = db_result(db_query('SELECT iso_code FROM {civicrm_country} WHERE id = %d', $edit['country_id']));
+        $state_id = db_result(db_query('SELECT iso_code FROM civicrm_country WHERE id = %d', $edit['country_id']));
         $edit['location']['country'] = strtolower($state_id);
       }
       db_set_active();
