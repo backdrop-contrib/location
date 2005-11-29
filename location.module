@@ -43,21 +43,19 @@ function location_perm() {
  */
 function location_help($section) {
   switch ($section) {
+    case 'admin/help#location':
+      $output = '<p>'. t('The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.') .'</p>';
+      $output .= '<p>'. t('To administer locative information for content, use the content type administration page.  To support most location enabled features, you will need to install the country specific include file.  To support postal code proximity searches for a particular country, you will need a database dump of postal code data for that country.  As of June 2005 only U.S. postal codes are supported.') .'</p>';
+      $output .= t('<p>You can</p>
+<ul>
+<li>administer locative information at <a href="%admin-node-configure-types"> administer &gt;&gt; content types</a> to configure a type and see the locative information.</li>
+<li>administer location at <a href="%admin-settings-location">administer &gt;&gt; settings &gt;&gt; location</a>.</li>
+<li>use a database dump for a U.S. postal codes table that can be found at <a href="%external-http-trac-civicspacelabs-com-cgi-bin-trac-cgi-file-trunk-database-zipcodes-mysql">zipcode database</a>.</li>
+', array('%admin-node-configure-types' => url('admin/node/configure/types'), '%admin-settings-location' => url('admin/settings/location'), '%external-http-trac-civicspacelabs-com-cgi-bin-trac-cgi-file-trunk-database-zipcodes-mysql' => 'http://trac.civicspacelabs.com/cgi-bin/trac.cgi/file/trunk/database/zipcodes.mysql')) .'</ul>';
+      $output .= '<p>'. t('For more information please read the configuration and customization handbook <a href="%location">Location page</a>.', array('%location' => 'http://www.drupal.org/handbook/modules/location/')) .'</p>';
+      return $output;
     case 'admin/modules#description':
       return t('Enables the location system and allow users to attach locative information to content.');
-    case 'admin/help#location':
-      return t('
-               <p>The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.</p>
-               <p>To administer locative information for content, use the content type administration page.  To support most location enabled features, you will need to install the country specific include file.  To support postal code proximity searches for a particular country, you will need a database dump of postal code data for that country.  As of June 2005 only U.S. postal codes are supported.</p>
-               <p>You can</p>
-               <ul>
-                 <li>administer locative information at <a href = "%administercontenttypeslocativeinformation" title = "administer content types locative information"> administer >> content types</a> to configure a type and see the locative information.</li>
-                 <li>administer location at <a href = "%administerlocation" title = "administer location">administer >> settings >> location</a></li>
-                 <li>use a database dump for a U.S. postal codes table that can be found at <a href = "http://trac.civicspacelabs.com/cgi-bin/trac.cgi/file/trunk/database/zipcodes.mysql" title = "zipcode database">zipcode database</a>.</li>
-               </ul>
-               <p>For more information, read the configuration and customization handbook <a href="http://drupal.org/handbook/modules/Location" title="Location page"> Location page</a></p>', 
-               array('%administercontenttypeslocativeinformation' => url('admin/node/configure/types'), '%administerlocation' => url('admin/settings/location'))
-             );
   }
 }
 
