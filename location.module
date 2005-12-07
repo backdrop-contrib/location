@@ -175,7 +175,7 @@ function location_search_form_page() {
           
           $item = array('link' => url('node/'. $row->nid), 
                         'title' => $row->title, 
-                        'type' => node_invoke($row, 'node_name'),
+                        'type' => node_get_name($row),
                         'user' => theme('username', $row), 
                         'date' => $row->created,
                         'snippet' => $row->teaser,
