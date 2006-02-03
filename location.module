@@ -672,7 +672,7 @@ function location_configure() {
       '#type' => 'radios',
       '#title' => t('Toggle location display'),
       '#default_value' => variable_get('location_display_location', 1),
-      '#options' => array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations locations.')),
+      '#options' => array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations.')),
       '#description' => t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take over them.')
       );
   if (!module_exist('civicrm')) {
