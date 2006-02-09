@@ -550,7 +550,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       if ($node_location = db_fetch_object($res)) {
         //$location = object2array($node_location);
         unset($node_location->nid);
-        $location = object2array($node_location);
+        $location = (array)$node_location;
       }
 
       if (count($location)) {
@@ -731,7 +731,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   if ($op == 'load' && $user_setting != LOCATION_USER_DONT_COLLECT) {
     $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND oid = %d", $user->uid);
     if ($location = db_fetch_object($res)) {
-      $user->location = object2array($location);
+      $user->location = (array)$location;
     }
     else {
       $user->location = array();
