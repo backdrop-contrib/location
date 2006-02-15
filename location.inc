@@ -1258,7 +1258,7 @@ function _location_supported_countries() {
 function _location_country_select_options($value = '', $required = FALSE, $function = NULL) {
   $value = strlen($value) ? $value : 'us';
   if ($function) {
-    $function = ($function == 'nearby_postalcodes_bylocation' || 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
+    $function = ($function == 'nearby_postalcodes_bylocation' || $function == 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
     $countrycodes = array();
     foreach (location_configured_countries() as $code => $full_name) {
       if (function_exists('location_'. $function .'_'. $code)) {
