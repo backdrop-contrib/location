@@ -304,8 +304,32 @@ function location_form_alter($form_id, &$form) {
       '#default_value' => variable_get('location_'. $type, 0),
       '#description' => t('Enable the submission of a location for content of this node type.  By checking this box and selecting fields for collection below, users will be able to add a full or partial address to each node of this type (depending on which fields you enable or require here).')
     );
-    $form['location']['location_name_'. $type] = array(
+    for ($i=-10; $i<11; $i++) {
+      $options[$i] = $i;
+    }
+    $form['location']['location_weight_'. $type] = array(
       '#prefix' => '<div style="margin-left: 40px">',
+      '#type' => 'select',
+      '#title' => t('Location weight'),
+      '#options' => $options,
+      '#default_value' => variable_get('location_weight_'. $type, 9),
+      '#description' => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.')
+    );
+    $form['location']['location_collapsible_'. $type] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Collapsible'),
+      '#return_value' => 1,
+      '#default_value' => variable_get('location_collapsible_'. $type, 1),
+      '#description' => t('Make the location box collapsible.')
+    );
+    $form['location']['location_collapsed_'. $type] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Collapsed'),
+      '#return_value' => 1,
+      '#default_value' => variable_get('location_collapsed_'. $type, 1),
+      '#description' => t('Display the location box collapsed.')
+    );
+    $form['location']['location_name_'. $type] = array(
       '#type' => 'radios',
       '#title' => t('Location names'),
       '#default_value' => variable_get('location_name_'. $type, $default),
@@ -373,6 +397,10 @@ function location_form_alter($form_id, &$form) {
     $form['location']['#type'] = 'fieldset';
     $form['location']['#title'] = t('Location');
     $form['location']['#tree'] = TRUE;
+    $form['location']['#attributes'] = array('class' => 'location');
+    $form['location']['#weight'] = variable_get('location_weight_'.$form['type']['#value'], 9);
+    $form['location']['#collapsible'] = variable_get('location_collapsible_'.$form['type']['#value'], 0) == 0 ? FALSE : TRUE;
+    $form['location']['#collapsed'] = variable_get('location_collapsed_'.$form['type']['#value'], 0) == 0 ? FALSE : TRUE;
 
     if (user_access('submit latitude/longitude')) {
       $form['location'][] = array(

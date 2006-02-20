@@ -409,10 +409,10 @@ function location_form($fields = array(), $prefilled_values = array(), $required
 
 function location_latlon_form($description = '', $prefilled_values = array()) {
   $form = array();
-  $form[] = array(
-      '#type' => 'markup',
-      '#value' => $description,
-      );
+  //$form[] = array(
+  //    '#type' => 'markup',
+  //    '#value' => $description,
+  //    );
   $form['latitude'] = array(
       '#prefix' => '<div class="container-inline">',
       '#type' => 'textfield',
@@ -427,6 +427,7 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
       '#default_value' => isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '',
       '#size' => 64,
       '#maxlength' => 64,
+      '#description' => $description,
       '#suffix' => '</div>'
       );
   return $form;
