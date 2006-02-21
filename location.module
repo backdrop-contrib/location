@@ -806,8 +806,23 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     unset($edit['location']);
   }
   
-  if ($user_setting == LOCATION_USER_COLLECT && $op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1) && count($user->location)) {
-    return array(t('Location') => array('location' => theme('location', $user->location)));
+  if ($user_setting == LOCATION_USER_COLLECT && $op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1) && !_location_is_empty($user->location)) {
+
+    $items[] = array(
+      'value' => theme('location', $user->location),
+      'class' => 'location',
+    );
+    
+    if (user_access('submit latitude/longitude')) {
+      if ($user->location['latitude'] != NULL && $user->location['longitude'] != NULL) {
+        $items[] = array('title' => t('Coordinates'),
+          'value' => t('lat: %latitude<br/>lon: %longitude', array('%latitude' => $user->location['latitude'], '%longitude' => $user->location['longitude'])),
+          'class' => 'location',
+        );
+      }
+    }
+
+    return array(t('Location') => $items);
   }
   
 }
