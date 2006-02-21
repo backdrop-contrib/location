@@ -788,6 +788,10 @@ function location_user($op, &$edit, &$user, $category = NULL) {
       }
       db_set_active();
     }
+    else {
+      $edit['location'] = location_form2api($edit['location']);
+    }
+    
     if ($data = location_get_postalcode_data($edit['location'])) {
       $edit['location']['source'] = LOCATION_LATLON_GEOCODED_APPROX;
       $edit['location']['lat'] = $data['lat'];
