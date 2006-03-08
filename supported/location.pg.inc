@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // Papua New Guinea
 

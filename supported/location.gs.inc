@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // South Georgia and the South Sandwich Islands
 

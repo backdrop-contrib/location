@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // Svalbard and Jan Mayen
 

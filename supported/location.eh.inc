@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // Western Sahara
 

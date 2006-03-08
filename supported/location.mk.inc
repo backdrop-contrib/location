@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // Macedonia, The Former Yugoslav Republic of
 

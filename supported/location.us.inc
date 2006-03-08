@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Returns a lat/lon pair of the approximate center of the given postal code in the given country

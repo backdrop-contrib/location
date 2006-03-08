@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 
 function location_map_link_ca_yahoo($location = array()) {

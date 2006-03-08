@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 // Saint Pierre and Miquelon
 
