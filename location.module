@@ -27,7 +27,7 @@ function location_menu($may_cache = FALSE) {
     $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK);
   }
   else {
-    drupal_set_html_head(location_form_html_head());
+    theme_add_style(drupal_get_path('module', 'location') .'/location.css');
   }
   return $items;
 }

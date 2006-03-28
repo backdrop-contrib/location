@@ -574,10 +574,6 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
   return $form;
 }
 
-function location_form_html_head() {
-  drupal_set_html_head(theme('stylesheet_import', base_path() . drupal_get_path('module', 'location') .'/location.css'));
-}
-
 /**
  * A helper function that tells you whether all the fields of an location are full (excluding the 'additional' field.
  *
