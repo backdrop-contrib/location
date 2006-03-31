@@ -25,7 +25,7 @@ CREATE TABLE zipcodes (
   KEY latitude (latitude),
   KEY longitude (longitude),
   KEY country (country)
-) TYPE=MyISAM;
+) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;
 
 ALTER TABLE zipcodes DROP PRIMARY KEY;
 ALTER TABLE zipcodes ADD PRIMARY KEY (country, zip);

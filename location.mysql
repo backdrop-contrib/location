@@ -14,5 +14,5 @@ CREATE TABLE location (
   longitude decimal(10,6) default NULL,
   source tinyint(4) default '0',
   PRIMARY KEY  (type,oid)
-) TYPE=MyISAM;
+) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;
 

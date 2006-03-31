@@ -1,0 +1,8 @@
+<?php
+
+function location_update_1() {
+  return _system_update_utf8(array('location', 'zipcodes'));
+}
+
+
+?>

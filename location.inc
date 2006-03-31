@@ -540,6 +540,7 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
   }
   else {
     $form['distance'] = array(
+        '#prefix' => t('Search within '),
         '#type' => 'select',
         '#title' => '',
         '#default_value' => (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25),
@@ -549,13 +550,10 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
   }
   
   if (in_array('distance_unit', array_keys($suppressed_values))) {
-    $form[] = array(
-        '#type' => 'markup',
-        '#value' => ($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km')
-      );
     $form['distance_unit'] = array(
         '#type' => 'hidden',
-        '#value' => $suppressed_values['distance_unit']
+        '#value' => $suppressed_values['distance_unit'],
+        '#suffix' => (($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km')) . t(' of:')
         );
   }
   else {
@@ -563,9 +561,11 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
         '#type' => 'select',
         '#title' => '',
         '#default_value' => (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'),
-        '#options' => array('mile' => 'miles', 'km' => 'km')
+        '#options' => array('mile' => 'miles', 'km' => 'km'),
+        '#suffix' => t(' of:')
         );
   }
+  
   $form[] = array(
       '#type' => 'markup',
       '#value' => t(' of:'),
@@ -1185,7 +1185,7 @@ function location_configured_countries() {
     }
   }
   // With array_flip() temporarily make array so that we have <English name> => <ISO code>
-  // We want to do this so we can do a ksort() by ISO code. Regular sort() destroys index values 
+  // We want to do this so we can do a ksort() by ISO code. Regular sort() destroys index values
   $configured_countries_associative = array_flip($configured_countries_associative);
   ksort($configured_countries_associative);
   reset($configured_countries_associative);

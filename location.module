@@ -21,7 +21,8 @@ include_once LOCATION_PATH.'/location.inc';
 function location_menu($may_cache = FALSE) {
   $items = array();
   if ($may_cache) {
-    $items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_form_page', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
+    //$items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_form_page', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
+    $items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_view', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
     $items[] = array('path' => 'admin/settings/location', 'title' => t('location'), 'callback' => 'location_configure');
     $items[] = array('path' => 'admin/settings/location/main', 'title' => t('main settings'), 'type' => MENU_DEFAULT_LOCAL_TASK);
     $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK);
@@ -60,35 +61,15 @@ function location_help($section) {
   }
 }
 
-/**
- * Serves a search-by-location page for nodes.
- * On $_POST, displays searh form + search results.
- * Otherwise, just displays search form.
- */
-function location_search_form_page() {
-  $from_get = FALSE; // boolean to remember if variables came from a get
+
+function location_search_get_form($edit = array()) {
+  $location_form = location_form(array('postal_code', 'country'), $edit, array('postal_code', 'country'), variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array(), '', 'location', 'nearby_postalcodes_bylocation');
   
-  $prefilled_values = array();
-  if ($edit = $_POST['edit']) {
-    $prefilled_values['postal_code'] = trim($edit['location']['postal_code']);
-    $prefilled_values['country'] = trim($edit['location']['country']);
-  }
-  elseif (isset($_GET['postal_code']) || isset($_GET['country']) || isset($_GET['distance']) || isset($_GET['distance_unit'])) {
-    $from_get = TRUE;
-    $prefilled_values['postal_code'] = isset($_GET['postal_code']) ? trim($_GET['postal_code']) : '';
-    $prefilled_values['country'] = isset($_GET['country']) ? $_GET['country'] : '';
-    $prefilled_values['distance'] = isset($_GET['distance']) ? $_GET['distance'] : '';
-    $prefilled_values['distance_unit'] = isset($_GET['distance_unit']) ? $_GET['distance_unit'] : '';
-    $edit = array();
-    $edit['location'] = $prefilled_values;
-  }
-  
-  $location_form = location_form(array('postal_code', 'country'), $prefilled_values, array('postal_code', 'country'), variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array(), '', 'location', 'nearby_postalcodes_bylocation');
-  
-  $proximity_form = location_proximity_form(
-                                 array('distance' => (isset($edit['location']['distance']) ? $edit['location']['distance'] : 25), 'distance_unit' => (isset($edit['location']['distance_unit']) ? $edit['location']['distance_unit'] : 'mile')),
-                                 variable_get('location_search_distance_unit', 0) ? array('distance_unit' => variable_get('location_search_distance_unit', 0)) : array()
-                                );
+  $proximity_form = location_proximity_form(array(
+                                              'distance' => (isset($edit['distance']) ? $edit['distance'] : 25), 
+                                              'distance_unit' => (isset($edit['distance_unit']) ? $edit['distance_unit'] : 'mile')),
+                                            variable_get('location_search_distance_unit', 0) ? array('distance_unit' => variable_get('location_search_distance_unit', 0)) : array()
+                                           );
 
   $form = array('location' => array_merge($proximity_form, $location_form));
   $form['location']['#tree'] = TRUE;
@@ -97,18 +78,69 @@ function location_search_form_page() {
       '#value' => t('Search'),
       '#name' => 'op'
       );
-  $form = drupal_get_form('location_search', $form);
-  $search_results = '';
+  if (count($edit)) {
+    // redirect to URL w/ get parameters
+    $get_query = 'postal_code='. $edit['postal_code'];
+    $get_query .= '&country='. $edit['country'];
+    $get_query .= '&distance='. $edit['distance'];
+    $get_query .= '&distance_unit='. $edit['distance_unit']; 
+    $form['#redirect'] = array($_GET['q'], $get_query);
+  }
+  
+  $form['#theme'] = 'location_search';
+  return drupal_get_form('location_search', $form);  
+}
+
+function theme_location_search($form) {
+  $row = array();
+  $form_exp = var_export($form, TRUE);
+  //drupal_set_message("\$form == <pre>$form_exp</pre>");
+  $string = '';
+  foreach ($form['location'] as $key => $value) {
+    $string .= "\n". $key;
+  }
+  //drupal_set_message("\$form's keys == \n<pre>$string</pre>");
+  $row[] = '<div class="container-inline">'. form_render($form['location']['distance']) . form_render($form['location']['distance_unit']) . '</div>';
+  
+  $row[] = form_render($form['location']['postal_code']) . form_render($form['location']['country']);
+  return theme('table', NULL, array($row)) . form_render($form['op']); 
+}
+
+/*
+function location_search_submit($form_id, $form_values) {
+  $form_values_exp = var_export($form_values, TRUE);
+  print "<pre>\n$form_values_exp\n</pre>";
+}
+*/
+
+function location_search_view() {
+  if ($edit = $_POST['edit']) {
+    $edit = $edit['location'];
+    $form = location_search_get_form($edit);
+  }
+  elseif (isset($_GET['postal_code']) && isset($_GET['distance']) && isset($_GET['distance_unit']) && isset($_GET['country'])) {
+    $edit = array('postal_code' => $_GET['postal_code'], 'distance' => $_GET['distance'], 'distance_unit' => $_GET['distance_unit'], 'country' => $_GET['country']);
+    $form = location_search_get_form($edit);
+    $search_results = location_search_get_results($edit);
+  }
+  else {
+    $form = location_search_get_form();
+  }
+  
+  print theme('page', $form . (isset($search_results) ? $search_results : ''));
+}
+
+function location_search_get_results($edit = NULL) {
   if ($edit) {
     //$start_time = microtime();
-    $edit['location']['postal_code'] = trim($edit['location']['postal_code']);
-    if (strlen($edit['location']['postal_code']) && strlen($edit['location']['country']) && $edit['location']['country'] != 'xx') {
+    $edit['postal_code'] = trim($edit['postal_code']);
+    if (strlen($edit['postal_code']) && strlen($edit['country']) && $edit['country'] != 'xx') {
       // DEBUG: commented code for testing/debugging purposes
       //$search_results .= 'serialize($edit[\'location\']) == '. serialize($edit['location']) ."<br/>\n";
-      $edit['location'] = location_form2api($edit['location']);
+      $location = location_form2api($edit);
 
       // Find all postal codes within search radius, sorted in ascending order by distance from search point  
-      $postal_codes = location_nearby_postalcodes_bylocation($edit['location'], $edit['location']['distance'], $edit['location']['distance_unit']);
+      $postal_codes = location_nearby_postalcodes_bylocation($location, $edit['distance'], $edit['distance_unit']);
 
       // Want to get just the postal_codes and implode them into a portion of the final query      
       // Want to be able to key each postal_codes distance from the search point.  Keying done by country/postal_code combination.
@@ -131,13 +163,12 @@ function location_search_form_page() {
         if ($count->result_count) {
           $page_count = db_num_rows($res);
           $results_offset = isset($_GET['from']) ? $_GET['from'] : 0;
-          $postal_data = location_get_postalcode_data($edit['location']);
-          $search_results_message = t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $count->result_count, '%c' => '<em>'. $edit['location']['postal_code'] .'</em> ('. $postal_data['city'] . ', '. $postal_data['province'] .')'));
+          $postal_data = location_get_postalcode_data($location);
+          $search_results_message = t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $count->result_count, '%c' => '<em>'. filter_xss($edit['postal_code']) .'</em> ('. $postal_data['city'] . ', '. $postal_data['province'] .')'));
         }
         else {
           if (isset($_POST['edit']) && !isset($_GET['from'])) {
             $search_results .= theme('box', t('Your search yielded no results.'), '');
-            print theme('page', $form . $search_results);
             return;
           }
         }
@@ -156,21 +187,21 @@ function location_search_form_page() {
                                   'distance' => $postal_codes[$city_index_key]['distance'],
                                  );
                                
-          $extra = t('Local to ') . $result_location['postal_code'] .', ' . $result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']] .' - '. $result_location['distance'] . ' ' . $edit['location']['distance_unit'] .' away.';
+          $extra = t('Local to ') . $result_location['postal_code'] .', ' . $result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']] .' - '. $result_location['distance'] . ' ' . $edit['distance_unit'] .' away.';
           
           $extra = array();
-          $extra['location'] = t('Local to %place', array('%place' => l($result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']], 'search/location', array(), 'postal_code='. urlencode($result_location['postal_code']) . '&country='. urlencode($result_location['country']) .'&distance='. urlencode($edit['location']['distance']) .'&distance_unit='. urlencode($edit['location']['distance_unit']))));
-          if ($result_location['postal_code'] == $edit['location']['postal_code'] && $result_location['country'] == $edit['location']['country']) {
+          $extra['location'] = t('Local to %place', array('%place' => l($result_location['city'] . ', '. $result_location['province'] .', '. $country_index[$result_location['country']], 'search/location', array(), 'postal_code='. urlencode($result_location['postal_code']) . '&country='. urlencode($result_location['country']) .'&distance='. urlencode($edit['distance']) .'&distance_unit='. urlencode($edit['distance_unit']))));
+          if ($result_location['postal_code'] == $edit['postal_code'] && $result_location['country'] == $edit['country']) {
             $extra['distance'] = t('Result is <strong>also from %postal_code</strong>', array('%postal_code' => $result_location['postal_code']));
           }
           else {
             if (round($result_location['distance']) != 1) {
-              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t('km') : t('miles');
+              $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('miles');
             }
             else {
-              $distance_unit = ($edit['location']['distance_unit'] == 'km') ? t('km') : t('mile');
+              $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('mile');
             }
-            $extra['distance'] = t('Approximately %distance from %location', array('%distance' => '<strong>'. round($result_location['distance']) .' '. $distance_unit .'</strong>', '%location' => $edit['location']['postal_code']));
+            $extra['distance'] = t('Approximately %distance from %location', array('%distance' => '<strong>'. round($result_location['distance']) .' '. $distance_unit .'</strong>', '%location' => $edit['postal_code']));
           }
           
           
@@ -190,7 +221,7 @@ function location_search_form_page() {
         }
         else {
           $search_results = '<dl class="search-results">'. theme('box', $search_results_message, $search_results) .'</dl>';
-          $search_results .= theme('pager', NULL, 15, 0, $edit['location']);
+          $search_results .= theme('pager', NULL, 15, 0, $edit);
         }
         
       }
@@ -199,19 +230,11 @@ function location_search_form_page() {
       }
     
     }
-    else {
-      if (!strlen($edit['location']['postal_code'])) {
-        form_set_error('location][postal_code', t('For this search, you must enter a postal code.'));
-      }
-      if (!strlen($edit['location']['country']) || $edit['location']['country'] == 'xx') {
-        form_set_error('location][country', t('For this search, you must select a country from the list.  If your country is not listed, then it is not supportable for this search.'));
-      }
-    }
   }
-  //$end_time = microtime();
-  //print 'Time for this NODE search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
-  print theme('page', $form . $search_results);
+  
+  return $search_results;
 }
+
 
 /**
  * 
