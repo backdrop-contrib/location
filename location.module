@@ -91,27 +91,12 @@ function location_search_get_form($edit = array()) {
   return drupal_get_form('location_search', $form);  
 }
 
-function theme_location_search($form) {
+function theme_location_search(&$form) {
   $row = array();
-  $form_exp = var_export($form, TRUE);
-  //drupal_set_message("\$form == <pre>$form_exp</pre>");
-  $string = '';
-  foreach ($form['location'] as $key => $value) {
-    $string .= "\n". $key;
-  }
-  //drupal_set_message("\$form's keys == \n<pre>$string</pre>");
   $row[] = '<div class="container-inline">'. form_render($form['location']['distance']) . form_render($form['location']['distance_unit']) . '</div>';
-  
   $row[] = form_render($form['location']['postal_code']) . form_render($form['location']['country']);
   return theme('table', NULL, array($row)) . form_render($form['op']); 
 }
-
-/*
-function location_search_submit($form_id, $form_values) {
-  $form_values_exp = var_export($form_values, TRUE);
-  print "<pre>\n$form_values_exp\n</pre>";
-}
-*/
 
 function location_search_view() {
   if ($edit = $_POST['edit']) {
@@ -270,8 +255,8 @@ function location_map_link_options_page() {
   }
   foreach (location_configured_countries() as $country_iso => $country_name) {
     $form['location_map_link_'. $country_iso] = array(
-        '#type' => 'fieldset',
-        '#title' => $country_name,
+        '#type' => 'markup',
+        '#value' => $country_name,
         '#tree' => TRUE
         );
     $provider_function = 'location_map_link_'. $country_iso .'_providers';
@@ -304,7 +289,37 @@ function location_map_link_options_page() {
       '#value' => t('Reset to defaults'),
       '#name' => 'op'
       );
+      
+  $form['#theme'] = 'location_map_link_options';
+  
   return drupal_get_form('location_map_link_options', $form);
+}
+
+function theme_location_map_link_options(&$form) {
+  $rows[] = array();
+  
+  foreach (element_children($form) as $key) {
+    if ($key != 'save' && $key != 'reset'  && $key != 'form_id') {
+      $row = array();
+      $second_cell = '';
+      foreach (element_children($form[$key]) as $checkbox_key) {
+        $second_cell .= form_render($form[$key][$checkbox_key]);
+      }
+      $row[1] = $second_cell;
+      $row[0] = form_render($form[$key]);
+      ksort($row);
+      $rows[] = $row;
+    }
+  }
+  
+  $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
+
+  $nontable_elems = '';
+  foreach (array('form_id', 'save', 'reset') as $key) {
+    $nontable_elems .= form_render($form[$key]);
+  }
+  
+  return theme('table', $header, $rows) . $nontable_elems;
 }
 
 function location_field_names() {
