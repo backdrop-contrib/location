@@ -1179,17 +1179,13 @@ function location_configured_countries() {
   $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
   $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
   $configured_countries_associative = array();
-  foreach ($configured_countries as $country_code => $enabled) {
-    if ($enabled) {
+  foreach ($configured_countries as $country_code) {
+    if (array_key_exists($country_code, $supported_countries)) {
       $configured_countries_associative[$country_code] = $supported_countries[$country_code];
     }
   }
-  // With array_flip() temporarily make array so that we have <English name> => <ISO code>
-  // We want to do this so we can do a ksort() by ISO code. Regular sort() destroys index values
-  $configured_countries_associative = array_flip($configured_countries_associative);
-  ksort($configured_countries_associative);
-  reset($configured_countries_associative);
-  return array_flip($configured_countries_associative);
+  asort($configured_countries_associative);
+  return $configured_countries_associative;
 }
 
 
