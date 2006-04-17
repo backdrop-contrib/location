@@ -406,6 +406,10 @@ function location_form_alter($form_id, &$form) {
       '#description' => t('The selection of a country can be hidden and/or forced to a default country selection by going to the %location_settings and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('%location_settings' => l(t('location settings page'), 'admin/settings/location'))),
       '#suffix' => '</div>'
     );
+    // clear the views cache in case anything was changed
+    if (function_exists('views_invalidate_cache')) {
+      views_invalidate_cache();
+    }
   }
   else if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_'. $form['type']['#value'], 0)) {
     $node = $form['#node'];
@@ -711,6 +715,10 @@ function location_configure() {
     $configured_countries = variable_get('location_configured_countries', array('us' => 1));
     $configured_countries[$default_country] = 1;
     variable_set('location_configured_countries', $configured_countries);
+    // clear the views cache to pick up any changes
+    if (function_exists('views_invalidate_cache')) {
+      views_invalidate_cache();
+    }
   }
 
   $form  = array();
@@ -920,4 +928,4 @@ function _location_floats_are_equal($x, $y) {
   return (abs(max($x, $y) - min($x, $y)) < pow(10, -6));
 }
 
-?>
+

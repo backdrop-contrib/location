@@ -1,0 +1,487 @@
+<?php
+// $Id: location_views.module
+/**
+ * @file
+ * Views-enables the location module.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function location_views_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return t('Views-enables the location fields and creates a default location view. Requires the location module and the views module.');
+    case 'admin/help#location_views':
+      return t('The Location Views module makes all the location fields available to the Views module, ' .
+        'and creates a default location view using all the location fields. Set up the default location view by going to <a href="'. base_path() . 'admin/views">'. base_path() . 'admin/views</a>. ');
+  }
+}
+
+
+/**
+ * Implementation of hook_field_info().
+ */
+function location_views_info() {
+  return array(
+    'location_views' => array('label' => 'Location Views'),
+  );
+}
+
+/**
+ *  Check that the location table has been converted to utf-8
+ */
+function location_views_init () {
+
+  if (!variable_get('location_table_utf8', 0)) {
+    $result = db_query("SELECT schema_version FROM {system} WHERE type = 'module' and name = 'location'");
+    while ($row = db_fetch_object($result)) {
+      $version = $row->schema_version;
+    }
+    if ($version < 1) {
+      if (arg(1) == 'views') {
+        drupal_set_message(t('The location_views module has been enabled but will not work until the location table has been updated to a utf-8 character set. ' .
+          'Run <a href="'. base_path() . 'update.php">'. base_path() . 'update.php</a> to update the table, then clear the cache, and you will be able to use location fields in views.'), 'error');
+      }
+      variable_set('location_table_utf8', 0);
+    } else {
+      variable_set('location_table_utf8', 1);
+    }
+  }
+}
+
+/**
+ * hunmonk's module dependency check: see http://drupal.org/node/54463
+ */
+function location_views_form_alter($form_id, &$form) {
+  if ($form_id == 'system_modules' && !$_POST) {
+    location_views_system_module_validate($form);
+  }
+}
+
+/**
+ * hunmonk's module dependency check: see http://drupal.org/node/54463
+ */
+function location_views_system_module_validate(&$form) {
+  $module = 'location_views';
+  $dependencies = array('views', 'location');
+  foreach ($dependencies as $dependency) {
+      if (!in_array($dependency, $form['status']['#default_value'])) {
+        $missing_dependency = TRUE;
+        $missing_dependency_list[] = $dependency;
+      }
+  }
+  if (in_array($module, $form['status']['#default_value']) && isset($missing_dependency)) {
+    db_query("UPDATE {system} SET status = 0 WHERE type = 'module' AND name = '%s'", $module);
+    $key = array_search($module, $form['status']['#default_value']);
+    unset($form['status']['#default_value'][$key]);
+    drupal_set_message(t('The module %module was deactivated--it requires the following disabled/non-existant modules to function properly: %dependencies', array('%module' => $module, '%dependencies' => implode(', ', $missing_dependency_list))), 'error');
+  }
+}
+
+
+/**
+ * For operation with the views.module.
+ */
+function location_views_tables() {
+  
+  if (!variable_get('location_table_utf8', 0)) return;
+
+  $countries = array();
+  $provinces = array();
+  $this = location_get_configured_countries();
+  $country_list = _location_get_iso3166_list();
+  foreach ($this as $country) {
+    $countries[$country] = $country_list[$country];
+    $list = _location_province_select_options('', FALSE, $country);
+    $provinces = $list['#options'];
+  }
+  
+  $tables['location'] = array(
+    'name' => 'location', 
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'nid'
+      ), 
+      'right' => array(
+        'field' => 'oid'
+      ), 
+    ),
+    'fields' => array(
+      'name'        => array('name' => t('Location: Name'),        'sortable' => true),
+      'street'      => array('name' => t('Location: Street'),      'sortable' => true),
+      'additional'  => array('name' => t('Location: Additional'),  'sortable' => true),
+      'city'        => array('name' => t('Location: City'),        'sortable' => true),
+      'province'    => array('name' => t('Location: Province'),    'sortable' => true),
+      'postal_code' => array('name' => t('Location: Postal Code'), 'sortable' => true),
+      'country'     => array('name' => t('Location: Country'),     'sortable' => true),
+      'latitude'    => array('name' => t('Location: Latitude'),    'sortable' => true),
+      'longitude'   => array('name' => t('Location: Longitude'),   'sortable' => true),
+    ),
+    'sorts' => array(
+      'name'        => array('name' => t('Location: Name')),
+      'street'      => array('name' => t('Location: Street')),
+      'additional'  => array('name' => t('Location: Additional')),
+      'city'        => array('name' => t('Location: City')),
+      'province'    => array('name' => t('Location: Province')),
+      'country'     => array('name' => t('Location: Country')),
+      'postal_code' => array('name' => t('Location: Postal Code')),
+    ),
+    'filters' => array(
+      'name' => array(
+        'field' => 'name',
+        'name' => t('Location: Name'),
+        'operator' => 'location_handler_operator_like',
+        'handler' => 'location_handler_filter_like',
+      ),
+      'additional' => array(
+        'field' => 'additional',
+        'name' => t('Location: Additional'),
+        'operator' => 'location_handler_operator_like',
+        'handler' => 'location_handler_filter_like',
+      ),
+      'street' => array(
+        'field' => 'street',
+        'name' => t('Location: Street'),
+        'operator' => 'location_handler_operator_like',
+        'handler' => 'location_handler_filter_like',
+      ),
+      'city' => array(
+        'field' => 'city',
+        'name' => t('Location: City'),
+        'operator' => 'location_handler_operator_like',
+        'handler' => 'location_handler_filter_like',
+      ),
+    )
+  );
+  
+  // use a select box for countries where there is more than a blank and NOT LISTED value
+  // use a text input box for all others
+  if (sizeof($provinces) > 2) {
+    $tables['location']['filters']['province'] = array(
+      'field' => 'province',
+      'name' => t('Location: Province'),
+      'operator' => 'location_handler_operator_eq',
+      'handler' => 'location_handler_filter_eq',
+      'list' => $provinces,
+      'list-type' => 'select',
+      );
+  } else {
+    $tables['location']['filters']['province'] = array(
+      'field' => 'province',
+      'name' => t('Location: Province'),
+      'operator' => 'location_handler_operator_like',
+      'handler' => 'location_handler_filter_like',
+      'list' => $provinces,
+      'list-type' => 'select',
+      );
+  }
+
+  $tables['location']['filters']['postal_code'] = array(
+    'field' => 'postal_code',
+    'name' => t('Location: Postal Code'),
+    'operator' => 'location_handler_operator_like',
+    'handler' => 'location_handler_filter_like',
+  );
+  $tables['location']['filters']['country'] = array(
+    'field' => 'country',
+    'name' => t('Location: Country'),
+    'operator' => 'location_handler_operator_eq',
+    'handler' => 'location_handler_filter_eq',
+    'list' => $countries,
+    'list-type' => 'select',
+  );
+  return $tables;
+}
+
+/**
+ *  Create default location view
+ */
+function location_views_default_views() {
+  
+  if (!variable_get('location_table_utf8', 0)) return;
+
+  // avoid miscellaneous problems by forcing the cache to clear before creating a default view
+  views_invalidate_cache();
+
+  // find all location-enabled nodes
+  foreach (module_list(TRUE, FALSE) as $module) {
+    if (variable_get('location_'. $module, 0)) {
+      $location_node_types[] = $module;
+    }
+  }
+  
+  $view = new stdClass();
+  $view->name = 'location table';
+  $view->description = 'User-selectable table of locations.';
+  $view->access = array (
+    );
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = '';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'location/views';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->menu = TRUE;
+  $view->menu_title = 'location table';
+  $view->menu_tab = FALSE;
+  $view->menu_tab_default = FALSE;
+  $view->menu_weight = '';
+  $view->sort = array (
+  );
+  $view->argument = array (
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => 'Title:',
+      'handler' => 'views_handler_field_nodelink',
+      'sortable' => '1',
+      'defaultsort' => 'ASC',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'name',
+      'label' => 'Name:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'street',
+      'label' => 'Street:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'additional',
+      'label' => 'Additional:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'city',
+      'label' => 'City:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'province',
+      'label' => 'Province:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'postal_code',
+      'label' => 'Postal Code:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'country',
+      'label' => 'Country:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'latitude',
+      'label' => 'Latitude:',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'longitude',
+      'label' => 'Longitude:',
+      'sortable' => '1',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'status',
+      'operator' => '=',
+      'options' => '',
+      'value' => '1',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => $location_node_types,
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'name',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'additional',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'street',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'city',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'province',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'postal_code',
+      'operator' => '',
+      'options' => '',
+      'value' => '',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'country',
+      'operator' => '=',
+      'options' => '',
+      'value' => 'us',
+    ),
+    
+  );
+
+  $view->exposed_filter = array (
+    array (
+      'tablename' => 'location',
+      'field' => 'name',
+      'label' => t('Name:'),
+      'optional' => 1,
+      'is_default' => 0,
+      'single' => 1,
+      'position' => 0,
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'city',
+      'label' => t('City:'),
+      'optional' => 1,
+      'is_default' => 0,
+      'single' => 1,
+      'position' => 0,
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'province',
+      'label' => t('Province:'),
+      'optional' => 1,
+      'is_default' => 0,
+      'single' => 1,
+      'position' => 0,
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'country',
+      'label' => t('Country:'),
+      'optional' => 0,
+      'is_default' => 0,
+      'single' => 1,
+      'position' => 0,
+    ),
+  );
+
+
+  $view->requires = array(term_data, node, location, term_node);
+  $views[$view->name] = $view;
+  return $views;
+}
+
+/**
+ * A list options to be used in = queries
+ */
+function location_handler_operator_eq() {
+  return array('' => t('<All>'), '=' => t('='), 'NOT =' => t('not ='));
+}
+
+/*
+ * Custom filter for = queries
+ */
+function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
+  switch($filter[value]) {
+    case(''):
+      return;
+      break;
+  }
+  switch($filter['operator']) {
+    case (''):
+      return;
+      break;
+  }
+  switch($filterinfo['field']) {
+    case ('province'):
+      $filter['value'] = location_form2api(array('province' => $filter['value']));
+      $filter['value'] = $filter['value']['province'];
+      break;
+  }
+  $query->ensure_table('location');
+  $query->add_where("$filterinfo[table].$filterinfo[field] $filter[operator] '$filter[value]'");
+}
+
+/**
+ * A list of options to be used in LIKE queries
+ */
+function location_handler_operator_like() {
+  return array('' => t('<All>'), 'contains' => t('Contains'), 'starts' => t('Starts With'), 'ends' => t('Ends With'), 'not' => t('Does Not Contain'));
+}
+
+/**
+ * Custom filter for LIKE queries
+ */
+function location_handler_filter_like($op, $filter, $filterinfo, &$query) {
+  switch (trim($filter['value'])) {
+  case (''):
+    return;
+    break;
+  }
+  switch ($op) {
+  case 'handler':
+      $fieldbits = explode('.', $filter['field']);
+      $query->ensure_table($fieldbits[0]);
+      switch ($filter['operator']) {
+      case 'contains':
+          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%%%s%%')", $filter[value]);
+          break;
+        case 'starts':
+          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%s%%')", $filter[value]);
+          break;
+        case 'ends':
+          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%%%s')", $filter[value]);
+          break;
+        case 'not':
+          $query->add_where("UPPER(".$filter[field].") NOT LIKE UPPER('%%%s%%')", $filter[value]);
+          break;
+        case 'all':
+          break;
+      }
+      break;
+  }
+}
