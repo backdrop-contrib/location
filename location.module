@@ -750,6 +750,7 @@ function location_configure() {
       '#options' => array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations.')),
       '#description' => t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take over them.')
       );
+      
   if (!module_exist('civicrm')) {
     $form['location_user'] = array(
         '#type' => 'radios',
@@ -766,6 +767,15 @@ function location_configure() {
         '#description' => t('You have enabled the CiviCRM module.  This means that CiviCRM will collect user locations for you.  To make sure you will be able to use location module features with these user addresses, you should make sure the CiviCRM \'address\' profile is marked as active.  If you are using CivicSpace, this comes activated on a default install.  If you installed CiviCRM on a seperate Drupal installation, please consult the documentation in the README file for the location module.')
         );
   }
+  
+  $form['location_usegmap'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use a Google Map to set latitude and longitude '),
+      '#return_value' => 1,
+      '#default_value' => variable_get('location_usegmap',1),
+      '#description' => t('If the gmap.module is installed and %enabled, and this is setting is turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a %google_maps_api_key into your %gmap_module_settings.', array('%enabled' => l('enabled', 'admin/modules'), '%google_maps_api_key' => '<a href="http://www.google.com/apis/maps" target="_blank">Google Maps API key</a>', '%gmap_module_settings' => l('gmap module settings', 'admin/settings/gmap')))
+      );
+  
   $form['location_configured_countries'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Enable all <em>available</em> features for locations from the following countries'),
@@ -776,6 +786,7 @@ function location_configure() {
 
   return system_settings_form('location_configure_settings', $form);
 }
+
 
 function _location_effective_user_setting() {
   if (module_exist('civicrm')) {
