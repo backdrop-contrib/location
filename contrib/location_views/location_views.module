@@ -89,9 +89,9 @@ function location_views_tables() {
 
   $countries = array();
   $provinces = array();
-  $this = location_get_configured_countries();
+  $configured = location_get_configured_countries();
   $country_list = _location_get_iso3166_list();
-  foreach ($this as $country) {
+  foreach ($configured as $country) {
     $countries[$country] = $country_list[$country];
     $list = _location_province_select_options('', FALSE, $country);
     $provinces = $list['#options'];
