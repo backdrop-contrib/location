@@ -158,7 +158,7 @@ function location_views_tables() {
   
   // use a select box for countries where there is more than a blank and NOT LISTED value
   // use a text input box for all others
-  if (sizeof($provinces) > 2) {
+  if (sizeof($provinces) > 2 && sizeof($countries) == 1) {
     $tables['location']['filters']['province'] = array(
       'field' => 'province',
       'name' => t('Location: Province'),
@@ -173,8 +173,6 @@ function location_views_tables() {
       'name' => t('Location: Province'),
       'operator' => 'location_handler_operator_like',
       'handler' => 'location_handler_filter_like',
-      'list' => $provinces,
-      'list-type' => 'select',
       );
   }
 
@@ -207,6 +205,15 @@ function location_views_default_views() {
 
   // find all location-enabled nodes
   foreach (module_list(TRUE, FALSE) as $module) {
+    if (variable_get('location_'. $module, 0)) {
+      $location_node_types[] = $module;
+    }
+  }
+  // cck content types all identify themselves as module 'content'
+  // need to find type name, then check to see if that type has been location-enabled
+  $cck_types = db_query('SELECT type_name FROM {node_type} nt ORDER BY nt.type_name ASC');
+  while ($type = db_fetch_object($cck_types)) {
+    $module = $type->type_name;
     if (variable_get('location_'. $module, 0)) {
       $location_node_types[] = $module;
     }
