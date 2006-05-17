@@ -91,11 +91,13 @@ function location_views_tables() {
   $provinces = array();
   $configured = location_get_configured_countries();
   $country_list = _location_get_iso3166_list();
+  
   foreach ($configured as $country) {
     $countries[$country] = $country_list[$country];
-    $list = _location_province_select_options('', FALSE, $country);
-    $provinces = $list['#options'];
   }
+
+  $form = _location_province_select_options();
+  $provinces = $form['#options'];
   
   $tables['location'] = array(
     'name' => 'location', 
@@ -157,8 +159,8 @@ function location_views_tables() {
   );
   
   // use a select box for countries where there is more than a blank and NOT LISTED value
-  // use a text input box for all others
-  if (sizeof($provinces) > 2 && sizeof($countries) == 1) {
+  // use a text input box for all others and where some selected countries have no select option
+  if (sizeof($provinces) > 2 && sizeof($missing) == 0) {
     $tables['location']['filters']['province'] = array(
       'field' => 'province',
       'name' => t('Location: Province'),
