@@ -222,7 +222,7 @@ function location_views_default_views() {
   }
   
   $view = new stdClass();
-  $view->name = 'location table';
+  $view->name = 'location_table';
   $view->description = 'User-selectable table of locations.';
   $view->access = array (
     );
@@ -428,7 +428,7 @@ function location_views_default_views() {
  * A list options to be used in = queries
  */
 function location_handler_operator_eq() {
-  return array('' => t('<All>'), '=' => t('='), 'NOT =' => t('not ='));
+  return array('' => t('<All>'), '=' => t('='), '!=' => t('not ='));
 }
 
 /*
