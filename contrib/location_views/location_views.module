@@ -3,6 +3,14 @@
 /**
  * @file
  * Views-enables the location module.
+ *
+ * This version is for Drupal 4.7 or cvs
+ * The module includes a test of whether location tables have been updated to utf-8 and that test will fail in 4.6
+ * The test is necessary because views joins together the location table with the utf8 node table and some
+ * queries that use 'LIKE' comparisons will spit out lots of nasty error messages if the location table is not utf8
+ *
+ * To use this module in 4.6 comment out the lines that are performing that test as follows
+ *   look for 2 lines that say 'if (!variable_get('location_table_utf8', 0)) return;' and comment those lines out
  */
 
 /**
@@ -134,26 +142,26 @@ function location_views_tables() {
       'name' => array(
         'field' => 'name',
         'name' => t('Location: Name'),
-        'operator' => 'location_handler_operator_like',
-        'handler' => 'location_handler_filter_like',
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
       ),
       'additional' => array(
         'field' => 'additional',
         'name' => t('Location: Additional'),
-        'operator' => 'location_handler_operator_like',
-        'handler' => 'location_handler_filter_like',
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
       ),
       'street' => array(
         'field' => 'street',
         'name' => t('Location: Street'),
-        'operator' => 'location_handler_operator_like',
-        'handler' => 'location_handler_filter_like',
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
       ),
       'city' => array(
         'field' => 'city',
         'name' => t('Location: City'),
-        'operator' => 'location_handler_operator_like',
-        'handler' => 'location_handler_filter_like',
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
       ),
     )
   );
@@ -173,16 +181,16 @@ function location_views_tables() {
     $tables['location']['filters']['province'] = array(
       'field' => 'province',
       'name' => t('Location: Province'),
-      'operator' => 'location_handler_operator_like',
-      'handler' => 'location_handler_filter_like',
+      'operator' => 'views_handler_operator_like',
+      'handler' => 'views_handler_filter_like',
       );
   }
 
   $tables['location']['filters']['postal_code'] = array(
     'field' => 'postal_code',
     'name' => t('Location: Postal Code'),
-    'operator' => 'location_handler_operator_like',
-    'handler' => 'location_handler_filter_like',
+    'operator' => 'views_handler_operator_like',
+    'handler' => 'views_handler_filter_like',
   );
   $tables['location']['filters']['country'] = array(
     'field' => 'country',
@@ -206,21 +214,12 @@ function location_views_default_views() {
   views_invalidate_cache();
 
   // find all location-enabled nodes
-  foreach (module_list(TRUE, FALSE) as $module) {
-    if (variable_get('location_'. $module, 0)) {
-      $location_node_types[] = $module;
+  foreach (node_get_types() as $type => $name) {
+    if (variable_get('location_'. $type, 0)) {
+      $location_node_types[] = $type;
     }
   }
-  // cck content types all identify themselves as module 'content'
-  // need to find type name, then check to see if that type has been location-enabled
-  $cck_types = db_query('SELECT type_name FROM {node_type} nt ORDER BY nt.type_name ASC');
-  while ($type = db_fetch_object($cck_types)) {
-    $module = $type->type_name;
-    if (variable_get('location_'. $module, 0)) {
-      $location_node_types[] = $module;
-    }
-  }
-  
+    
   $view = new stdClass();
   $view->name = 'location_table';
   $view->description = 'User-selectable table of locations.';
@@ -455,42 +454,3 @@ function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
   $query->add_where("$filterinfo[table].$filterinfo[field] $filter[operator] '$filter[value]'");
 }
 
-/**
- * A list of options to be used in LIKE queries
- */
-function location_handler_operator_like() {
-  return array('' => t('<All>'), 'contains' => t('Contains'), 'starts' => t('Starts With'), 'ends' => t('Ends With'), 'not' => t('Does Not Contain'));
-}
-
-/**
- * Custom filter for LIKE queries
- */
-function location_handler_filter_like($op, $filter, $filterinfo, &$query) {
-  switch (trim($filter['value'])) {
-  case (''):
-    return;
-    break;
-  }
-  switch ($op) {
-  case 'handler':
-      $fieldbits = explode('.', $filter['field']);
-      $query->ensure_table($fieldbits[0]);
-      switch ($filter['operator']) {
-      case 'contains':
-          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%%%s%%')", $filter[value]);
-          break;
-        case 'starts':
-          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%s%%')", $filter[value]);
-          break;
-        case 'ends':
-          $query->add_where("UPPER(".$filter[field].") LIKE UPPER('%%%s')", $filter[value]);
-          break;
-        case 'not':
-          $query->add_where("UPPER(".$filter[field].") NOT LIKE UPPER('%%%s%%')", $filter[value]);
-          break;
-        case 'all':
-          break;
-      }
-      break;
-  }
-}
