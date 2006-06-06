@@ -112,7 +112,7 @@ function location_views_tables() {
     'join' => array(
       'left' => array(
         'table' => 'node',
-        'field' => 'nid'
+        'field' => 'vid'
       ), 
       'right' => array(
         'field' => 'oid'
@@ -223,6 +223,7 @@ function location_views_default_views() {
   $view = new stdClass();
   $view->name = 'location_table';
   $view->description = 'User-selectable table of locations.';
+  $view->disabled = TRUE;
   $view->access = array (
     );
   $view->view_args_php = '';
@@ -298,18 +299,6 @@ function location_views_default_views() {
       'label' => 'Country:',
       'sortable' => '1',
     ),
-    array (
-      'tablename' => 'location',
-      'field' => 'latitude',
-      'label' => 'Latitude:',
-      'sortable' => '1',
-    ),
-    array (
-      'tablename' => 'location',
-      'field' => 'longitude',
-      'label' => 'Longitude:',
-      'sortable' => '1',
-    ),
   );
   $view->filter = array (
     array (
@@ -381,15 +370,6 @@ function location_views_default_views() {
   $view->exposed_filter = array (
     array (
       'tablename' => 'location',
-      'field' => 'name',
-      'label' => t('Name:'),
-      'optional' => 1,
-      'is_default' => 0,
-      'single' => 1,
-      'position' => 0,
-    ),
-    array (
-      'tablename' => 'location',
       'field' => 'city',
       'label' => t('City:'),
       'optional' => 1,
@@ -416,12 +396,245 @@ function location_views_default_views() {
       'position' => 0,
     ),
   );
-
-
-  $view->requires = array(term_data, node, location, term_node);
+  $view->requires = array(node, location);
   $views[$view->name] = $view;
+
+
+  $view = new stdClass();
+  $view->name = 'location_directory';
+  $view->description = 'Location directory filtered by arguments in the url.';
+  $view->disabled = TRUE;
+  $view->access = array ();
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = '';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'location/directory';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->menu = TRUE;
+  $view->menu_title = 'Locations';
+  $view->menu_tab = FALSE;
+  $view->menu_tab_default = FALSE;
+  $view->menu_weight = '';
+  $view->sort = array (
+  );
+  $view->argument = array (
+    array (
+      'type' => 'country',
+      'argdefault' => '6',
+      'title' => t('Country'),
+      'options' => '',
+    ),
+    array (
+      'type' => 'province',
+      'argdefault' => '6',
+      'title' => t('State'),
+      'options' => '',
+    ),
+    array (
+      'type' => 'city',
+      'argdefault' => '6',
+      'title' => t('City'),
+      'options' => '1',
+    ),
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => t('Title:'),
+      'handler' => 'views_handler_field_nodelink',
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'name',
+      'label' => t('Name:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'street',
+      'label' => t('Street:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'additional',
+      'label' => t('Additional:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'city',
+      'label' => t('City:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'province',
+      'label' => t('Province:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'postal_code',
+      'label' => t('Postal Code:'),
+      'sortable' => '1',
+    ),
+    array (
+      'tablename' => 'location',
+      'field' => 'country',
+      'label' => 'Country:',
+      'sortable' => '1',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'status',
+      'operator' => '=',
+      'options' => '',
+      'value' => '1',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => $location_node_types,
+    ),
+  );
+  $view->exposed_filter = array ();
+  $view->requires = array(node, location);
+  $views[$view->name] = $view;
+
   return $views;
 }
+
+function location_views_arguments() {
+  $arguments = array(
+    'city' => array(
+      'name' => t('Location: City'),
+      'handler' => 'location_views_handler_arg_city',
+      'option' => 'string',
+      'help' => t('The node type argument allows users to filter a view by specifying the city. Set the option to the number of characters to use in summaries, using 0 for full name; use 1 for an A/B/C style directory of cities.'),
+    ),
+    'province' => array(
+      'name' => t('Location: Province'),
+      'handler' => 'location_views_handler_arg_province',
+      'help' => t('The node type argument allows users to filter a view by specifying the province.'),
+    ),
+    'country' => array(
+      'name' => t('Location: Country'),
+      'handler' => 'location_views_handler_arg_country',
+      'help' => t('The node type argument allows users to filter a view by specifying the country.'),
+    ));
+    return $arguments;
+}
+
+function location_views_handler_arg_city($op, &$query, $argtype, $arg = '') {
+  switch($op) {
+  case 'summary':
+      
+      // if a length option has been provided, display only the $len left letters of the name
+      $len = intval($arg);
+      $query->add_table('location', true);
+      $query->add_field('city', 'location');
+
+      $fieldinfo['field'] = ($len <= 0 ? "location.city" : $fieldinfo['field'] = "LEFT(location.city, $len)");
+      $fieldinfo['fieldname'] = 'city';
+      return $fieldinfo;
+      break;
+    case 'sort':
+      $query->add_orderby('node', 'title', $argtype);
+      break;
+    case 'filter':
+      $query->ensure_table('location');
+      $query->add_field('city', 'location');
+
+      // adjust the search based on whether you are looking for the full city name or the first $len letters
+      $len = intval($argtype['options']);
+      if ($len <= 0) {
+        $query->add_where("location.city = '%s'", $arg);
+      } else {
+        $query->add_where("LEFT(location.city, $len) = '%s'", $arg);
+      }
+      break;
+    case 'link':
+      // if using first letter directory, use strtoupper on the link
+      if ($len) {
+        return l(strtoupper($query->city), "$arg/$query->city");
+      } else {
+        return l($query->city, "$arg/$query->city");
+      }
+    case 'title':
+      return $query;
+  }
+}
+
+function location_views_handler_arg_province($op, &$query, $argtype, $arg = '') {
+  switch($op) {
+    case 'summary':
+      $query->add_table('location', true);
+      $query->add_field('province', 'location');
+
+      $fieldinfo['field'] = "location.province";
+      $fieldinfo['fieldname'] = 'Province';
+      return $fieldinfo;
+      break;
+    case 'sort':
+      $query->add_orderby('node', 'title', $argtype);
+      break;
+    case 'filter':
+      $query->ensure_table('location');
+      $query->add_field('province', 'location');
+      $query->add_where("location.province = '%s'", $arg);
+      break;
+    case 'link':
+      return l(strtoupper($query->province), "$arg/$query->province");
+    case 'title':
+      return $query;
+  }
+}
+
+function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
+
+  $all_countries=_location_get_iso3166_list();
+  $country_name = $all_countries[$query->country];
+
+  switch($op) {
+    case 'summary':
+      $query->add_table('location', true);
+      $query->add_field('country', 'location');
+
+      $fieldinfo['field'] = "location.country";
+      $fieldinfo['fieldname'] = 'Country';
+      return $fieldinfo;
+      break;
+    case 'sort':
+      $query->add_orderby('node', 'title', $argtype);
+      break;
+    case 'filter':
+      $query->ensure_table('location');
+      $query->add_field('country', 'location');
+
+      $query->add_where("location.country = '%s'", $arg);
+      break;
+    case 'link':
+      return l($country_name, "$arg/$query->country");
+    case 'title':
+      return $country_name;
+  }
+}
+
 
 /**
  * A list options to be used in = queries
