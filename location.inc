@@ -1162,10 +1162,10 @@ function location_geocode_meta_tags($location = array()) {
     if (isset($location['province'])) {
       $output .= '-'. $location['province'];
     }
-    $output .= '">'."\n";
+    $output .= '" />'."\n";
   }
   if (isset($location['city'])) {
-    $output .= '<meta name="geo.placename" content="'. $location['city'] .'">'."\n";
+    $output .= '<meta name="geo.placename" content="'. $location['city'] .'" />'."\n";
   }
   return $output;
 }
