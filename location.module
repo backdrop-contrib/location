@@ -824,7 +824,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     }
   }
 
-  if ($op == 'update' || $op == 'insert') {
+  if (($op == 'update' || $op == 'insert') && $category == 'account') {
     if ($user_setting == LOCATION_USER_CIVICRM_ONLY) {
       // There was no location form. We need to map CiviCRM fields to location fields.
       $edit['location'] = array();
