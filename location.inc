@@ -1259,7 +1259,6 @@ function _location_supported_countries() {
  *   will be "edit[location][country]".
  */
 function _location_country_select_options($value = '', $required = FALSE, $function = NULL) {
-  $value = strlen($value) ? $value : 'us';
   if ($function) {
     $function = ($function == 'nearby_postalcodes_bylocation' || $function == 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
     $countrycodes = array();
