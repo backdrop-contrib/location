@@ -608,7 +608,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '') 
 function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
 
   $all_countries=_location_get_iso3166_list();
-  $country_name = $all_countries[$query->country];
+  $country_name = $query->country ? $all_countries[$query->country] : $all_countries[$query];
 
   switch($op) {
     case 'summary':
