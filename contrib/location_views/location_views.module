@@ -1,5 +1,5 @@
 <?php
-// $Id: location_views.module
+// $Id$
 /**
  * @file
  * Views-enables the location module.
@@ -9,8 +9,6 @@
  * The test is necessary because views joins together the location table with the utf8 node table and some
  * queries that use 'LIKE' comparisons will spit out lots of nasty error messages if the location table is not utf8
  *
- * To use this module in 4.6 comment out the lines that are performing that test as follows
- *   look for 2 lines that say 'if (!variable_get('location_table_utf8', 0)) return;' and comment those lines out
  */
 
 /**
@@ -95,15 +93,6 @@ function location_views_tables() {
   
   if (!variable_get('location_table_utf8', 0)) return;
 
-  $countries = array();
-  $provinces = array();
-  $configured = location_get_configured_countries();
-  $country_list = _location_get_iso3166_list();
-  
-  foreach ($configured as $country) {
-    $countries[$country] = $country_list[$country];
-  }
-
   $form = _location_province_select_options();
   $provinces = $form['#options'];
   
@@ -165,7 +154,7 @@ function location_views_tables() {
       ),
     )
   );
-  
+
   // use a select box for countries where there is more than a blank and NOT LISTED value
   // use a text input box for all others and where some selected countries have no select option
   if (sizeof($provinces) > 2 && sizeof($missing) == 0) {
@@ -197,9 +186,40 @@ function location_views_tables() {
     'name' => t('Location: Country'),
     'operator' => 'location_handler_operator_eq',
     'handler' => 'location_handler_filter_eq',
-    'list' => $countries,
+    'list' => location_views_countries(),
     'list-type' => 'select',
   );
+
+  $tables['location']['filters']['proximity'] = array(
+    'field' => 'distance',
+    'name' => t('Location: Proximity'),
+    'operator' => location_views_proximity_operators(),
+    'handler' => 'location_views_filter_handler_proximity',
+    'value' => location_views_proximity_form(),
+    'help' => t('Select the central point and the distance units to be used for the proximity filter.'),
+    'cacheable' => 'no',
+  );
+  
+  // add a complete address in a single box as a field option
+  $tables['location']['fields']['address'] = array(
+    'name'      => t('Location: Address'),
+    'handler'   => 'location_views_field_handler_address',
+    'notafield' => true,
+    'sortable'  => false,
+    'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
+    'help' => t('Complete formatted address in a single cell, using the location theme.'),
+    );
+  
+  // add field showing distance from selected zip code
+  $tables['location']['fields']['distance'] = array(
+    'name'      => t('Location: Distance'),
+    'handler'   => 'location_views_field_handler_distance',
+    'notafield' => true,
+    'sortable'  => false,
+    'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+    'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
+    );
+  
   return $tables;
 }
 
@@ -546,9 +566,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '') {
       
       // if a length option has been provided, display only the $len left letters of the name
       $len = intval($arg);
-      $query->add_table('location', true);
-      $query->add_field('city', 'location');
-
+      $query->ensure_table('location', true);
       $fieldinfo['field'] = ($len <= 0 ? "location.city" : $fieldinfo['field'] = "LEFT(location.city, $len)");
       $fieldinfo['fieldname'] = 'city';
       return $fieldinfo;
@@ -583,11 +601,9 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '') {
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '') {
   switch($op) {
     case 'summary':
-      $query->add_table('location', true);
-      $query->add_field('province', 'location');
-
+      $query->ensure_table('location', true);
       $fieldinfo['field'] = "location.province";
-      $fieldinfo['fieldname'] = 'Province';
+      $fieldinfo['fieldname'] = 'province';
       return $fieldinfo;
       break;
     case 'sort':
@@ -612,11 +628,9 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
 
   switch($op) {
     case 'summary':
-      $query->add_table('location', true);
-      $query->add_field('country', 'location');
-
+      $query->ensure_table('location', true);
       $fieldinfo['field'] = "location.country";
-      $fieldinfo['fieldname'] = 'Country';
+      $fieldinfo['fieldname'] = 'country';
       return $fieldinfo;
       break;
     case 'sort':
@@ -634,7 +648,6 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
       return $country_name;
   }
 }
-
 
 /**
  * A list options to be used in = queries
@@ -667,3 +680,85 @@ function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
   $query->add_where("$filterinfo[table].$filterinfo[field] $filter[operator] '$filter[value]'");
 }
 
+/*
+ * Format complete address as a single field.
+ */
+function location_views_field_handler_address($fieldinfo, $fielddata, $value, $data) {
+  
+  $location['name'] = $data->location_name;
+  $location['street'] = $data->location_street;
+  $location['city'] = $data->location_city;
+  $location['province'] = $data->location_province;
+  $location['country'] = $data->location_country;
+  $location['postal_code'] = $data->location_postal_code;
+  return theme('location', $location);
+}
+
+function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $data) {
+  return number_format(round($data->distance, 2), 2) .' '. $distance_unit;
+}
+
+
+/**
+ *  Proximity handling functions
+ * 
+ *  at the moment, everything is set up to assume the unit is miles
+ *  need to find a way to provide an alternative for km
+ *  not sure yet how to add another selector into the mix so user can select units
+ */
+function location_views_proximity_form() {
+ return array(
+    '#title' => t('from Postal Code'),
+    '#type' => 'textfield',
+    '#size' => 15,
+    );
+}
+
+function location_views_proximity_operators() {
+  $values = array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250);
+  foreach ($values as $val) {
+    $options[$val] = t('%distance miles', array('%distance' => $val));
+  }
+  return $options;
+}
+
+/**
+ *  Proximity filter
+ *  Uses functions and queries created in location.inc and earth.inc and re-factors them to work in views
+ */
+function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$query) {
+  
+  $unit     = 'miles';
+  $distance = $filter['operator'];
+  $zip      = $filter['value'];
+  $result   = db_query("SELECT * FROM {zipcodes} WHERE zip='$zip'");
+  while ($arr = db_fetch_array($result)) {
+    $lat = $arr['latitude'];
+    $lon = $arr['longitude'];
+  }
+  if (!$lat || !$lon) return;
+
+  $divisor = $unit == 'km' ? 1000 : 1609.347;
+  $latrange = earth_latitude_range($lon, $lat, ($distance * $divisor));
+  $lonrange = earth_longitude_range($lon, $lat, ($distance * $divisor));  
+
+  $query->ensure_table('location');
+  $query->add_field("((". earth_distance_sql($lon, $lat) .") / $divisor) as distance", NULL);
+  $query->add_orderby(NULL, 'distance', 'ASC');
+  $query->add_where("longitude IS NOT NULL");
+  $query->add_where("latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f", $latrange[0], $latrange[1], $lonrange[0], $lonrange[1]);
+}
+
+function location_views_countries() {
+  
+  $countries = array();
+  $provinces = array();
+  $configured = location_get_configured_countries();
+  $country_list = _location_get_iso3166_list();
+  
+  foreach ($configured as $country) {
+    $countries[$country] = $country_list[$country];
+  }
+  return $countries;
+
+}
