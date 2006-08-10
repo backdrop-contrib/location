@@ -219,6 +219,108 @@ function location_map_link_us_default_providers() {
   return array('google');
 }
 
+function location_geocode_us_providers() {
+  return array('yahoo' => array('name' =>'Yahoo! Maps Web Services', 'url' => 'http://developer.yahoo.com/maps/rest/V1/geocode.html', 'tos' => 'http://developer.yahoo.com/maps/mapsTerms.html'));
+}
+
+function location_geocode_us_yahoo_settings(){
+  $form = array();
+
+  $form['location_geocode_us_yahoo_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Yahoo! Web Services Application ID'),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#default_value' => variable_get('location_geocode_us_yahoo_appid', 'YahooDemo'),
+    '#description' => t('Unless you are using this site to test and develop, you will need to obtain a Yahoo! Web Services Application ID from the %network_link.  If you are using for development and testing purposes, you can use \'YahooDemo\' as your AppID.  When getting an Application ID from Yahoo!, please also be sure to review the %usage_policy.', array('%network_link' => '<a href="http://api.search.yahoo.com/webservices/register_application">Yahoo! Developer Network</a>', '%usage_policy' => '<a href="http://developer.yahoo.com/usagePolicy/index.html">usage policy</a>'))
+  );
+  
+  $form['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+    '#name' => 'op'
+  );
+  
+  $form['reset'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reset to defaults'),
+    '#name' => 'op'
+  );
+
+  return drupal_get_form('geocode_us_yahoo_settings', $form);
+}
+
+function location_geocode_us_yahoo($location = array()) {
+  $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=". variable_get('location_geocode_us_yahoo_appid', "YahooDemo") ."&location=";
+  
+  $address = '';
+  if (!empty($location['street'])) {
+    $address .= $location['street'];
+  }
+  
+  if (!empty($location['city'])) {
+    if (!empty($location['street'])) {
+      $address .= ', ';
+    }
+    
+    $address .= $location['city'];
+  }
+  
+  if (!empty($location['province'])) {
+    if (!empty($location['street']) || !empty($location['city'])) {
+      $address .= ', ';
+    }
+    
+    $address .= $location['province'];
+  }
+  
+  if (!empty($location['postal_code'])) {
+    if (!empty($address)) {
+      $address .= ' ';
+    }
+      $address .= $location['postal_code'];
+  }
+  
+  $http_reply = drupal_http_request($service_url . urlencode($address));
+  
+  // address may have been improperly formatted or invalid
+  if ($http_reply == 400) {
+    return NULL;
+  }
+  else {
+    // got a successful reply, but we only want to return if we have address-level precision
+    $matches = array();
+    preg_match('/precision="([a-z]*)"/', $http_reply->data, $matches);
+    $matches_exp = var_export($matches, TRUE);
+    if ($matches[1] != 'address') {
+      // The precision we got back was not down to the street-address level
+      return NULL;
+    }
+    else {
+      $lat_match = array();
+      $lon_match = array();
+      $latlon = array();
+      
+      if (preg_match('/<Latitude>(.*)<\/Latitude>/', $http_reply->data, $lat_match)) {
+        $latlon['lat'] = $lat_match[1];
+      }
+      else {
+        return NULL;
+      }
+      
+      
+      if (preg_match('/<Longitude>(.*)<\/Longitude>/', $http_reply->data, $lon_match)) {
+        $latlon['lon'] = $lon_match[1];
+
+        return $latlon;
+      }
+      else {
+        return NULL;
+      }
+    }
+  }
+}
+
 /**
  * Parameters:
  *   -> $locationA is an associative array that represents a full location where

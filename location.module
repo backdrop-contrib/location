@@ -25,7 +25,8 @@ function location_menu($may_cache = FALSE) {
     $items[] = array('path' => 'search/location', 'title' => t('by location'), 'callback' => 'location_search_view', 'access' => user_access('search content'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
     $items[] = array('path' => 'admin/settings/location', 'title' => t('location'), 'callback' => 'location_configure');
     $items[] = array('path' => 'admin/settings/location/main', 'title' => t('main settings'), 'type' => MENU_DEFAULT_LOCAL_TASK);
-    $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK);
+    $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK, 'weight' => 1);
+    $items[] = array('path' => 'admin/settings/location/geocoding', 'title' => t('geocoding options'), 'callback' => 'location_geocoding_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK, 'weight' => 2);
   }
   else {
     theme_add_style(drupal_get_path('module', 'location') .'/location.css');
@@ -326,6 +327,162 @@ function location_field_names() {
   return array('name' => t('Location name'), 'street' => t('Street location'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 }
 
+function location_geocoding_parameters_page($country_iso, $service) {
+  $geocode_settings_function = 'location_geocode_'. $country_iso .'_'. $service .'_settings';
+  if (function_exists('location_geocode_'. $country_iso .'_'. $service .'_settings')) {
+    $provider_function = 'location_geocode_'. $country_iso .'_providers';
+    if (function_exists($provider_function)) {
+      $providers = $provider_function();
+      drupal_set_title(t('Configure parameters for %service', array('%service' => $providers[$service]['name'])));
+      $breadcrumbs = drupal_get_breadcrumb();
+      $breadcrumbs[] = l('location', 'admin/settings/locaiton');
+      $breadcrumbs[] = l('geocoding', 'admin/settings/location/geocoding');
+      $countries = location_get_iso3166_list();
+      $breadcrumbs[] = l($countries[$country_iso], 'admin/settings/location/geocoding', array(), NULL, $country_iso);
+      drupal_set_breadcrumb($breadcrumbs);
+    }
+    return $geocode_settings_function();
+  }
+  else {
+    
+  }
+}
+
+function location_geocoding_options_page() {
+  $iso = arg(4);
+  $service = arg(5);
+  if (!empty($iso) || !empty($service)) {
+    return location_geocoding_parameters_page($iso, $service);
+  }
+
+  global $conf;
+  $form = array();
+
+  if ($edit = $_POST['edit']) {
+    if ($_POST['op'] == t('Save configuration')) {
+      foreach (location_configured_countries() as $country_iso => $country_name) {
+        $providers = array();
+        if (isset($edit['location_geocode_'. $country_iso])) {
+          variable_set('location_geocode_'. $country_iso, $edit['location_geocode_'. $country_iso]);
+        }
+      }
+      drupal_set_message(t('The configuration options have been saved.'));
+    }
+    elseif ($_POST['op'] == t('Reset to defaults')) {
+      db_query("DELETE FROM {variable} WHERE name LIKE 'location_geocode_%'");
+      cache_clear_all('variables');
+      foreach (location_configured_countries() as $country_iso => $country_name) {
+        unset($conf['location_geocode_'. $country_iso]);
+      }
+      drupal_set_message(t('The configuration options have been reset to their default values.'));
+    }
+  }
+  foreach (location_configured_countries() as $country_iso => $country_name) {
+    $form['location_geocode_'. $country_iso] = array(
+        '#type' => 'markup',
+        '#value' => '<div id="'.$country_iso .'">'. $country_name .'</div>',
+        '#tree' => TRUE
+        );
+    $provider_function = 'location_geocode_'. $country_iso .'_providers';
+
+
+    if (function_exists($provider_function)) {
+      
+      $form['location_geocode_'. $country_iso]['none'] = array(
+        '#type' => 'radio',
+        '#title' => t('None'),
+        '#name' => 'edit[location_geocode_'. $country_iso .']',
+        '#default_value' => variable_get('location_geocode_'. $country_iso, 'none'),
+        '#return_value' => 'none'
+      );
+      
+      foreach ($provider_function() as $name => $details) {
+        $form['location_geocode_'. $country_iso][$name] = array(
+            '#type' => 'radio',
+            '#title' => '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)',
+            '#default_value' => variable_get('location_geocode_'. $country_iso, 'none'),
+            '#name' => 'edit[location_geocode_'. $country_iso .']',
+            '#return_value' => $name
+            );
+      }
+      
+      
+      // ---------
+      $form['location_geocode_'. $country_iso]['configure_link'] = array(
+        '#type' => 'markup',  
+      );
+      
+      if (variable_get('location_geocode_'. $country_iso, 'none') != 'none') {
+        $form['location_geocode_'. $country_iso]['configure_link']['#value'] = l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. variable_get('location_geocode_'. $country_iso, TRUE));
+      }
+      else {
+        $form['location_geocode_'. $country_iso]['configure_link']['#value'] = t('No service selected for country.');
+      }
+      
+      // -----------
+      
+    }
+    else {
+      $form['location_geocode_'. $country_iso][$name] = array(
+          '#type' => 'markup',
+          '#value' => t('None supported.')
+          );
+      $form['location_geocode_'. $country_iso]['configure_link']['#value'] = t('No service selected for country.');
+    }
+  }
+
+  $form['save'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save configuration'),
+      '#name' => 'op'
+      );
+  $form['reset'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reset to defaults'),
+      '#name' => 'op'
+      );
+      
+  $form['#theme'] = 'location_geocoding_options';
+  
+  return drupal_get_form('location_geocoding_options', $form);
+}
+
+function theme_location_geocoding_options(&$form) {
+  $rows[] = array();
+
+  foreach (element_children($form) as $key) {
+    if ($key != 'save' && $key != 'reset'  && $key != 'form_id') {
+      $row = array();
+      $second_cell = '';
+      foreach (element_children($form[$key]) as $checkbox_key) {
+        if ($checkbox_key != 'configure_link') {
+          $second_cell .= form_render($form[$key][$checkbox_key]);
+        }
+        else {
+          $third_cell = form_render($form[$key][$checkbox_key]);
+        }
+      }
+      $row[1] = $second_cell;
+      $row[0] = form_render($form[$key]);
+      $row[2] = empty($third_cell) ? t('No service selected for country.') : $third_cell;
+      unset($third_cell);
+      ksort($row);
+      $rows[] = $row;
+      
+    }
+  }
+  
+  $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Configure') .'</center>'));
+
+  $nontable_elems = '';
+  foreach (array('form_id', 'save', 'reset') as $key) {
+    $nontable_elems .= form_render($form[$key]);
+  }
+  
+  return theme('table', $header, $rows) . $nontable_elems .'<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>';
+}
+
+
 function location_form_alter($form_id, &$form) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_settings' == $form_id) {
     $type = $form['type']['#value'];
@@ -525,6 +682,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       
     case 'insert':
     case 'update':
+      $node->location = location_form2api($node->location);
+
       if (user_access('submit latitude/longitude')) {
         $node->location['latitude'] = trim($node->location['latitude']);
         $node->location['longitude'] = trim($node->location['longitude']);
@@ -533,13 +692,21 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // the source of these lat/lons since they can either be prefilled from postalcode data
         // or manually entered by the user.
         if (!empty($node->location['latitude']) && !empty($node->location['longitude'])) {
-          if (($data = location_get_postalcode_data($node->location)) &&
+ 
+          if (($data = location_latlon_exact($node->location)) &&
+              _location_floats_are_equal(floatval($node->location['latitude']), floatval($data['lat'])) &&
+              _location_floats_are_equal(floatval($node->location['longitude']), floatval($data['lon']))) {
+            $node->location['lat'] = $node->location['latitude'];
+            $node->location['lon'] = $node->location['longitude'];
+            $node->location['source'] = LOCATION_LATLON_GEOCODED_EXACT;
+          }         
+          elseif (($data = location_get_postalcode_data($node->location)) &&
               _location_floats_are_equal(floatval($node->location['latitude']), floatval($data['lat'])) &&
               _location_floats_are_equal(floatval($node->location['longitude']), floatval($data['lon']))) {
             $node->location['lat'] = $node->location['latitude'];
             $node->location['lon'] = $node->location['longitude'];
             $node->location['source'] = LOCATION_LATLON_GEOCODED_APPROX;
-          }
+          }        
           else {
             $node->location['lat'] = $node->location['latitude'];
             $node->location['lon'] = $node->location['longitude'];
@@ -547,7 +714,14 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           }
         }
         else {
-          if ($data = location_get_postalcode_data($node->location)) {
+          if ($data = location_latlon_exact($node->location)) {
+            $node->location['latitude'] = $data['lat'];
+            $node->location['longitude'] = $data['lon'];
+            $node->location['lat'] = $data['lat'];
+            $node->location['lon'] = $data['lon'];
+            $node->location['source'] = LOCATION_LATLON_GEOCODED_EXACT;
+          }          
+          elseif ($data = location_get_postalcode_data($node->location)) {
             $node->location['latitude'] = $data['lat'];
             $node->location['longitude'] = $data['lon'];
             $node->location['lat'] = $data['lat'];
@@ -572,7 +746,14 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND oid = %d", $node->nid);
           if ($location = db_fetch_object($result)) {
             if ($location->source != LOCATION_LATLON_USER_SUBMITTED) {
-              if ($data = location_get_postalcode_data($node->location)) {
+              if ($data = location_latlon_exact($node->location)) {
+                $node->location['lat'] = $data['lat'];
+                $node->location['lon'] = $data['lon'];
+                $node->location['latitude'] = $data['lat'];
+                $node->location['longitude'] = $data['lon'];
+                $node->location['source'] = LOCATION_LATLON_GEOCODED_EXACT;
+              }            
+              elseif ($data = location_get_postalcode_data($node->location)) {
                 $node->location['lat'] = $data['lat'];
                 $node->location['lon'] = $data['lon'];
                 $node->location['latitude'] = $data['lat'];
@@ -588,6 +769,13 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               }
             }
           }
+        }
+        elseif ($data = location_latlon_exact($node->location)) {
+          $node->location['lat'] = $data['lat'];
+          $node->location['lon'] = $data['lon'];
+          $node->location['latitude'] = $data['lat'];
+          $node->location['longitude'] = $data['lon'];
+          $node->location['source'] = LOCATION_LATLON_GEOCODED_EXACT;
         }
         elseif ($data = location_get_postalcode_data($node->location)) {
           $node->location['lat'] = $data['lat'];
@@ -703,7 +891,7 @@ function location_get_configured_countries() {
 function location_configure() {
   $supported_countries = _location_supported_countries();
 
-  $default_country = variable_get('location_default_country', '');
+  $default_country = variable_get('location_default_country', 'us');
   
   $configured_countries = location_get_configured_countries();
   
@@ -850,7 +1038,12 @@ function location_user($op, &$edit, &$user, $category = NULL) {
       $edit['location'] = location_form2api($edit['location']);
     }
     
-    if ($data = location_get_postalcode_data($edit['location'])) {
+    if ($data = location_latlon_exact($edit['location'])) {
+      $edit['location']['source'] = LOCATION_LATLON_GEOCODED_EXACT;
+      $edit['location']['lat'] = $data['lat'];
+      $edit['location']['lon'] = $data['lon'];
+    }    
+    elseif ($data = location_get_postalcode_data($edit['location'])) {
       $edit['location']['source'] = LOCATION_LATLON_GEOCODED_APPROX;
       $edit['location']['lat'] = $data['lat'];
       $edit['location']['lon'] = $data['lon'];

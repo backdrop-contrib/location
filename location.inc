@@ -1120,8 +1120,10 @@ function _location_format_search_result_distances(&$results_array, $distance_uni
  *      'lat' => A floating point number for the latitude coordinate of the parameter location
  */
 function location_latlon_exact($location = array()) {
-  if (isset($location['country']) && trim($location['country']) != '') {
-    $exact_latlon_function = 'location_latlon_exact_'. trim($location['country']);
+  $country = trim($location['country']);
+  $service = variable_get('location_geocode_'. $country, 'none');
+  if (!empty($country) && $service != 'none') {
+    $exact_latlon_function = 'location_geocode_'. $country .'_'. $service;
     if (function_exists($exact_latlon_function)) {
       return $exact_latlon_function($location);
     }
@@ -1376,6 +1378,11 @@ function _location_include_configured() {
       include_once($filename);
     }
   }
+}
+
+
+function location_get_iso3166_list() {
+  return _location_get_iso3166_list();
 }
 
 // The following is an array of all countrycode => country-name pairs as layed out in
