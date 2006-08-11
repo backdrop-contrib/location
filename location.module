@@ -969,7 +969,7 @@ function location_configure() {
       '#title' => t('Enable all <em>available</em> features for locations from the following countries'),
       '#default_value' => location_get_configured_countries(),
       '#options' => $supported_countries,
-      '#description' => t('Currently, your CivicSpace site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.')
+      '#description' => t('Currently, your Drupal site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries.  Please narrow the list down to countries for which you want to support these extra features.  It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.')
       );
 
   return system_settings_form('location_configure_settings', $form);
