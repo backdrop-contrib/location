@@ -220,7 +220,12 @@ function location_map_link_us_default_providers() {
 }
 
 function location_geocode_us_providers() {
-  return array('yahoo' => array('name' =>'Yahoo! Maps Web Services', 'url' => 'http://developer.yahoo.com/maps/rest/V1/geocode.html', 'tos' => 'http://developer.yahoo.com/maps/mapsTerms.html'));
+  return array(
+    'yahoo' => array('name' => 'Yahoo! Maps Web Services', 'url' => 'http://developer.yahoo.com/maps/rest/V1/geocode.html', 'tos' => 'http://developer.yahoo.com/maps/mapsTerms.html'),
+    
+    'google' => array('name' => 'Google Maps API', 'url' => 'http://www.google.com/apis/maps/', 'tos' => 'http://www.google.com/apis/maps/terms.html')
+  
+  );
 }
 
 function location_geocode_us_yahoo_settings(){
@@ -243,45 +248,19 @@ function location_geocode_us_yahoo_settings(){
 function location_geocode_us_yahoo($location = array()) {
   $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=". variable_get('location_geocode_us_yahoo_appid', "YahooDemo") ."&location=";
   
-  $address = '';
-  if (!empty($location['street'])) {
-    $address .= $location['street'];
-  }
-  
-  if (!empty($location['city'])) {
-    if (!empty($location['street'])) {
-      $address .= ', ';
-    }
-    
-    $address .= $location['city'];
-  }
-  
-  if (!empty($location['province'])) {
-    if (!empty($location['street']) || !empty($location['city'])) {
-      $address .= ', ';
-    }
-    
-    $address .= $location['province'];
-  }
-  
-  if (!empty($location['postal_code'])) {
-    if (!empty($address)) {
-      $address .= ' ';
-    }
-      $address .= $location['postal_code'];
-  }
+  $address = location_address2singleline($location);
   
   $http_reply = drupal_http_request($service_url . urlencode($address));
   
   // address may have been improperly formatted or invalid
-  if ($http_reply == 400) {
+  if ($http_reply->code == 400) {
     return NULL;
   }
   else {
     // got a successful reply, but we only want to return if we have address-level precision
     $matches = array();
     preg_match('/precision="([a-z]*)"/', $http_reply->data, $matches);
-    $matches_exp = var_export($matches, TRUE);
+
     if ($matches[1] != 'address') {
       // The precision we got back was not down to the street-address level
       return NULL;
@@ -309,6 +288,55 @@ function location_geocode_us_yahoo($location = array()) {
       }
     }
   }
+}
+
+function location_geocode_us_google($location = array()) {
+  $temp_key = 'ABQIAAAA4SAlKS5PGPmCp1M1lFSi9xR3cOHNVOtncaBOMo5NHmu-PYjzChQ8usI5DSvxnid-Hl-_BKyQgCeRNA';
+  $service_url = 'http://maps.google.com/maps/geo?output=xml&key='. variable_get('location_geocode_us_google_apikey', '') .'&q=';
+
+  $address = location_address2singleline($location);
+  
+  $http_reply = drupal_http_request($service_url . urlencode($address));
+  
+  $reply_exp = var_export($http_reply->data, TRUE);
+  $reply_exp = htmlspecialchars($reply_exp);
+  drupal_set_message("reply data == <pre>$reply_exp</pre>");
+  
+  $status_code_match = array();
+  preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
+  $status_code = $status_code_match[1];
+  if ($status_code != 200) {
+    return NULL;
+  }
+  
+  $accuracy_code_match = array();
+  preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
+  $accuracy_code = $accuracy_code_match[1];
+  if ($accuracy_code != 8 && $accuracy_code != 7) {
+    return NULL;
+  }
+  
+  $latlon_match = array();
+  preg_match('/<coordinates>(.*)<\/coordinates>/', $http_reply->data, $latlon_match);
+  
+  $latlon_exploded = explode(',', $latlon_match[1]);
+  
+  return array('lat' => $latlon_exploded[1], 'lon' => $latlon_exploded[0]);
+}
+
+function location_geocode_us_google_settings(){
+  $form = array();
+
+  $form['location_geocode_us_google_apikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Google Maps API Key'),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#default_value' => variable_get('location_geocode_us_google_apikey', ''),
+    '#description' => t('In order to use the Google Maps API geocoding web-service, you will need a Google Maps API Key.  You can obtain one at the %sign_up_link for the %google_maps_api.', array('%sign_up_link' => '<a href="http://www.google.com/apis/maps/signup.html">sign-up page</a>', '%google_maps_api' => '<a href="http://www.google.com/apis/maps/">Google Maps API</a>'))
+  );
+
+  return system_settings_form('location_geocode_us_google_settings', $form);
 }
 
 /**

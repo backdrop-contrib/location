@@ -1380,6 +1380,41 @@ function _location_include_configured() {
   }
 }
 
+function location_address2singleline($location = array()) {
+  $address = '';
+  if (!empty($location['street'])) {
+    $address .= $location['street'];
+  }
+  
+  if (!empty($location['city'])) {
+    if (!empty($location['street'])) {
+      $address .= ', ';
+    }
+    
+    $address .= $location['city'];
+  }
+  
+  if (!empty($location['province'])) {
+    if (!empty($location['street']) || !empty($location['city'])) {
+      $address .= ', ';
+    }
+    
+    $address .= $location['province'];
+  }
+  
+  if (!empty($location['postal_code'])) {
+    if (!empty($address)) {
+      $address .= ' ';
+    }
+      $address .= $location['postal_code'];
+  }
+  
+  if (!empty($location['country'])) {
+    $address .= ', '. $location['country'];
+  }
+  
+  return $address;
+}
 
 function location_get_iso3166_list() {
   return _location_get_iso3166_list();
