@@ -298,10 +298,6 @@ function location_geocode_us_google($location = array()) {
   
   $http_reply = drupal_http_request($service_url . urlencode($address));
   
-  $reply_exp = var_export($http_reply->data, TRUE);
-  $reply_exp = htmlspecialchars($reply_exp);
-  drupal_set_message("reply data == <pre>$reply_exp</pre>");
-  
   $status_code_match = array();
   preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
   $status_code = $status_code_match[1];
