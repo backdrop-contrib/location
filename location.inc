@@ -411,7 +411,7 @@ function location_form($fields = array(), $prefilled_values = array(), $required
 function location_latlon_form($description = '', $prefilled_values = array()) {
   $form = array();
 
-  $usegmap = (function_exists('gmap_set_location') && variable_get('location_usegmap', FALSE));
+  $usegmap = (function_exists('gmap_set_location') && variable_get('location_usegmap', 1));
 
   if ($usegmap) {
     $form['map'] = array();  //reserve spot at top of form for map
@@ -437,7 +437,7 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
       
   if ($usegmap) {
     $map_macro = variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]');
-    $form['map']['gmap']['#value'] = gmap_set_location($map_macro, $form['longitude'], $form['latitude']);
+    $form['map']['gmap']['#value'] = gmap_set_location($map_macro, $form, array('latitude'=>'latitude','longitude'=>'longitude'));
   }
   
   return $form;
