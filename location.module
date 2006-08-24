@@ -587,12 +587,12 @@ function location_form_alter($form_id, &$form) {
     }
 
     $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-
+    if (!isset($form['location'])) $form['location']=array();
     if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
-      $form['location'] = location_form($location_fields, $node->location ? $node->location : array(), $required_fields, $suppressed_values);
+      $form['location'] = array_merge($form['location'],location_form($location_fields, $node->location ? $node->location : array(), $required_fields, $suppressed_values));
     }
     else {
-      $form['location'] = location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, $suppressed_values);
+      $form['location'] = array_merge($form['location'],location_form($location_fields, $node->location ? location_api2form($node->location) : array(), $required_fields, $suppressed_values));
     }
     $form['location']['#type'] = 'fieldset';
     $form['location']['#title'] = t('Location');
