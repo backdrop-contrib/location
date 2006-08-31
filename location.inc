@@ -1367,6 +1367,14 @@ function _location_province_select_options($value = '', $required = FALSE, $coun
 }
 
 /**
+ * This function is a public wrapper for the above function
+ *
+ */
+function location_province_select_options($value = '', $required = FALSE, $country = NULL) {
+  return _location_province_select_options($value, $required, $country);
+}
+
+/**
  * This function simply loads the include file for each country whose
  * locationes are configured to be recognized by the location system.
  */
