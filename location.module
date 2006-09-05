@@ -683,7 +683,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     case 'insert':
     case 'update':
       $node->location = location_form2api($node->location);
-
+      
       if (user_access('submit latitude/longitude')) {
         $node->location['latitude'] = trim($node->location['latitude']);
         $node->location['longitude'] = trim($node->location['longitude']);
@@ -795,7 +795,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
       // If no city and/or province were supplied in the address (whether the user left it blank or whether the user did not have the option
       // of entering them) then we want to use the data we have based strictly on the postal code.
-      $node->location = location_form2api($node->location);
       if ($data = location_get_postalcode_data($node->location)) {
         $node->location['city'] = (!isset($node->location['city']) || strlen($node->location['city']) == 0) ? $data['city'] : $node->location['city'];
         $node->location['province'] = (!isset($node->location['province']) || strlen($node->location['province']) == 0) ? $data['province'] : $node->location['province'];
