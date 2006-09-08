@@ -997,6 +997,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     $form[0]['location']['#type'] = 'fieldset';
     $form[0]['location']['#title'] = t('Location');
     $form[0]['location']['#tree'] = TRUE;
+    $form[0]['location']['#collapsible'] = TRUE;
     $form[0]['location']['#description'] = t('Enter as much of your address as you are comfortable with. Your address will only be viewable by those who have the appropriate permissions. The site will be able to automatically link you to driving directions and other features if it already knows your address.');
     return $form;
   }
