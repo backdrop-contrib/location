@@ -1186,16 +1186,22 @@ function location_geocode_meta_tags($location = array()) {
  * configured the site to actually use that country's include file. 
  */
 function location_configured_countries() {
-  $configured_countries = variable_get('location_configured_countries', array('us' => 1)); // <integer index> => <ISO code>
-  $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
-  $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
-  $configured_countries_associative = array();
-  foreach ($configured_countries as $country_code) {
-    if (array_key_exists($country_code, $supported_countries)) {
-      $configured_countries_associative[$country_code] = $supported_countries[$country_code];
+  static $configured_countries_associative;
+  if (!count($configured_countries)) {
+      $configured_countries = variable_get('location_configured_countries', array('us' => 'us')); // <integer index> => <ISO code>
+    
+    $configured_countries = is_array($configured_countries) ? $configured_countries : array(); 
+    $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
+    
+    $configured_countries_associative = array();
+    foreach ($configured_countries as $country_code) {
+      if (array_key_exists($country_code, $supported_countries)) {
+        $configured_countries_associative[$country_code] = $supported_countries[$country_code];
+      }
     }
+    
+    asort($configured_countries_associative);
   }
-  asort($configured_countries_associative);
   return $configured_countries_associative;
 }
 

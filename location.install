@@ -61,3 +61,11 @@ function location_install() {
 function location_update_1() {
   return _system_update_utf8(array('location', 'zipcodes'));
 }
+
+function location_update_2() {
+  $configured_countries = variable_get('location_configured_countries', array());
+  if ($configured_countries['us']) {
+    $configured_countries['us'] = 'us';
+    variable_set('location_configured_countries', $configured_countries);
+  }
+}
