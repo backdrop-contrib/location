@@ -171,6 +171,36 @@ function location_views_tables() {
     'help' => t('Complete formatted address in a single cell, using the location theme.'),
     );
 
+  $tables['location']['filters']['proximity'] = array(
+    'field' => 'distance',
+    'name' => t('Location: Proximity'),
+    'operator' => location_views_proximity_operators(),
+    'handler' => 'location_views_filter_handler_proximity',
+    'value' => location_views_proximity_form(),
+    'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
+    'cacheable' => 'no',
+  );
+  
+  $tables['location']['filters']['proximity_map'] = array(
+    'field' => 'distance',
+    'name' => t('Location: Proximity Map'),
+    'operator' => location_views_proximity_operators(),
+    'handler' => 'location_views_filter_handler_proximity',
+    'value' => location_views_map_input_form(),
+    'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
+    'cacheable' => 'no',
+  );
+  
+  // add field showing distance from selected zip code
+  $tables['location']['fields']['distance'] = array(
+    'name'      => t('Location: Distance'),
+    'handler'   => 'location_views_field_handler_distance',
+    'notafield' => true,
+    'sortable'  => false,
+    'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+    'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
+    );
+    
   return $tables;
 }
 
@@ -672,4 +702,140 @@ function location_views_countries() {
   }
   return $countries;
 
+}
+
+function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $data) {
+  return number_format(round($data->distance, 2), 2) .' '. $distance_unit;
+}
+
+
+/**
+ *  Proximity handling functions
+ * 
+ *  at the moment, everything is set up to assume the unit is miles
+ *  need to find a way to provide an alternative for km
+ *  not sure yet how to add another selector into the mix so user can select units
+ */
+function location_views_proximity_form() {
+ return array(
+    '#title' => t('from Postal Code'),
+    '#type' => 'textfield',
+    '#size' => 15,
+    );
+}
+
+function location_views_proximity_operators() {
+  $values = array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250);
+  foreach ($values as $val) {
+    $options[$val] = t('%distance miles', array('%distance' => $val));
+  }
+  return $options;
+}
+
+/**
+ *  Proximity filter
+ *  Uses functions and queries created in location.inc and earth.inc and re-factors them to work in views
+ */
+function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$query) {
+  
+  $unit     = 'miles';
+  $distance = $filter['operator'];
+  
+  if ($filterinfo['value']['coordinates']) {
+    $lat = $_GET['edit']['gmap_latitude'];
+    $lon = $_GET['edit']['gmap_longitude'];
+  
+  } else {
+    
+    $zip      = $filter['value'];
+    $result   = db_query("SELECT * FROM {zipcodes} WHERE zip='$zip'");
+    while ($arr = db_fetch_array($result)) {
+      $lat = $arr['latitude'];
+      $lon = $arr['longitude'];
+    }
+  }
+  
+  if (!$lat || !$lon) return;
+
+  $divisor = $unit == 'km' ? 1000 : 1609.347;
+  $latrange = earth_latitude_range($lon, $lat, ($distance * $divisor));
+  $lonrange = earth_longitude_range($lon, $lat, ($distance * $divisor));  
+
+  $query->ensure_table('location');
+  $query->add_field("((". earth_distance_sql($lon, $lat) .") / $divisor) as distance", NULL);
+  $query->add_orderby(NULL, 'distance', 'ASC');
+  $query->add_where("longitude IS NOT NULL");
+  $query->add_where("latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f", $latrange[0], $latrange[1], $lonrange[0], $lonrange[1]);
+}
+
+/**
+ *  Function to create a gmap map form
+ */
+function location_views_map_input_form() {
+  
+  $form = array();
+  
+  if (!module_exist('gmap')) return $form;
+
+  $user = $GLOBALS['user'];
+  $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='user'",$user->uid);
+  if ($gmap_user = db_fetch_array($res)) {
+    $user->latitude  = $gmap_user['latitude'];
+    $user->longitude = $gmap_user['longitude'];
+  }
+
+  $form['map'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Google Map'), 
+    '#description' => t('Click on the map to mark the center point for your search, then submit the values.')
+    );
+  $form['map']['gmap_user'] = array(
+    '#type'=>'markup',
+    '#value'=>''
+    );
+  $form['coordinates'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Coordinates'),
+    '#description' => t('The latitude and longitude will automatically be entered here (or you can do it manually).'),
+    );
+  $form['coordinates']['gmap_latitude'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-latitude',
+    '#title' => t('Latitude'),
+    '#default_value' => $_GET['edit']['gmap_latitude'] ? $_GET['edit']['gmap_latitude'] : $user->latitude,
+    '#size' => 30,
+    '#maxlength' => 120,
+    '#attributes' => array('onchange'=>'gmap_textchange();')
+    );
+  $form['coordinates']['gmap_longitude'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Longitude'),
+    '#default_value' => $_GET['edit']['gmap_longitude'] ? $_GET['edit']['gmap_longitude'] : $user->longitude,
+    '#size' => 30,
+    '#maxlength' => 120,
+    '#attributes' => array('onchange'=>'gmap_textchange();')
+    );
+
+  $form['map']['gmap_user']['#value'] = gmap_set_location(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|control=Large|zoom=16|width=100%|height=400px]'),
+                                         $form['coordinates']['gmap_longitude'],
+                                         $form['coordinates']['gmap_latitude']);
+  return  $form;
+
+}
+
+/**
+ *  Implementation of views_pre_view
+ */
+function location_views_views_pre_view($view, $items) {
+
+  // the map form gets cached in the views table cache
+  // get location_views_map_input_form() to regenerate itself by clearing the cache
+  // and recalling the form
+  foreach ($view->filter as $key => $filter) {
+    if ($filter['field'] == 'location.proximity_map') {
+      cache_clear_all('views_tables', true);
+      $view->filter[$key]['value'] = location_views_map_input_form();  
+    }
+  }
+  
 }
