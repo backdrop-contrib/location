@@ -96,7 +96,9 @@ function theme_location_search(&$form) {
   $row = array();
   $row[] = '<div class="container-inline">'. form_render($form['location']['distance']) . form_render($form['location']['distance_unit']) . '</div>';
   $row[] = form_render($form['location']['postal_code']) . form_render($form['location']['country']);
-  return theme('table', NULL, array($row)) . form_render($form['op']); 
+  $output = theme('table', NULL, array($row)) . form_render($form['op']);
+  $output .= form_render($form);
+  return $output; 
 }
 
 function location_search_view() {
@@ -320,7 +322,9 @@ function theme_location_map_link_options(&$form) {
     $nontable_elems .= form_render($form[$key]);
   }
   
-  return theme('table', $header, $rows) . $nontable_elems;
+  $output = theme('table', $header, $rows) . $nontable_elems;
+  $output .= form_render($form);
+  return $output;
 }
 
 function location_field_names() {
@@ -479,7 +483,9 @@ function theme_location_geocoding_options(&$form) {
     $nontable_elems .= form_render($form[$key]);
   }
   
-  return theme('table', $header, $rows) . $nontable_elems .'<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>';
+  $output = theme('table', $header, $rows) . $nontable_elems .'<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>';
+  $output .= form_render($form);
+  return $output;
 }
 
 

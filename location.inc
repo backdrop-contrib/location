@@ -536,11 +536,9 @@ function location_api2form($location = array()) {
  *
  */
 function location_proximity_form($prefilled_values = array(), $suppressed_values = array(), $form_name = 'location') {
-  $form[] = array(
-      '#prefix' => '<div class="container-inline">',
-      '#type' => 'markup',
-      '#value' => t('Search within ')
-      );
+  $form = array();
+
+
   if (in_array('distance', array_keys($suppressed_values))) {
     $form['distance'] = array(
         '#type' => 'hidden',
@@ -575,11 +573,6 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
         );
   }
   
-  $form[] = array(
-      '#type' => 'markup',
-      '#value' => t(' of:'),
-      '#suffix' => '</div>'
-      );
   return $form;
 }
 
