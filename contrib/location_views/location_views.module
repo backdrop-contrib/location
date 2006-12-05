@@ -67,7 +67,7 @@ function location_views_tables() {
         'field' => 'vid'
       ), 
       'right' => array(
-        'field' => 'oid'
+        'field' => 'eid'
       ), 
     ),
     'fields' => array(
@@ -778,7 +778,7 @@ function location_views_map_input_form() {
   if (!module_exist('gmap')) return $form;
 
   $user = $GLOBALS['user'];
-  $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='user'",$user->uid);
+  $res=db_query("SELECT * FROM {location} WHERE eid=%d AND type='user'",$user->uid);
   if ($gmap_user = db_fetch_array($res)) {
     $user->latitude  = $gmap_user['latitude'];
     $user->longitude = $gmap_user['longitude'];
