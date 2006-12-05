@@ -7,7 +7,7 @@ function location_install() {
     case 'mysqli':
       db_query("
       CREATE TABLE {location} (
-        oid int(10) unsigned NOT NULL default '0',
+        eid int unsigned NOT NULL default '0',
         type varchar(6) NOT NULL default '',
         name varchar(255) default NULL,
         street varchar(255) default NULL,
@@ -18,8 +18,8 @@ function location_install() {
         country char(2) default NULL,
         latitude decimal(10,6) default NULL,
         longitude decimal(10,6) default NULL,
-        source tinyint(4) default '0',
-        PRIMARY KEY  (type,oid)
+        source tinyint default '0',
+        PRIMARY KEY  (type,eid)
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;
       ");
     
@@ -30,8 +30,8 @@ function location_install() {
         state varchar(30) NOT NULL default '',
         latitude decimal(10,6) NOT NULL default '0.000000',
         longitude decimal(10,6) NOT NULL default '0.000000',
-        timezone tinyint(2) NOT NULL default '0',
-        dst tinyint(1) NOT NULL default '0',
+        timezone tinyint NOT NULL default '0',
+        dst tinyint NOT NULL default '0',
         country char(2) default '',
         PRIMARY KEY (country, zip),
         KEY pc (country, zip),
@@ -44,14 +44,46 @@ function location_install() {
       $success = TRUE;
       break;
     case 'pgsql':
-
-       break;
+      db_query("CREATE TABLE {location} (
+        eid int NOT NULL default '0' CHECK (eid >= 0),
+        type varchar(6) NOT NULL default '',
+        name varchar(255) default NULL,
+        street varchar(255) default NULL,
+        additional varchar(255) default NULL,
+        city varchar(255) default NULL,
+        province varchar(16) default NULL,
+        postal_code varchar(16) default NULL,
+        country char(2) default NULL,
+        latitude decimal(10,6) default NULL,
+        longitude decimal(10,6) default NULL,
+        source smallint default '0',
+        PRIMARY KEY (type,eid)
+      )");
+    
+      db_query("CREATE TABLE {zipcodes} (
+        zip varchar(16) NOT NULL default '0',
+        city varchar(30) NOT NULL default '',
+        state varchar(30) NOT NULL default '',
+        latitude decimal(10,6) NOT NULL default '0.000000',
+        longitude decimal(10,6) NOT NULL default '0.000000',
+        timezone smallint NOT NULL default '0',
+        dst smallint NOT NULL default '0',
+        country char(2) default '',
+        PRIMARY KEY (country, zip)
+      )");
+      db_query("CREATE INDEX {zipcodes}_pc_idx ON {zipcodes} (country, zip)");
+      db_query("CREATE INDEX {zipcodes}_zip_idx ON {zipcodes} (zip)");
+      db_query("CREATE INDEX {zipcodes}_latitude_idx ON {zipcodes} (latitude)");
+      db_query("CREATE INDEX {zipcodes}_longitude_idx ON {zipcodes} (longitude)");
+      db_query("CREATE INDEX {zipcodes}_country_idx ON {zipcodes} (country)");
+      $success = TRUE;
+      break;
     default:
       break;
   } // End case
 
   if ($success) {
-    drupal_set_message(t('Location module installed tables successfully. If you would also like a database of zip codes, please manually import the appropriate zipcode.XX.mysql file(s) in the %module directory.', array('%module' => drupal_get_path('module', 'location') . '/database')));
+    drupal_set_message(t('Location module installed tables successfully. If you would also like a database of zip codes, please manually import the appropriate zipcode.XX.YYYY file(s) in the %module directory.', array('%module' => drupal_get_path('module', 'location') . '/database')));
   }
   else {
     drupal_set_message(t('The installation of Location module was unsuccessful.'), 'error');
@@ -69,3 +101,21 @@ function location_update_2() {
     variable_set('location_configured_countries', $configured_countries);
   }
 }
+
+function location_update_3() {
+  $ret = array();
+
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = db_query("ALTER TABLE {location} CHANGE oid eid int unsigned NOT NULL default '0'");
+      break;
+  }
+  
+  return $ret;
+}
+
+/***************************************************************
+  PostgreSQL must be supported in all updates after this comment
+ ***************************************************************/
+

@@ -135,13 +135,13 @@ function location_search_get_results($edit = NULL) {
       if (count($postal_codes)) {
         $query_fragment = "'". implode(array_keys($postal_codes), ',') ."'";
         
-        $sql = "SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, r.teaser, n.type, n.created, n.nid, u.name, FIND_IN_SET(CONCAT(country, postal_code), ". $query_fragment .") AS search_rank FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0 ORDER BY search_rank ASC, created DESC";
+        $sql = "SELECT n.nid, a.postal_code, a.city, a.province, a.country, n.title, r.teaser, n.type, n.created, n.nid, u.name, FIND_IN_SET(CONCAT(country, postal_code), ". $query_fragment .") AS search_rank FROM {location} a INNER JOIN {node} n ON a.eid = n.nid INNER JOIN {users} u ON n.uid = u.uid INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0 ORDER BY search_rank ASC, created DESC";
         $sql = db_rewrite_sql($sql);
 
-        $count_sql = "SELECT COUNT(*) FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
+        $count_sql = "SELECT COUNT(*) FROM {location} a INNER JOIN {node} n ON a.eid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE a.type = 'node' AND FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
         $count_sql = db_rewrite_sql($count_sql);
 
-        $count_display_sql = "SELECT COUNT(*) as result_count FROM {location} a INNER JOIN {node} n ON a.oid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
+        $count_display_sql = "SELECT COUNT(*) as result_count FROM {location} a INNER JOIN {node} n ON a.eid = n.nid INNER JOIN {users} u ON n.uid = u.uid WHERE FIND_IN_SET(CONCAT(a.country, a.postal_code), ". $query_fragment .") > 0";
         $count_display_sql = db_rewrite_sql($count_display_sql);
         
         $res = pager_query($sql, 15, 0, $count_sql);
@@ -749,7 +749,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // If the lat/lon was determined from geocoding, then we will want to update the lat/lon using postal codes.
         // If the lat/lon was user-submitted, then we don't want to allow the current editor to change the lat/lon
         if ($node->nid) {
-          $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND oid = %d", $node->nid);
+          $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND eid = %d", $node->nid);
           if ($location = db_fetch_object($result)) {
             if ($location->source != LOCATION_LATLON_USER_SUBMITTED) {
               if ($data = location_latlon_exact($node->location)) {
@@ -809,7 +809,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       break;
       
     case 'load':
-      $res = db_query("SELECT * FROM {location} WHERE type = 'node' AND oid = %d", $node->vid);
+      $res = db_query("SELECT * FROM {location} WHERE type = 'node' AND eid = %d", $node->vid);
       $location = array();
       if ($node_location = db_fetch_object($res)) {
         //$location = object2array($node_location);
@@ -1009,7 +1009,7 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
   
   if ($op == 'load' && $user_setting != LOCATION_USER_DONT_COLLECT) {
-    $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND oid = %d", $user->uid);
+    $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND eid = %d", $user->uid);
     if ($location = db_fetch_object($res)) {
       $user->location = (array)$location;
     }
@@ -1094,8 +1094,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
   $field = ($type == 'node' ? 'vid': 'uid');
   if (isset($posted_location) && count($posted_location)) {
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
-       db_query("DELETE FROM {location} WHERE type = '%s' AND oid = %d", $type, $user_or_node->$field);
-       db_query("INSERT INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
+       db_query("DELETE FROM {location} WHERE type = '%s' AND eid = %d", $type, $user_or_node->$field);
+       db_query("INSERT INTO {location} (type, eid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
               $type, 
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
@@ -1111,8 +1111,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );     
     }
     else {
-      db_query("DELETE FROM {location} WHERE type = '%s' AND oid = %d", $type, $user_or_node->$field);
-      db_query("INSERT INTO {location} (type, oid, name, street, additional, city, province, postal_code, country, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
+      db_query("DELETE FROM {location} WHERE type = '%s' AND eid = %d", $type, $user_or_node->$field);
+      db_query("INSERT INTO {location} (type, eid, name, street, additional, city, province, postal_code, country, source) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
               $type,
               $user_or_node->$field, 
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
