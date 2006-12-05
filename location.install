@@ -108,9 +108,13 @@ function location_update_3() {
   switch ($GLOBALS['db_type']) {
     case 'mysql':
     case 'mysqli':
-      $ret[] = db_query("ALTER TABLE {location} CHANGE oid eid int unsigned NOT NULL default '0'");
+      $ret[] = update_sql("ALTER TABLE {location} CHANGE oid eid int unsigned NOT NULL default '0'");
       break;
   }
+  
+  drupal_set_message("The schema for location module has been updated.  The update is such that you may want to re-resave any views you have that may include locations.");
+  
+  views_invalidate_cache();
   
   return $ret;
 }
