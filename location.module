@@ -894,6 +894,7 @@ function location_get_configured_countries() {
  *
  */
 function location_configure() {
+  cache_clear_all('location:supported-countries');
   $supported_countries = _location_supported_countries();
 
   $default_country = variable_get('location_default_country', 'us');
