@@ -1212,31 +1212,45 @@ function location_configured_countries() {
  * configured the site to actually use that country. 
  */
 function _location_supported_countries() {
-  // '<ISO two-letter code>' => '<English name for country>'
-  $iso_list = _location_get_iso3166_list();
-  $iso_keys = array_keys($iso_list);
-  $supported_countries = array();
-  if (is_dir(LOCATION_PATH.'/supported') && $handle = opendir(LOCATION_PATH.'/supported')) {
-    $matches = array();
-    while ($file = readdir($handle)) {
-      if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file(LOCATION_PATH.'/supported/'. $file)) {
-        if (in_array($matches[1], $iso_keys)) {
-          $supported_countries[] = $matches[1];
-          $matches = array();
+  static $supported_countries = array();
+
+  // If this function has already been called this request, we can avoid a DB hit.
+  if (!empty($supported_countries)) {
+    return $supported_countries;
+  }
+
+  // Try first to load from cache, it's much faster than the scan below.
+  $cache = cache_get('location:supported-countries');
+  if (!empty($cache)) {
+    $supported_countries = unserialize($cache->data);
+  } else {
+    // '<ISO two-letter code>' => '<English name for country>'
+    $iso_list = _location_get_iso3166_list();
+    $iso_keys = array_keys($iso_list);
+    if (is_dir(LOCATION_PATH.'/supported') && $handle = opendir(LOCATION_PATH.'/supported')) {
+      $matches = array();
+      while ($file = readdir($handle)) {
+        if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file(LOCATION_PATH.'/supported/'. $file)) {
+          if (in_array($matches[1], $iso_keys)) {
+            $supported_countries[] = $matches[1];
+            $matches = array();
+          }
         }
       }
     }
+    $supported_countries = array_flip($supported_countries);
+    // In the foreach, here, $index is just an integer that we want to 
+    // replace with the name of the country, where the key pointing to it
+    // is the two-letter ISO code for the country
+    foreach ($supported_countries as $code => $index) {
+      $supported_countries[$code] = $iso_list[$code];
+    }
+    array_multisort($supported_countries);;
+    // Data is now in an array where key = <ISO code for country> and values = <English name for country>
+    // Cache our processed array before returning
+		cache_set('location:supported-countries',serialize($supported_countries));
   }
-  
-  $supported_countries = array_flip($supported_countries);
-  // In the foreach, here, $index is just an integer that we want to 
-  // replace with the name of the country, where the key pointing to it
-  // is the two-letter ISO code for the country
-  foreach ($supported_countries as $code => $index) {
-    $supported_countries[$code] = $iso_list[$code];
-  }
-  array_multisort($supported_countries);;
-  // Return an array where key = <ISO code for country> and values = <English name for country>
+
   return $supported_countries;
 }
 
