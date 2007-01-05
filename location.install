@@ -123,3 +123,40 @@ function location_update_3() {
   PostgreSQL must be supported in all updates after this comment
  ***************************************************************/
 
+function location_update_4() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("ALTER TABLE {location} ADD COLUMN lid int(10) unsigned NOT NULL default '0' AFTER eid");
+      
+      $result = db_query("SELECT eid, type FROM {location}");
+      $next_id = 0;
+      while ($row = db_fetch_object($result)) {
+        $next_id++;
+        db_query("UPDATE {location} SET lid = %d WHERE eid = %d AND type = '%s'", $next_id, $row->eid, $row->type);
+      }
+      
+      $ret[] = update_sql("ALTER TABLE {location} DROP PRIMARY KEY");
+      $ret[] = update_sql("ALTER TABLE {location} ADD PRIMARY KEY (lid)");
+      
+      db_query("INSERT INTO {sequences} (name, id) VALUES ('{location}_lid', %d)", $next_id);
+      $ret[] = update_sql("ALTER TABLE {location} ADD COLUMN is_primary tinyint(1) NOT NULL default '0'");
+      $ret[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
+
+      break;
+    case 'pgsql':
+      // help me
+      break;
+  }
+  
+  foreach (node_get_types() as $type => $name) {
+    $new_setting = variable_get('location_'. $type, 0) ? 1 : 0;
+    variable_del('location_'. $type);
+    variable_set('location_maxnum_'. $type, $new_setting);
+    variable_set('location_defaultnum_'. $type, $new_setting);
+  }
+  
+  return $ret;
+}

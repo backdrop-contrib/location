@@ -83,6 +83,15 @@ function _location_is_empty($location = array()) {
   return TRUE;
 }
 
+function theme_locations($locations = array(), $hide = array()) {
+  $output = '';
+  foreach ($locations as $location) {
+    $output .= theme('location', $location, $hide);
+  }
+  
+  return $output;
+}
+
 /**
  * Generates HTML for the passed location.
  *
