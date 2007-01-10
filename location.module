@@ -649,20 +649,20 @@ function location_form_alter($form_id, &$form) {
 
     $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
     
-    for ($index = 1; $index <= $location_form_count; $index++) {
+    for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index] = array(
         '#type' => 'fieldset',
-        '#title' => t('Location #%number', array('%number' => $index)),
+        '#title' => t('Location #%number', array('%number' => $index + 1)),
         '#tree' => TRUE,
         '#attributes' => array('class' => 'location')
       );
     }
        
     if ($location_form_count == 1) {
-      $form['locations'][1]['#title'] = t('Location');
+      $form['locations'][0]['#title'] = t('Location');
     }
 
-    for ($index = 1; $index <= $location_form_count; $index++) {
+    for ($index = 0; $index < $location_form_count; $index++) {
       if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
         $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
       }
@@ -671,20 +671,20 @@ function location_form_alter($form_id, &$form) {
     $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
     
     if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
-      for ($index = 1; $index <= $location_form_count; $index++) {
-        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 1) ? $required_fields : array(), $suppressed_values));
+      for ($index = 0; $index < $location_form_count; $index++) {
+        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
       }
     }
     else {
-      for ($index = 1; $index <= $location_form_count; $index++) {
+      for ($index = 0; $index < $location_form_count; $index++) {
         if (!isset($form['locations'][$index])) $form['locations'][$index] = array();
         
-        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 1) ? $required_fields : array(), $suppressed_values));
+        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
       }
     }
     
     if (user_access('submit latitude/longitude')) {
-      for ($index = 1; $index <= $location_form_count; $index++) {
+      for ($index = 0; $index < $location_form_count; $index++) {
         $form['locations'][$index][] = array(
           '#type' => 'markup',
           '#value' => "<br/>\n"
@@ -710,7 +710,7 @@ function location_form_alter($form_id, &$form) {
     }
     
     // foreach of the locations, make sure we have an lid field
-    for ($index = 1; $index <= $location_form_count; $index++) {
+    for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index]['lid'] = array(
         '#type' => 'hidden',
         '#value' => $node->locations[$index]['lid']
@@ -751,7 +751,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         foreach (location_field_names() as $field_name => $display_name) {
           $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
           // We only enforce required fields on the first location if there are multiple locations
-          if ($index == 1) {
+          if ($index == 0) {
             if (variable_get('location_'. $field_name .'_'. $node->type, 0) == 2) {
               if (isset($node->locations[$index][$field_name]) && !strlen(trim($node->locations[$index][$field_name]))) {
                 form_set_error('locations]['. $index .']['. $field_name, t('The field %field is required.', array('%field' => theme('placeholder', $display_name))));
@@ -932,7 +932,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // Finally, if there are multiple forms, it's possible for the default country to still be selected with all the other fields blank, and
         // very possible that the user didn't intend to fill out that default country value.  So, we use the following rules to determine whether
         // a location is bogus or not:
-        // IF $index == 1, then 
+        // IF $index == 0, then 
         //   --> if no other fields are enabled, we consider the country to be important and save the location
         //   --> if other fields are enabled, but are all left blank, we consider the location empty and don't save
         // IF $index != 1, then
@@ -940,7 +940,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         
         $keep = FALSE;
         if (!empty($node->locations[$index]['country'])) {
-          if ($index == 1) {
+          if ($index == 0) {
             if (in_array('country', $required_fields)) {
               $keep = TRUE;
             }
@@ -1018,7 +1018,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
       }
       
-      if (count($node->locations) < variable_get('location_maxnum_'. $node->type, 0) && !$teaser) {
+      if (count($node->locations) < variable_get('location_maxnum_'. $node->type, 0) && !$teaser && node_access('update', $node)) {
         $location_fields = array();
         $required_fields = array();
         foreach (array_keys(location_field_names()) as $field_name) {
@@ -1223,12 +1223,12 @@ function location_load_locations($type, $node_or_user) {
   $location = array();
   $index = 0;
   while ($row = db_fetch_object($res)) {
-    $index++;
     $locations[$index] = (array) $row;
     if (isset($locations[$index]['latitude'])) {
       $locations[$index]['lat'] = $locations[$index]['latitude'];
       $locations[$index]['lon'] = $locations[$index]['longitude'];
     }
+    $index++;
   }
   
   $location = count($locations) ? $locations[1] : array();
