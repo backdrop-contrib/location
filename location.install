@@ -8,6 +8,7 @@ function location_install() {
       db_query("
       CREATE TABLE {location} (
         eid int unsigned NOT NULL default '0',
+        lid int unsigned NOT NULL default '0',
         type varchar(6) NOT NULL default '',
         name varchar(255) default NULL,
         street varchar(255) default NULL,
@@ -19,7 +20,8 @@ function location_install() {
         latitude decimal(10,6) default NULL,
         longitude decimal(10,6) default NULL,
         source tinyint default '0',
-        PRIMARY KEY  (type,eid)
+        is_primary tinyint NOT NULL default '0',
+        PRIMARY KEY  (lid)
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;
       ");
     
@@ -45,6 +47,7 @@ function location_install() {
       break;
     case 'pgsql':
       db_query("CREATE TABLE {location} (
+        lid serial CHECK (lid >= 0),
         eid int NOT NULL default '0' CHECK (eid >= 0),
         type varchar(6) NOT NULL default '',
         name varchar(255) default NULL,
@@ -57,7 +60,8 @@ function location_install() {
         latitude decimal(10,6) default NULL,
         longitude decimal(10,6) default NULL,
         source smallint default '0',
-        PRIMARY KEY (type,eid)
+        is_primary smallint default '0',
+        PRIMARY KEY (lid)
       )");
     
       db_query("CREATE TABLE {zipcodes} (
@@ -142,7 +146,7 @@ function location_update_4() {
       $ret[] = update_sql("ALTER TABLE {location} ADD PRIMARY KEY (lid)");
       
       db_query("INSERT INTO {sequences} (name, id) VALUES ('{location}_lid', %d)", $next_id);
-      $ret[] = update_sql("ALTER TABLE {location} ADD COLUMN is_primary tinyint(1) NOT NULL default '0'");
+      $ret[] = update_sql("ALTER TABLE {location} ADD COLUMN is_primary tinyint NOT NULL default '0'");
       $ret[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
 
       break;
@@ -156,6 +160,47 @@ function location_update_4() {
     variable_del('location_'. $type);
     variable_set('location_maxnum_'. $type, $new_setting);
     variable_set('location_defaultnum_'. $type, $new_setting);
+  }
+  
+  return $ret;
+}
+
+
+// Poor PostgreSQL
+// I forgot all about you in the previous update
+function location_update_5() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'pgsql':
+      $ret[] = update_sql("ALTER TABLE {location} DROP CONSTRAINT {location}_pkey");
+      $ret[] = update_sql("ALTER TABLE {location} RENAME TO {location}_old");
+      $ret[] = update_sql("CREATE TABLE {location} (
+        lid serial CHECK (lid >= 0),
+        eid int NOT NULL default '0' CHECK (eid >= 0),
+        type varchar(6) NOT NULL default '',
+        name varchar(255) default NULL,
+        street varchar(255) default NULL,
+        additional varchar(255) default NULL,
+        city varchar(255) default NULL,
+        province varchar(16) default NULL,
+        postal_code varchar(16) default NULL,
+        country char(2) default NULL,
+        latitude decimal(10,6) default NULL,
+        longitude decimal(10,6) default NULL,
+        source smallint default '0',
+        is_primary smallint default '0',
+        PRIMARY KEY (lid)
+      )");
+      $ret[] = update_sql("INSERT INTO {location}
+      	(eid, type, name, street, additional, city, province, postal_code, country, latitude, 
+      	longitude, source) SELECT eid, type, name, street, additional, city, province,
+      	postal_code, country, latitude, longitude, source FROM {location}_old");
+      $ret[] = update_sql("DROP TABLE {location}_old");
+      
+      $ret[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
+
+      break;
   }
   
   return $ret;
