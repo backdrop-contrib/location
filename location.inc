@@ -959,7 +959,7 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
   //--------------------------------------------------------------------------------------------
   // This is the spot where search results are cached
   
-  cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, serialize($search_results));
+  cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, 'cache', serialize($search_results));
   
   // DEBUG: commented code is for testing/debugging purposes
   //print 'POSTAL CODE SEARCH CACHING: Wrote new search results to cache'."<br/>\n";
@@ -1040,7 +1040,7 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
       
       // DEBUG: commented code is for testing/debugging purposes
       //print 'POSTAL CODE SEARCH CACHING: Throwing out old search on a point because new search uses larger search-radius'."<br/>\n";
-      cache_clear_all($result_row->cid);
+      cache_clear_all($result_row->cid, 'cache');
       return array();
     }
     
@@ -1257,7 +1257,7 @@ function _location_supported_countries() {
     array_multisort($supported_countries);;
     // Data is now in an array where key = <ISO code for country> and values = <English name for country>
     // Cache our processed array before returning
-		cache_set('location:supported-countries',serialize($supported_countries));
+		cache_set('location:supported-countries', 'cache', serialize($supported_countries));
   }
 
   return $supported_countries;
