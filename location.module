@@ -493,24 +493,33 @@ function location_form_alter($form_id, &$form) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_settings' == $form_id) {
     $type = $form['type']['#value'];
     
-    $form['#validate'] = array_merge($form['#validate'], array('location_node_settings_validate' => array())); 
+    $form['#validate'] = array_merge(
+      is_array($form['#validate']) ? $form['#validate'] : array(),
+      array('location_node_settings_validate' => array())
+    ); 
     
-    $form['location'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Locative information'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#weight' => 0
+    $form['location'] = array_merge(
+      is_array($form['location']) ? $form['location'] : array(),
+      array(
+        '#type' => 'fieldset',
+        '#title' => t('Locative information'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => 0
+      )
     );
     
     // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
     
-    $form['location']['multiple_locations'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Multiple Locations'),
-      '#collapsible' => FALSE,
-      '#collapsed' => FALSE,
-      '#weight' => 0
+    $form['location']['multiple_locations'] = array_merge(
+      is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
+      array(
+        '#type' => 'fieldset',
+        '#title' => t('Number of locations'),
+        '#collapsible' => FALSE,
+        '#collapsed' => FALSE,
+        '#weight' => 0
+      )
     );
     
     $options = array();
@@ -636,28 +645,34 @@ function location_form_alter($form_id, &$form) {
     }
 
 
-    $form['locations'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Location(s)'),
-      '#tree' => TRUE,
-      '#attributes' => array_merge($form['locations']['#attributes'], array('class' => 'locations')),
-      '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
-      '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
-      '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE    
+    $form['locations'] = array_merge(
+      is_array($form['locations']) ? $form['locations'] : array(),
+      array(
+        '#type' => 'fieldset',
+        '#title' => t('Location(s)'),
+        '#tree' => TRUE,
+        '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
+        '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
+        '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
+        '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE
+      )
     );
 
 
     $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
     
     for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Location #%number', array('%number' => $index + 1)),
-        '#tree' => TRUE,
-        '#attributes' => array('class' => 'location')
+      $form['locations'][$index] = array_merge(
+        is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
+        array(
+          '#type' => 'fieldset',
+          '#title' => t('Location #%number', array('%number' => $index + 1)),
+          '#tree' => TRUE,
+          '#attributes' => array('class' => 'location')
+        )
       );
     }
-       
+    
     if ($location_form_count == 1) {
       $form['locations'][0]['#title'] = t('Location');
     }
@@ -973,6 +988,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         else {
           if ($node->locations[$index]['lid']) {
             db_query('DELETE FROM {location} WHERE lid = %d', $node->locations[$index]['lid']);
+            location_invoke_locationapi($node->locations[$index], 'delete');
           }
         }
       }
@@ -1228,10 +1244,14 @@ function location_load_locations($type, $node_or_user) {
       $locations[$index]['lat'] = $locations[$index]['latitude'];
       $locations[$index]['lon'] = $locations[$index]['longitude'];
     }
+    
+    if ($extra = location_invoke_locationapi($locations[$index], 'load')) {
+      $locations[$index] = array_merge($locations[$index], $extra);
+    }
     $index++;
   }
   
-  $location = count($locations) ? $locations[1] : array();
+  $location = count($locations) ? $locations[0] : array();
 
   return array('locations' => $locations, 'location' => $location);
 }
@@ -1470,6 +1490,9 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
   if (isset($posted_location) && count($posted_location)) {
   
     $lid = $posted_location['lid'] ? $posted_location['lid'] : db_next_id('{location}_lid');
+    $posted_location['lid'] = $lid;
+    
+    location_invoke_locationapi($posted_location, 'save');
   
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
        db_query("DELETE FROM {location} WHERE lid = %d", $lid);
@@ -1506,6 +1529,8 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );
     }
   }
+  
+  
 }
 
 /**
@@ -1519,3 +1544,17 @@ function _location_floats_are_equal($x, $y) {
 }
 
 
+function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
+  $return = array();
+  foreach (module_implements('locationapi') as $name) {
+    $function = $name .'_locationapi';
+    $result = $function($location, $op, $a3, $a4);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge($return, $result);
+    }
+    else if (isset($result)) {
+      $return[] = $result;
+    }
+  }
+  return $return;
+}
