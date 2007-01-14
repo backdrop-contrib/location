@@ -705,7 +705,7 @@ function location_views_arguments() {
  *  City argument handler.
  */
 function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_user_city($op, &$query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_city($op, &$query, $argtype, $arg, 'user_location');
 }
 function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $table = 'location') {
   switch($op) {
@@ -754,7 +754,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
  *  Province argument handler.
  */
 function location_views_handler_arg_user_province($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_user_province($op, &$query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_province($op, &$query, $argtype, $arg, 'user_location');
 }
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
   $provinces = location_views_provinces($country = '');
