@@ -43,6 +43,7 @@ function location_views_tables() {
       'province'    => array(
         'name' => t('Location: Province'),
         'handler' => 'location_views_province_handler',
+        'addlfields' => array('country'),
         'sortable' => true,
         ),
       'postal_code' => array('name' => t('Location: Postal Code'), 'sortable' => true),
@@ -199,6 +200,7 @@ function location_views_tables() {
         'province'    => array(
           'name' => t('User Location: Province'),
           'handler' => 'location_views_province_handler',
+          'addlfields' => array('country'),
           'sortable' => true,
           ),
         'postal_code' => array('name' => t('User Location: Postal Code'), 'sortable' => true),
