@@ -240,7 +240,7 @@ function location_geocode_us_yahoo_settings(){
     '#description' => t('Unless you are using this site to test and develop, you will need to obtain a Yahoo! Web Services Application ID from the %network_link.  If you are using for development and testing purposes, you can use \'YahooDemo\' as your AppID.  When getting an Application ID from Yahoo!, please also be sure to review the %usage_policy.', array('%network_link' => '<a href="http://api.search.yahoo.com/webservices/register_application">Yahoo! Developer Network</a>', '%usage_policy' => '<a href="http://developer.yahoo.com/usagePolicy/index.html">usage policy</a>'))
   );
 
-  return system_settings_form('location_geocode_us_yahoo_settings', $form);
+  return $form;
 }
 
 
@@ -329,10 +329,10 @@ function location_geocode_us_google_settings(){
     '#size' => 64,
     '#maxlength' => 128,
     '#default_value' => variable_get('location_geocode_us_google_apikey', ''),
-    '#description' => t('In order to use the Google Maps API geocoding web-service, you will need a Google Maps API Key.  You can obtain one at the %sign_up_link for the %google_maps_api.', array('%sign_up_link' => '<a href="http://www.google.com/apis/maps/signup.html">sign-up page</a>', '%google_maps_api' => '<a href="http://www.google.com/apis/maps/">Google Maps API</a>'))
+    '#description' => t('In order to use the Google Maps API geocoding web-service, you will need a Google Maps API Key.  You can obtain one at the !sign_up_link for the !google_maps_api.', array('!sign_up_link' => '<a href="http://www.google.com/apis/maps/signup.html">sign-up page</a>', '!google_maps_api' => '<a href="http://www.google.com/apis/maps/">Google Maps API</a>'))
   );
 
-  return system_settings_form('location_geocode_us_google_settings', $form);
+  return $form;
 }
 
 /**
