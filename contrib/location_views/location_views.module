@@ -23,17 +23,17 @@ function location_views_help($section) {
  * For operation with the views.module.
  */
 function location_views_tables() {
-  
+
    $tables['location'] = array(
-    'name' => 'location', 
+    'name' => 'location',
     'join' => array(
       'left' => array(
         'table' => 'node',
         'field' => 'vid'
-      ), 
+      ),
       'right' => array(
         'field' => 'eid'
-      ), 
+      ),
     ),
     'fields' => array(
       'name'        => array('name' => t('Location: Name'),        'sortable' => true),
@@ -106,7 +106,7 @@ function location_views_tables() {
     'operator' => 'views_handler_operator_like',
     'handler' => 'views_handler_filter_like',
     );
-  
+
   $tables['location']['filters']['postal_code'] = array(
     'field' => 'postal_code',
     'name' => t('Location: Postal Code'),
@@ -159,7 +159,7 @@ function location_views_tables() {
     'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
     'cacheable' => 'no',
   );
-  
+
   $tables['location']['filters']['proximity_map'] = array(
     'field' => 'distance',
     'name' => t('Location: Proximity Map'),
@@ -169,7 +169,7 @@ function location_views_tables() {
     'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
     'cacheable' => 'no',
   );
-  
+
   // add field showing distance from selected zip code
   $tables['location']['fields']['distance'] = array(
     'name'      => t('Location: Distance'),
@@ -179,18 +179,18 @@ function location_views_tables() {
     'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
     'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
     );
-    
+
   if (module_exists('usernode')) {
     $tables['user_location'] = array(
-      'name' => 'location', 
+      'name' => 'location',
       'join' => array(
         'left' => array(
           'table' => 'usernode',
           'field' => 'uid'
-        ), 
+        ),
         'right' => array(
           'field' => 'eid'
-        ), 
+        ),
       ),
       'fields' => array(
         'name'        => array('name' => t('User Location: Name'),        'sortable' => true),
@@ -263,7 +263,7 @@ function location_views_tables() {
       'operator' => 'views_handler_operator_like',
       'handler' => 'views_handler_filter_like',
       );
-     
+
     $tables['user_location']['filters']['postal_code'] = array(
       'field' => 'postal_code',
       'name' => t('User Location: Postal Code'),
@@ -344,7 +344,7 @@ function location_views_tables() {
  *  Create default location view
  */
 function location_views_default_views() {
-  
+
   // find all location-enabled nodes
   $location_node_types = array();
   foreach (node_get_types('names') as $type => $name) {
@@ -352,7 +352,7 @@ function location_views_default_views() {
       $location_node_types[] = $type;
     }
   }
-    
+
   $view = new stdClass();
   $view->name = 'location_table';
   $view->description = 'Node location table.';
@@ -659,7 +659,7 @@ function location_views_default_views() {
     $views[$view->name] = $view;
 
   }
-  
+
   return $views;
 }
 
@@ -707,12 +707,12 @@ function location_views_arguments() {
  *  City argument handler.
  */
 function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_city($op, &$query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_city($op, $query, $argtype, $arg, 'user_location');
 }
 function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $table = 'location') {
   switch($op) {
   case 'summary':
-      
+
       // if a length option has been provided, display only the $len left letters of the name
       $len = intval($arg);
       $query->ensure_table($table, true);
@@ -756,7 +756,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
  *  Province argument handler.
  */
 function location_views_handler_arg_user_province($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_province($op, &$query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_province($op, $query, $argtype, $arg, 'user_location');
 }
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
   $provinces = location_views_provinces($country = '');
@@ -765,7 +765,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
       $query->ensure_table($table, true);
       $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'" . LOCATION_VIEWS_UNKNOWN . "',$table.province)";
       $fieldinfo['fieldname'] = 'province';
-      
+
       // Make sure the country gets added so we can do a lookup on the province name.
       $query->add_field('country', $table);
 
@@ -790,7 +790,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
  *  Country argument handler.
  */
 function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_country($op, &$query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_country($op, $query, $argtype, $arg, 'user_location');
 }
 function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $table = 'location') {
 
@@ -831,7 +831,7 @@ function location_handler_operator_eq() {
  * Custom filter for = queries
  */
 function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
-  
+
   switch($filter[value]) {
     case(''):
       return;
@@ -906,12 +906,12 @@ function location_views_provinces($country = '') {
  *  Get an array of all enabled countries.
  */
 function location_views_countries() {
-  
+
   $countries = array();
   $provinces = array();
   $configured = location_get_configured_countries();
   $country_list = _location_get_iso3166_list();
-  
+
   foreach ($configured as $country) {
     $countries[$country] = $country_list[$country];
   }
@@ -926,7 +926,7 @@ function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $
 
 /**
  *  Proximity handling functions
- * 
+ *
  *  at the moment, everything is set up to assume the unit is miles
  *  need to find a way to provide an alternative for km
  *  not sure yet how to add another selector into the mix so user can select units
@@ -952,19 +952,19 @@ function location_views_proximity_operators() {
  *  Uses functions and queries created in location.inc and earth.inc and re-factors them to work in views
  */
 function location_views_filter_handler_user_proximity($op, $filter, $filterinfo, &$query) {
-  return location_views_filter_handler_proximity($op, $filter, $filterinfo, &$query, 'user_location');
+  return location_views_filter_handler_proximity($op, $filter, $filterinfo, $query, 'user_location');
 }
 function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$query, $table = 'location') {
-  
+
   $unit     = 'miles';
   $distance = $filter['operator'];
-  
+
   if ($filterinfo['value']['coordinates']) {
     $lat = $_GET['edit']['gmap_latitude'];
     $lon = $_GET['edit']['gmap_longitude'];
-  
+
   } else {
-    
+
     $zip      = $filter['value'];
     $result   = db_query("SELECT * FROM {zipcodes} WHERE zip='$zip'");
     while ($arr = db_fetch_array($result)) {
@@ -972,12 +972,12 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
       $lon = $arr['longitude'];
     }
   }
-  
+
   if (!$lat || !$lon) return;
 
   $divisor = $unit == 'km' ? 1000 : 1609.347;
   $latrange = earth_latitude_range($lon, $lat, ($distance * $divisor));
-  $lonrange = earth_longitude_range($lon, $lat, ($distance * $divisor));  
+  $lonrange = earth_longitude_range($lon, $lat, ($distance * $divisor));
 
   $query->ensure_table($table);
   $query->add_orderby(NULL, "((". earth_distance_sql($lon, $lat) .") / $divisor)", 'ASC', 'distance');
@@ -989,9 +989,9 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
  *  Function to create a gmap map form
  */
 function location_views_map_input_form() {
-  
+
   $form = array();
-  
+
   if (!module_exists('gmap')) return $form;
 
   $user = $GLOBALS['user'];
@@ -1003,7 +1003,7 @@ function location_views_map_input_form() {
 
   $form['map'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Google Map'), 
+    '#title' => t('Google Map'),
     '#description' => t('Click on the map to mark the center point for your search, then submit the values.')
     );
   $form['map']['gmap_user'] = array(
@@ -1044,15 +1044,15 @@ function location_views_map_input_form() {
  *  Implementation of views_pre_view
  */
 function location_views_views_pre_view($view, $items) {
-  
+
   // the map form gets cached in the views table cache
   // get location_views_map_input_form() to regenerate itself by clearing the cache
   // and recalling the form
   foreach ($view->filter as $key => $filter) {
     if ($filter['field'] == 'location.proximity_map' || $filter['field'] == 'user_location.proximity_map') {
       cache_clear_all('views_tables', true);
-      $view->filter[$key]['value'] = location_views_map_input_form();  
+      $view->filter[$key]['value'] = location_views_map_input_form();
     }
   }
-  
+
 }
