@@ -496,25 +496,20 @@ function location_form_alter($form_id, &$form) {
         '#weight' => 0
       )
     );
-    
-    $options = array();
-    for ($i = 0; $i <= 100; $i++) {
-      $options[$i] = $i;
-    }
-    
+
     $form['location']['multiple_locations']['location_maxnum'] = array(
       '#type' => 'select',
       '#title' => t('Maximum number of locations allowed for this type.'),
-      '#default_value' => variable_get('location_maxnum_'. $type, 1),
-      '#options' => $options,
+      '#default_value' => variable_get('location_maxnum_'. $type, 0),
+      '#options' => drupal_map_assoc(range(0,100)),
       '#description' => t('This setting determines the maximum number of locations that can be assigned to a node of this type.  This number must be greater than or equal to the default number of location forms selected below.  By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
     );
     
     $form['location']['multiple_locations']['location_defaultnum'] = array(
       '#type' => 'select',
       '#title' => t('Default number of location forms'),
-      '#default_value' => variable_get('location_defaultnum_'. $type, 1),
-      '#options' => drupal_map_assoc(array(0,1,2,3,4,5,6,7,8,9,10)),
+      '#default_value' => variable_get('location_defaultnum_'. $type, 0),
+      '#options' => drupal_map_assoc(range(0,10)),
       '#description' => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
     );    
         
@@ -549,7 +544,15 @@ function location_form_alter($form_id, &$form) {
       '#default_value' => variable_get('location_collapsed_'. $type, 1),
       '#description' => t('Display the location box collapsed.')
     );
-    
+
+    $form['location']['location_addanother'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Add another location from node view page'),
+      '#return_value' => 1,
+      '#default_value' => variable_get('location_addanother_'. $type, 0),
+      '#description' => t('Display the "Add another location" option on the node view page.')
+    );
+
     $form['location']['required_field_notice'] = array(
       '#type' => 'markup',
       '#value' => '<p><strong>'. t('NOTE:') .'</strong> '. t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
@@ -619,12 +622,13 @@ function location_form_alter($form_id, &$form) {
       }
     }
 
+    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
 
     $form['locations'] = array_merge(
       is_array($form['locations']) ? $form['locations'] : array(),
       array(
         '#type' => 'fieldset',
-        '#title' => t('Location(s)'),
+        '#title' => format_plural($location_form_count, 'Location', 'Locations'),
         '#tree' => TRUE,
         '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
         '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
@@ -633,9 +637,6 @@ function location_form_alter($form_id, &$form) {
       )
     );
 
-
-    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
-    
     for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index] = array_merge(
         is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
@@ -1008,8 +1009,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           //}
         }
       }
-      
-      if (count($node->locations) < variable_get('location_maxnum_'. $node->type, 0) && !$teaser && node_access('update', $node)) {
+
+      if (variable_get('location_addanother_'. $node->type, 0) && count($node->locations) < variable_get('location_maxnum_'. $node->type, 0) && !$teaser && node_access('update', $node)) {
         $node->content['locations']['#value'] .= drupal_get_form('location_extra_form', $node);
       }
       break;
