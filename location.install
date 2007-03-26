@@ -205,3 +205,22 @@ function location_update_5() {
   
   return $ret;
 }
+
+
+function location_update_6() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("UPDATE {location} SET country = 'se' WHERE country = 'sw'");
+
+      break;
+    case 'pgsql':
+      $ret[] = update_sql("UPDATE {location} SET country = 'se' WHERE country = 'sw'");
+
+      break;
+  }
+  
+  return $ret;
+}
