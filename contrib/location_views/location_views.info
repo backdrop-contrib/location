@@ -1,6 +1,5 @@
 ; $Id$
 name = Location Views
 description = Views-enables the node location fields and creates default location views. User location fields are views-enabled if usernode is installed.
-version = "$Name$"
 package = Location
 dependencies = location views
