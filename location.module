@@ -1662,7 +1662,3 @@ function _location_user_address($action = NULL, $lid = NULL) {
 
   return $output;
 }
-
-function z($array) {
-  drupal_set_message(print_r($array,true));
-}
