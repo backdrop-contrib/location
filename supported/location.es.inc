@@ -35,7 +35,7 @@ function location_province_list_es() {
     'LG' => "Lugo",
     'MD' => "Madrid",
     'ML' => "Malaga",
-    'MU' => "Mucria",
+    'MU' => "Murcia",
     'NV' => "Navarra",
     'OU' => "Ourense",
     'PL' => "Palencia",
