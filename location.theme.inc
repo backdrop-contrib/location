@@ -171,7 +171,7 @@ function theme_location($location = array(), $hide = array()) {
 
     if ((!empty($location['city']) and !in_array('city', $hide)) or
         (!empty($location['province']) and !in_array('province', $hide)) or
-        (!empty($location['postal_codet']) and !in_array('postal_code', $hide))) {
+        (!empty($location['postal_code']) and !in_array('postal_code', $hide))) {
 
       $city_province_postal = array();
 
