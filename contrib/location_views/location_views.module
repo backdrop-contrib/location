@@ -709,6 +709,7 @@ function location_views_arguments() {
 function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
   return location_views_handler_arg_city($op, $query, $argtype, $arg, 'user_location');
 }
+
 function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $table = 'location') {
   switch($op) {
   case 'summary':
@@ -758,6 +759,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
 function location_views_handler_arg_user_province($op, &$query, $argtype, $arg = '') {
   return location_views_handler_arg_province($op, $query, $argtype, $arg, 'user_location');
 }
+
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
   $provinces = location_views_provinces($country = '');
   switch($op) {
@@ -792,9 +794,10 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
 function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = '') {
   return location_views_handler_arg_country($op, $query, $argtype, $arg, 'user_location');
 }
+
 function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $table = 'location') {
 
-  $all_countries=_location_get_iso3166_list();
+  $all_countries=_location_country_get();
   $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
 
   switch($op) {
@@ -827,7 +830,7 @@ function location_handler_operator_eq() {
   return array('' => t('<All>'), '=' => t('='), '!=' => t('not ='));
 }
 
-/*
+/**
  * Custom filter for = queries
  */
 function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
@@ -844,7 +847,7 @@ function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
   }
   switch($filterinfo['field']) {
     case ('province'):
-      $filter['value'] = location_form2api(array('province' => $filter['value']));
+      $filter['value'] = _location_form2api(array('province' => $filter['value']));
       $filter['value'] = $filter['value']['province'];
       break;
   }
@@ -864,15 +867,14 @@ function location_views_country_handler($fieldinfo, $fielddata, $value, $data)  
  *  Format a province name
  */
 function location_views_province_handler($fieldinfo, $fielddata, $value, $data)  {
-   $array = location_province_select_options();
-   $provinces = $array['#options'];
+   $provinces = _location_province_get();
    $location['province'] = $data->location_province;
    $location['country']  = $data->location_country;
-   $values = location_api2form($location);
+   $values = _location_api2form($location);
    return $provinces[$values['province']];
 }
 
-/*
+/**
  * Format complete address as a single field.
  */
 function location_views_field_handler_user_address($fieldinfo, $fielddata, $value, $data) {
@@ -884,6 +886,7 @@ function location_views_field_handler_user_address($fieldinfo, $fielddata, $valu
   $location['postal_code'] = $data->user_location_postal_code;
   return theme('location', $location);
 }
+
 function location_views_field_handler_address($fieldinfo, $fielddata, $value, $data) {
   $location['name'] = $data->location_name;
   $location['street'] = $data->location_street;
@@ -898,31 +901,27 @@ function location_views_field_handler_address($fieldinfo, $fielddata, $value, $d
  *  Get an array of provinces, optionally limited by country.
  */
 function location_views_provinces($country = '') {
-  $form = location_province_select_options('', FALSE, $country);
-  return $form['#options'];
+  return _location_province_get();
 }
 
 /**
  *  Get an array of all enabled countries.
  */
 function location_views_countries() {
-
   $countries = array();
   $provinces = array();
-  $configured = location_get_configured_countries();
-  $country_list = _location_get_iso3166_list();
+  $configured = _location_country_configured_get();
+  $country_list = _location_country_get();
 
   foreach ($configured as $country) {
     $countries[$country] = $country_list[$country];
   }
   return $countries;
-
 }
 
 function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $data) {
   return number_format(round($data->distance, 2), 2) .' '. $distance_unit;
 }
-
 
 /**
  *  Proximity handling functions
@@ -954,6 +953,7 @@ function location_views_proximity_operators() {
 function location_views_filter_handler_user_proximity($op, $filter, $filterinfo, &$query) {
   return location_views_filter_handler_proximity($op, $filter, $filterinfo, $query, 'user_location');
 }
+
 function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$query, $table = 'location') {
 
   $unit     = 'miles';
@@ -973,7 +973,7 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
     }
   }
 
-  if (!$lat || !$lon) return;
+  if (!$lat or !$lon) return;
 
   $divisor = $unit == 'km' ? 1000 : 1609.347;
   $latrange = earth_latitude_range($lon, $lat, ($distance * $divisor));
@@ -1049,7 +1049,7 @@ function location_views_views_pre_view($view, $items) {
   // get location_views_map_input_form() to regenerate itself by clearing the cache
   // and recalling the form
   foreach ($view->filter as $key => $filter) {
-    if ($filter['field'] == 'location.proximity_map' || $filter['field'] == 'user_location.proximity_map') {
+    if ($filter['field'] == 'location.proximity_map' or $filter['field'] == 'user_location.proximity_map') {
       cache_clear_all('views_tables', true);
       $view->filter[$key]['value'] = location_views_map_input_form();
     }
