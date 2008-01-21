@@ -492,7 +492,9 @@ function location_form_alter($form_id, &$form) {
       views_invalidate_cache();
     }
   }
-  elseif (isset($form['type']['#value']) and $form['type']['#value'] .'_node_form' == $form_id and variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
+  elseif (isset($form['type']['#value'])
+      and $form['type']['#value'] .'_node_form' == $form_id
+      and variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
     $node = $form['#node'];
 
     $location_fields = array();
@@ -507,7 +509,9 @@ function location_form_alter($form_id, &$form) {
       }
     }
 
-    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
+    $location_form_count = !empty($node->nid) ?
+      max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) :
+      variable_get('location_defaultnum_'. $node->type, 1);
 
     $form['locations'] = array_merge(
       is_array($form['locations']) ? $form['locations'] : array(),
@@ -523,15 +527,19 @@ function location_form_alter($form_id, &$form) {
     );
 
     for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index] = array_merge(
-        is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
-        array(
-          '#type' => 'fieldset',
-          '#title' => t('Location #%number', array('%number' => $index + 1)),
-          '#tree' => TRUE,
-          '#attributes' => array('class' => 'location')
-        )
-      );
+      if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
+        for ($index = 0; $index < $location_form_count; $index++) {
+          $form['locations'][$index] = array_merge(
+            is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
+            array(
+              '#type'       => 'fieldset',
+              '#title'      => t('Location #%number', array('%number' => $index + 1)),
+              '#tree'       => TRUE,
+              '#attributes' => array('class' => 'location'),
+            )
+          );
+        }
+      }
     }
 
     if ($location_form_count == 1) {
