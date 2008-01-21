@@ -181,9 +181,9 @@ function location_update_5() {
         PRIMARY KEY (lid)
       )");
       $ret[] = update_sql("INSERT INTO {location}
-        (eid, type, name, street, additional, city, province, postal_code, country, latitude,
-        longitude, source) SELECT eid, type, name, street, additional, city, province,
-        postal_code, country, latitude, longitude, source FROM {location}_old");
+      	(eid, type, name, street, additional, city, province, postal_code, country, latitude,
+      	longitude, source) SELECT eid, type, name, street, additional, city, province,
+      	postal_code, country, latitude, longitude, source FROM {location}_old");
       $ret[] = update_sql("DROP TABLE {location}_old");
 
       $ret[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");

@@ -1,10 +1,17 @@
 <?php
-// $Id$
+/**
+ * $Id$
+ * @author Location Dev Team
+ * @file google.inc
+ * Integrate the Google maps API
+ */
 
-// Returns lower-case of iso codes for countries supported by Google's geocoder
+/**
+ * Returns lower-case of iso codes for countries supported by Google's geocoder
+ */
 function google_geocode_country_list() {
   static $countries;
-  
+
   if (!count($countries)) {
     $countries = array(
       'at',
@@ -32,36 +39,38 @@ function google_geocode_country_list() {
       'uk'
     );
   }
-  
+
   return $countries;
 }
 
-// Return general info
+/**
+ * Return general info
+ */
 function google_geocode_info() {
   static $info;
-  
+
   if (!count($info)) {
     $info = array('name' => 'Google Maps', 'url' => 'http://maps.google.com', 'tos' => 'http://www.google.com/help/terms_local.html', 'general' => TRUE);
   }
-  
+
   return $info;
 }
 
 function google_geocode_location($location = array()) {
-  
+
   switch ($location['country']) {
     case 'li':
       $location['country'] = 'Liechtenstein';
-      $query = location_address2singleline($location);
+      $query = _location_address_singleline($location);
       break;
-      
+
     case 'at':
       $location['country'] = 'Austria';
-      $query = location_address2singleline($location);
+      $query = _location_address_singleline($location);
       break;
-      
+
     case 'uk':
-      if ($location['street'] && $location['city']) {
+      if ($location['street'] and $location['city']) {
         unset($location['postal_code']);
       }
       elseif ($location['postal_code']) {
@@ -72,40 +81,39 @@ function google_geocode_location($location = array()) {
       else {
         unset($location['postal_code']);
       }
-      $query = location_address2singleline($location);
+      $query = _location_address_singleline($location);
       break;
-      
+
     default:
-      $query = location_address2singleline($location);
+      $query = _location_address_singleline($location);
       break;
   }
 
   $service_url = 'http://maps.google.com/maps/geo?output=xml&key='. variable_get('location_geocode_google_apikey', '') .'&q=';
-  
+
   $http_reply = drupal_http_request($service_url . urlencode($query));
-  
+
   $status_code_match = array();
   preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
   $status_code = $status_code_match[1];
   if ($status_code != 200) {
     return NULL;
   }
-  
+
   $accuracy_code_match = array();
   preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
   $accuracy_code = $accuracy_code_match[1];
   if ($accuracy_code < 3) {
     return NULL;
   }
-  
+
   $latlon_match = array();
   preg_match('/<coordinates>(.*)<\/coordinates>/', $http_reply->data, $latlon_match);
-  
+
   $latlon_exploded = explode(',', $latlon_match[1]);
-  
+
   return array('lat' => $latlon_exploded[1], 'lon' => $latlon_exploded[0]);
 }
-
 
 function google_geocode_settings() {
   $form = array();
@@ -121,5 +129,3 @@ function google_geocode_settings() {
 
   return $form;
 }
-
-?>

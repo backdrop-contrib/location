@@ -18,15 +18,16 @@
 
 include_once "includes/bootstrap.inc";
 include_once "includes/common.inc";
- 
+
 // Enable access checking?
 $access_check = TRUE;
 
-$sql_updates = array(0  => '',
-                     1  => 'Mid 4.6 upgrade -- Merge location_user and location_node tables into location',
-                     2  => "Mid 4.6 upgrade II -- Rename column 'exact' to 'source'",
-                     3  => "Correction to zipcode data"
-                    );
+$sql_updates = array(
+  0  => '',
+  1  => 'Mid 4.6 upgrade -- Merge location_user and location_node tables into location',
+  2  => "Mid 4.6 upgrade II -- Rename column 'exact' to 'source'",
+  3  => "Correction to zipcode data"
+);
 
 if (!ini_get("safe_mode")) {
   set_time_limit(180);
@@ -64,8 +65,8 @@ function location_upgrade_page() {
     case "Update":
       $edit = $_POST['edit'];
 
-      if (!isset($edit['location_update_version']) || $edit['location_update_version'] == 0) { 
-      
+      if (!isset($edit['location_update_version']) or $edit['location_update_version'] == 0) {
+
       //*****************************
         $form = form_select('Select the update after your most recent update', 'location_update_version', '', $sql_updates, 'Please select what you think was the last update for this module.  If you\'re not sure of what your last update was, it is better to select one that is older than what you think than to select one that is newer.  Updates that are too old for you will fail while the newer ones will still execute.');
         $form .= form_submit('Update');
@@ -84,7 +85,7 @@ function location_upgrade_page() {
         $links[] = "<a href=\"index.php\">main page</a>";
         $links[] = "<a href=\"index.php?q=admin\">administration pages</a>";
         print theme("item_list", $links);
-      
+
         location_upgrade($edit['location_update_version']);
 
         print location_upgrade_page_footer();
@@ -104,7 +105,7 @@ function location_upgrade_page() {
 
 function location_upgrade($update_n) {
   global $base_url, $sql_updates;
-  
+
   $update_keys = array_keys($sql_updates);
   $number = $update_n;
   while (in_array($number, $update_keys)) {
@@ -125,7 +126,7 @@ function location_upgrade_info() {
 
 if (isset($_GET["op"])) {
   // Access check:
-  if (($access_check == 0) || ($user->uid == 1)) {
+  if (($access_check == 0) or ($user->uid == 1)) {
     location_upgrade_page();
   }
   else {
@@ -145,7 +146,7 @@ function location_update_1() {
   db_query("ALTER TABLE {location_node} DROP PRIMARY KEY");
   db_query("ALTER TABLE {location_node} CHANGE nid oid int(10) unsigned NOT NULL default '0'");
   db_query("ALTER TABLE {location_node} ADD PRIMARY KEY (type, oid)");
-  
+
   $result = db_query("SELECT * FROM {location_user}");
   while ($row = db_fetch_object($result)) {
     db_query("INSERT INTO {location_node} (oid, name, street, additional, city, province, postal_code, country, latitude, longitude, exact, type) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d, 'user')", $row->uid, $row->name, $row->street, $row->additional, $row->city, $row->province, $row->postal_code, $row->country, $row->latitude, $row->longitude, $row->exact, $row->type);
@@ -160,5 +161,3 @@ function location_update_2() {
 function location_update_3() {
   db_query("UPDATE {zipcodes} SET city = 'North Plainfield' WHERE country = 'us' AND zip = '07060'");
 }
-
-?>
