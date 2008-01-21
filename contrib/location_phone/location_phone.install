@@ -1,0 +1,34 @@
+<?php
+// $Id$
+
+function location_phone_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("
+      CREATE TABLE {location_phone} (
+        lid int(10) unsigned NOT NULL default '0',
+        phone varchar(31) default NULL,
+        PRIMARY KEY  (lid)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
+      ");
+      break;
+    
+    case 'pgsql':
+      db_query("
+        CREATE TABLE {location_phone} (
+        lid int NOT NULL default '0' CHECK (eid >= 0),
+        phone varchar(31) default NULL,
+        postal_code varchar(16) default NULL,
+        PRIMARY KEY  (lid)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
+      ");
+      break;
+  }
+  drupal_set_message(t('Installed tables for module location_phone'));
+}
+
+//TODO: drop 'postal_code' column in pgsql version of table
+//That's what you get for a lousy copy-paste-modify job
+
+?>

@@ -1,0 +1,6 @@
+; $Id$
+name = Location Phone
+package = Location
+description = The location module allows you to add a phone number to a location.
+dependencies = location
+

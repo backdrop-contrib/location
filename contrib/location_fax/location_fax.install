@@ -1,0 +1,31 @@
+<?php
+// $Id$
+
+function location_fax_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("
+      CREATE TABLE {location_fax} (
+        lid int(10) unsigned NOT NULL default '0',
+        fax varchar(31) default NULL,
+        PRIMARY KEY  (lid)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
+      ");
+      break;
+    
+    case 'pgsql':
+      db_query("
+        CREATE TABLE {location_fax} (
+        lid int NOT NULL default '0' CHECK (eid >= 0),
+        fax varchar(31) default NULL,
+        PRIMARY KEY  (lid)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
+      ");
+      break;
+  }
+  drupal_set_message(t('Installed tables for module location_fax'));
+}
+
+
+?>

@@ -1,0 +1,90 @@
+<?php
+// $Id$
+
+function location_fax_form_alter($form_id, &$form) {
+
+  if ($form_id == 'node_type_form') {
+    $type = $form['#node_type']->type;
+  
+    $form['location']['location_fax'] = array(
+      '#type' => 'radios',
+      '#title' => 'Fax numbers',
+      '#default_value' => variable_get('location_fax_'. $type, 0),
+      '#options' => array(t('Do not collect fax numbers for content of this type.'), t('Allow fax numbers to be submitted for content of this type.'), t('Require fax numbers to be submitted for content of this type.')),
+      '#prefix' => '<div style="margin-left: 40px">',
+      '#suffix' => '</div>',
+      '#weight' => 9
+    );
+  }
+  elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0) && variable_get('location_fax_'. $form['type']['#value'], 0)) {
+    $type = $form['type']['#value'];
+    $node = $form['#node'];
+    
+    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
+    
+    for ($index = 0; $index < $location_form_count; $index++) {
+      $form['locations'][$index]['fax'] = array_merge(
+        is_array($form['locations'][$index]['fax']) ? $form['locations'][$index]['fax'] : array(),
+        array(
+          '#type' => 'textfield',
+          '#title' => t('Fax number'),
+          '#default_value' => isset($node->locations[$index]['fax']) ? $node->locations[$index]['fax'] : '',
+          '#size' => 31,
+          '#maxlength' => 31,
+          '#required' => ($index == 0 && variable_get('location_fax_'. $type, 0) == 2),
+          '#weight' => 8
+        )
+      );
+    }
+  }
+  elseif ($form_id == 'location_extra') {
+    $arg0 = arg(0);
+    $arg1 = arg(1);
+    $arg2 = arg(2);
+    if ($arg0 == 'node' && is_numeric($arg1) && empty($arg2)) {
+      // We clearly are viewing a node, and since it's already loaded into a static array, node_load()ing it costs nothing
+      $node = node_load($arg1);
+      if (variable_get('location_fax_'. $node->type, 0)) {
+        $form['location']['fax'] = array_merge(
+          is_array($form['location']['fax']) ? $form['location']['fax'] : array(),
+          array(
+            '#type' => 'textfield',
+            '#title' => t('Fax number'),
+            '#size' => 31,
+            '#maxlength' => 31,
+            '#required' => (count($node->locations) == 0 && variable_get('location_fax_'. $type, 0) == 2),
+            '#weight' => 8
+          )
+        );
+      }
+    }
+  }
+}
+
+function location_fax_locationapi(&$location, $op) {
+  switch ($op) {
+    case 'save':
+      db_query('DELETE FROM {location_fax} WHERE lid = %d', $location['lid']);
+      db_query("INSERT INTO {location_fax} (lid, fax) VALUES (%d, '%s')", $location['lid'], $location['fax']);
+      break;
+    case 'load':
+      if ($row = db_fetch_object(db_query('SELECT fax FROM {location_fax} WHERE lid = %d', $location['lid']))) {
+        return (array) $row;
+      }
+      
+      break;
+    case 'delete':
+      db_query('DELETE FROM {location_fax} WHERE lid = %d', $location['lid']);
+      break;
+  }
+}
+
+function location_fax_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return t('Adds ability to include a fax-number field for locations.  NOTE: Requires location.');
+      break;
+  }
+}
+
+?>

@@ -1,6 +1,83 @@
 <?php
 // $Id$
 
+/**
+ * Returns a lat/lon pair of the approximate center of the given postal code in the given country
+ *
+ * @param $location
+ *   An associative array $location where
+ *     'street'       => the street portion of the location
+ *     'supplemental' => additional street portion of the location
+ *     'province'     => the province, state, or territory
+ *     'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *     'postal_code'  => the international postal code for this location (REQUIRED)
+ *
+ * @return
+ *   An associative array where
+ *      'lat' => approximate latitude of the center of the postal code's area
+ *      'lon' => approximate longitude of the center of the postal code's area
+ *
+ */
+function location_latlon_rough_ca($location = array()) {
+  if (!isset($location['postal_code'])) {
+    return NULL;
+  }
+
+  $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], $location['postal_code']);
+  
+  if ($row = db_fetch_object($result)) {
+    return array('lat' => $row->latitude, 'lon' => $row->longitude);
+  }
+  else {
+    return NULL;
+  }
+}
+
+/**
+ * Returns a lat/lon pair of the approximate center of the given postal code in the given country
+ *
+ * @param $location
+ *   An associative array $location where only postal code and country are necessary, but can have the keys:
+ *     'street'       => the street portion of the location
+ *     'supplemental' => additional street portion of the location
+ *     'province'     => the province, state, or territory
+ *     'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *     'postal_code'  => the international postal code for this location (REQUIRED)
+ *
+ * @return
+ *   An associative array where
+ *      'lat' => approximate latitude of the center of the postal code's area
+ *      'lon' => approximate longitude of the center of the postal code's area
+ *      'city'     => the city
+ *      'province'     => the province, state, or territory
+ *      'country'      => lower-cased two-letter ISO code
+ *
+ */
+function location_get_postalcode_data_ca($location = array()) {
+  // Now we pad the thing and query.
+  $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], $location['postal_code']);
+  if ($row = db_fetch_object($res)) {
+    return array('lat' => $row->latitude, 'lon' => $row->longitude, 'city' => $row->city, 'province' => $row->state, 'country' => $row->country);
+  }
+  else {
+    return NULL;
+  } 
+}
+
+/**
+ * Parameters:
+ *   An associative array $location where
+ *     'street'       => the street portion of the location
+ *     'supplemental' => additional street portion of the location
+ *     'province'     => the province, state, or territory
+ *     'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *     'postal_code'  => the international postal code for this location (REQUIRED)
+ *
+ *
+ */
+function location_latlon_exact_ca($location = array()) {
+  // return location_geocode_ca_geocoder($location);
+}
 
 function location_map_link_ca_yahoo($location = array()) {
   $get_query = '?';
@@ -199,6 +276,79 @@ function _location_ca_yahoo_csz_get_field($location) {
   return '';
 }
 
+function location_geocode_ca_providers() {
+  return array(
+    'geocoder' => array('name' => 'GeoCode.ca geocoding service', 'url' => 'http://geocoder.ca/?api=1', 'tos' => 'http://geocoder.ca/?terms=1http://geocoder.ca/?terms=1'),
+  );
+}
+
+
+function location_geocode_ca_geocoder_settings(){
+  $form = array();
+
+  $form['location_geocode_ca_geocoder_apikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Geocoder API Key'),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#default_value' => variable_get('location_geocode_ca_geocoder_apikey', ''),
+    '#description' => t('In order to use the Geocoder.ca API geocoding web-service, you for a commercial entity or without attribution you will need a Geocoder API Key.  You can obtain one at the !sign_up_link for the !geocoder_api.', array('!sign_up_link' => '<a href="http://geocoder.ca/?register=1">sign-up page</a>', '!geocoder_api' => '<a href="http://geocoder.ca/?premium_api=1">Geocoder API</a>'))
+  );
+
+  return $form;
+}
+
+
+/**
+ * This needs some more work to cover errors and such. I think showing a proper
+ * Drupal error is a good idea. If an incorrect address is given to geocoder.ca
+ * it offers a suggestion. If this happens the drupal user should be told.
+ */
+function location_geocode_ca_geocoder($location = array()) {
+  $service_url = "http://geocoder.ca/?geoit=XML";
+
+  if (variable_get('location_geocode_ca_geocoder_apikey', NULL)) {
+    $service_url .= '&auth='. variable_get('location_geocode_ca_geocoder_apikey', NULL) .'&locate=';
+  }
+  else {
+    $service_url .= '&locate=';
+  }
+
+  // geocoder gives better results when not usong postal code, country and ,
+  unset($location['postal_code'], $location['country']);
+  $address = strtr(location_address2singleline($location), array(', ' => ' '));
+
+  $http_reply = drupal_http_request($service_url . urlencode($address));
+
+  if ($http_reply->code == 400) {
+    return NULL;
+  }
+  else {
+    $matches = array();
+    $lat_match = array();
+    $lon_match = array();
+    $latlon = array();
+
+    if (preg_match('/<error>(.*)<\/error>/', $http_reply->data, $lat_match)) {
+      return NULL;
+    }
+
+    if (preg_match('/<latt>(.*)<\/latt>/', $http_reply->data, $lat_match)) {
+      $latlon['lat'] = $lat_match[1];
+    }
+    else {
+      return NULL;
+    }
+
+    if (preg_match('/<longt>(.*)<\/longt>/', $http_reply->data, $lon_match)) {
+      $latlon['lon'] = $lon_match[1];
+      return $latlon;
+    }
+    else {
+      return NULL;
+    }
+  }
+}
 
 function location_province_list_ca() {
   return array('AB' => 'Alberta',

@@ -122,37 +122,49 @@ function _location_driving_directions_link_de_tinfo($locationA, $locationB) {
   }
 }
 
-function theme_location_de($location = array()) {
+function theme_location_de($location = array(), $hide = array()) {
   $output = '';
   if (count($location)) {
     $output .= "\n";
-    $output .= '<dl class="location">'."\n";
-    
-    if (isset($location['street'])) {
-      $output .= '<dd>'. $location['street'] .'</dd>';
+    $output .= '<div class="location vcard"><div class="adr">'."\n";
+    if (!empty($location['name']) && !in_array('name', $hide)) {
+       $output .= '<div class="fn">'. $location['name'] .'</div>';
     }
-    
-    if (isset($location['additional'])) {
-      $output .= '<dd>' . $location['additional'] . '</dd>';
+
+    if (!empty($location['street']) && !in_array('street', $hide)) {
+      $output .= '<div class="street-address">'. $location['street'];
+      if (!empty($location['additional']) && !in_array('street', $hide)) {
+        $output .= ' ' . $location['additional'];
+      }
+      $output .='</div>';
     }
-    
-    $postal_isset = (isset($location['postal_code']) && strlen($location['postal_code']));
-    $city_isset = (isset($location['city']) && strlen($location['postal_code']));
-    if ($postal_isset || $city_isset) {
-      $output .= '<dd>';
-      if ($postal_isset) {
-        $output .= $location['postal_code'];
+
+    if ((!empty($location['city']) && !in_array('city', $hide)) ||
+        (!empty($location['postal_codet']) && !in_array('postal_code', $hide))) {
+
+      $city_postal = array();
+
+      if (!empty($location['postal_code']) && !in_array('postal_code', $hide)) {
+        $city_postal[] = '<span class="postal-code">'. $location['postal_code'] .'</span>';
       }
-      if ($postal_isset && $city_isset) {
-        $output .= ' ';
+
+      if (!empty($location['city']) && !in_array('city', $hide)) {
+        $city_postal[] = '<span class="locality">'. $location['city'] .'</span>';
       }
-      if ($city_isset) {
-        $output .= $location['city'];
-      }
-      $output .= "</dd>\n";
+
+      $output .= '<div>'. implode(' ', $city_postal) .'</div>';
     }
-    
-    $output .= '<dd>'. t('Germany') ."</dd>\n";
+
+    if (!in_array('country', $hide)) {
+      $output .= '<div class="country-name">'. t('Germany') .'</div>';
+    }
+
+    if (isset($location['latitude']) && isset($location['longitude'])) {
+      $output .=  '<div class="geo"><abbr class="latitude" title="'. $location['latitude'] .'" /><abbr class="longitude" title="'. $location['latitude']. '" /></div>';
+    }
+
+    $output .= '</div></div>';
+
   }
   return $output;
 }
@@ -211,5 +223,4 @@ function location_province_list_de() {
          'ST' => 'Sachsen-Anhalt',
          'TH' => 'Thüringen'
          );
-}  
-?>
+}

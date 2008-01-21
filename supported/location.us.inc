@@ -219,12 +219,10 @@ function location_map_link_us_default_providers() {
   return array('google');
 }
 
+
 function location_geocode_us_providers() {
   return array(
-    'yahoo' => array('name' => 'Yahoo! Maps Web Services', 'url' => 'http://developer.yahoo.com/maps/rest/V1/geocode.html', 'tos' => 'http://developer.yahoo.com/maps/mapsTerms.html'),
-    
-    'google' => array('name' => 'Google Maps API', 'url' => 'http://www.google.com/apis/maps/', 'tos' => 'http://www.google.com/apis/maps/terms.html')
-  
+    'yahoo' => array('name' => 'Yahoo! Maps Web Services', 'url' => 'http://developer.yahoo.com/maps/rest/V1/geocode.html', 'tos' => 'http://developer.yahoo.com/maps/mapsTerms.html')
   );
 }
 
@@ -290,50 +288,6 @@ function location_geocode_us_yahoo($location = array()) {
   }
 }
 
-function location_geocode_us_google($location = array()) {
-  $temp_key = 'ABQIAAAA4SAlKS5PGPmCp1M1lFSi9xR3cOHNVOtncaBOMo5NHmu-PYjzChQ8usI5DSvxnid-Hl-_BKyQgCeRNA';
-  $service_url = 'http://maps.google.com/maps/geo?output=xml&key='. variable_get('location_geocode_us_google_apikey', '') .'&q=';
-
-  $address = location_address2singleline($location);
-  
-  $http_reply = drupal_http_request($service_url . urlencode($address));
-  
-  $status_code_match = array();
-  preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
-  $status_code = $status_code_match[1];
-  if ($status_code != 200) {
-    return NULL;
-  }
-  
-  $accuracy_code_match = array();
-  preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
-  $accuracy_code = $accuracy_code_match[1];
-  if ($accuracy_code != 8 && $accuracy_code != 7) {
-    return NULL;
-  }
-  
-  $latlon_match = array();
-  preg_match('/<coordinates>(.*)<\/coordinates>/', $http_reply->data, $latlon_match);
-  
-  $latlon_exploded = explode(',', $latlon_match[1]);
-  
-  return array('lat' => $latlon_exploded[1], 'lon' => $latlon_exploded[0]);
-}
-
-function location_geocode_us_google_settings(){
-  $form = array();
-
-  $form['location_geocode_us_google_apikey'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Google Maps API Key'),
-    '#size' => 64,
-    '#maxlength' => 128,
-    '#default_value' => variable_get('location_geocode_us_google_apikey', ''),
-    '#description' => t('In order to use the Google Maps API geocoding web-service, you will need a Google Maps API Key.  You can obtain one at the !sign_up_link for the !google_maps_api.', array('!sign_up_link' => '<a href="http://www.google.com/apis/maps/signup.html">sign-up page</a>', '!google_maps_api' => '<a href="http://www.google.com/apis/maps/">Google Maps API</a>'))
-  );
-
-  return $form;
-}
 
 /**
  * Parameters:

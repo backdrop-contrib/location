@@ -83,93 +83,6 @@ function _location_is_empty($location = array()) {
   return TRUE;
 }
 
-function theme_locations($locations = array(), $hide = array()) {
-  $output = '';
-  foreach ($locations as $location) {
-    $output .= theme('location', $location, $hide);
-  }
-  
-  return $output;
-}
-
-/**
- * Generates HTML for the passed location.
- *
- * @param $location
- *   An associative array where
- *      'street'       => A string representing the street location
- *      'additional'   => A string for any additional portion of the street location
- *      'city'         => A string for the city name
- *      'province'     => The standard postal abbreviation for the province
- *      'country'      => The two-letter ISO code for the country of the location (REQUIRED)
- *      'postal_code'  => The international postal code for the location
- *
- * @param $hide
- *   An linear array where the values are the location fields to suppress in the themed display.
- *
- * @return
- *   An HTML string with special tags for locations.
- */
-function theme_location($location = array(), $hide = array()) {
-  if (_location_nothing_to_show($location, $hide)) {
-    return '';
-  }
-  $output = '';
-  $country_specific_function = 'theme_location_'. (isset($location['country']) ? $location['country'] : '');
-  if (function_exists($country_specific_function)) {
-    $output .= $country_specific_function($location);
-  }
-  elseif (count($location)) {
-    $output .= "\n";
-    $output .= '<dl class="location">'."\n";
-    if (!empty($location['name']) && !in_array('name', $hide)) {
-       $output .= '<dd>'. $location['name'] .'</dd>';
-    }
-
-    if (!empty($location['street']) && !in_array('street', $hide)) {
-      $output .= '<dd>'. $location['street'] .'</dd>';
-    }
-    
-    if (!empty($location['additional']) && !in_array('street', $hide)) {
-      $output .= '<dd>' . $location['additional'] . '</dd>';
-    }
-    
-    if ((!empty($location['city']) && !in_array('city', $hide)) || 
-        (!empty($location['province']) && !in_array('province', $hide)) || 
-        (!empty($location['postal_code']) && !in_array('postal_code', $hide))) {
-      $output .= '<dd>';
-      
-      $city_province_postal = array();
-      if (!empty($location['city']) && !in_array('city', $hide)) {
-        $city_province_postal[] = $location['city'];
-      }
-      
-      if (!empty($location['province']) && !in_array('province', $hide)) {
-        $city_province_postal[] = $location['province'];
-      }
-
-      if (!empty($location['postal_code']) && !in_array('postal_code', $hide)) {
-        $city_province_postal[] = $location['postal_code'];
-      }
-      
-      $output .= implode(', ', $city_province_postal);
-      
-      $output .= '</dd>';
-    }
-    
-    if (!empty($location['country']) && !in_array('country', $hide)) {
-      $countries = _location_get_iso3166_list();
-      $output .= '<dd>'. $countries[$location['country']] . '</dd>';
-    }
-    
-    $output .= '</dl>';
-  }
-
-  $output .= location_map_link($location);
-
-  return $output;
-}
-
 function _location_nothing_to_show($location = array(), $hide = array()) {
   foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
     if (isset($location[$field]) && strlen(trim($location[$field])) && !in_array($field, $hide)) {
@@ -315,7 +228,7 @@ function location_distance_between($latlonA = array(), $latlonB = array(), $dist
  *
  *        Note that in both cases, the first and third argument can take the same array since all the fields are being required.
  */
-function location_form($fields = array(), $prefilled_values = array(), $required_fields = array(), $suppressed_values = array(), $description = '', $form_name = 'location', $function = NULL) {
+function location_form($fields = array(), $prefilled_values = array(), $required_fields = array(), $suppressed_values = array(), $description = '', $function = NULL) {
   if (count($fields) == 0) {
     $fields = array('name', 'street', 'city', 'province', 'postal_code', 'country');
   }
@@ -328,8 +241,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
 
   if (in_array('name', $fields)) {
     $form['name'] = array(
-        '#prefix' => '<div class="container-inline">',
-        '#suffix' => "</div>\n",
         '#type' => 'textfield',
         '#title' => t('Location name'),
         '#default_value' => isset($prefilled_values['name']) ? $prefilled_values['name'] : '',
@@ -342,8 +253,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
   }
   if (in_array('street', $fields)) {
     $form['street'] = array(
-        '#prefix' => '<div class="container-inline">',
-        '#suffix' => "</div>\n",
         '#type' => 'textfield',
         '#title' => t('Street'),
         '#default_value' => isset($prefilled_values['street']) ? $prefilled_values['street'] : '',
@@ -352,8 +261,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
         '#required' => in_array('street', $required_fields)
         );
     $form['additional'] = array(
-        '#prefix' => '<div class="container-inline">',
-        '#suffix' => "</div>\n",
         '#type' => 'textfield',
         '#title' => t('Additional'),
         '#default_value' => isset($prefilled_values['additional']) ? $prefilled_values['additional'] : '',
@@ -363,8 +270,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
   }
   if (in_array('city', $fields)) {
     $form['city'] = array(
-        '#prefix' => '<div class="container-inline">',
-        '#suffix' => "</div>\n",
         '#type' => 'textfield',
         '#title' => t('City'),
         '#default_value' => isset($prefilled_values['city']) ? $prefilled_values['city'] : '',
@@ -384,14 +289,10 @@ function location_form($fields = array(), $prefilled_values = array(), $required
     }
     else {
       $form['province'] = _location_province_select_options(isset($prefilled_values['province']) ? $prefilled_values['province'] : '', in_array('province', $required_fields), in_array('country', array_keys($suppressed_values)) ? $suppressed_values['country'] : NULL);
-      $form['province']['#prefix'] = '<div class="container-inline">';
-      $form['province']['#suffix'] = "</div>\n";
     }
   }
   if (in_array('postal_code', $fields)) {
     $form['postal_code'] = array(
-        '#prefix' => '<div class="container-inline">',
-        '#suffix' => "</div>\n",
         '#type' => 'textfield',
         '#title' => t('Postal code'),
         '#default_value' => isset($prefilled_values['postal_code']) ? $prefilled_values['postal_code'] : '',
@@ -409,13 +310,14 @@ function location_form($fields = array(), $prefilled_values = array(), $required
     }
     else {
       $form['country'] = _location_country_select_options(isset($prefilled_values['country']) ? $prefilled_values['country'] : '', in_array('country', $required_fields), $function);
-      $form['country']['#prefix'] = '<div class="container-inline">';
-      $form['country']['#suffix'] = "</div>\n";
     }
   }
   
+  $form['#theme'] = 'location_form';
+  
   return $form;
 }
+
 
 function location_latlon_form($description = '', $prefilled_values = array()) {
   $form = array();
@@ -427,7 +329,6 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
   }
   
   $form['latitude'] = array(
-      '#prefix' => '<div class="container-inline">',
       '#type' => 'textfield',
       '#title' => t('Latitude'),
       '#default_value' => isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '',
@@ -441,7 +342,6 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
       '#size' => 64,
       '#maxlength' => 64,
       '#description' => $description,
-      '#suffix' => '</div>'
       );
       
   if ($usegmap) {
@@ -544,46 +444,42 @@ function location_api2form($location = array()) {
  *   the caller of this function will be assumed to already have one.  
  *
  */
-function location_proximity_form($prefilled_values = array(), $suppressed_values = array(), $form_name = 'location') {
+function location_proximity_form($prefilled_values = array(), $suppressed_values = array()) {
   $form = array();
-
 
   if (in_array('distance', array_keys($suppressed_values))) {
     $form['distance'] = array(
-        '#type' => 'hidden',
-        '#value' => $suppressed_values['distance']
-        );
+      '#type' => 'hidden',
+      '#value' => $suppressed_values['distance']
+    );
   }
   else {
     $form['distance'] = array(
-        '#prefix' => t('Search within '),
-        '#type' => 'select',
-        '#title' => '',
-        '#default_value' => (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25),
-        '#options' => array(5 => 5, 10 => 10, 25 => 25, 50 => 50, 100 => 100, 250 => 250),
-        '#description' => ''
-        );
+      '#type' => 'select',
+      '#default_value' => (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25),
+      '#options' => drupal_map_assoc(array(5, 10, 25, 50, 100, 250)),
+    );
   }
   
-  if (in_array('distance_unit', array_keys($suppressed_values))) {
-    $form['distance_unit'] = array(
-        '#type' => 'hidden',
-        '#value' => $suppressed_values['distance_unit'],
-        '#suffix' => (($suppressed_values['distance_unit'] == 'mile') ? t(' miles') : t(' km')) . t(' of:')
-        );
+  if (in_array('unit', array_keys($suppressed_values))) {
+    $form['unit'] = array(
+      '#type' => 'hidden',
+      '#value' => $suppressed_values['unit']
+    );
   }
   else {
-    $form['distance_unit'] = array(
-        '#type' => 'select',
-        '#title' => '',
-        '#default_value' => (isset($prefilled_values['distance_unit']) ? $prefilled_values['distance_unit'] : 'mile'),
-        '#options' => array('mile' => 'miles', 'km' => 'km'),
-        '#suffix' => t(' of:')
-        );
+    $form['unit'] = array(
+      '#type' => 'select',
+      '#default_value' => (isset($prefilled_values['unit']) ? $prefilled_values['unit'] : 'mile'),
+      '#options' => array('mile' => 'miles', 'km' => 'km'),
+    );
   }
+  
+  $form['#theme'] = 'location_proximity_form';
   
   return $form;
 }
+
 
 /**
  * A helper function that tells you whether all the fields of an location are full (excluding the 'additional' field.
@@ -1125,7 +1021,13 @@ function location_latlon_exact($location = array()) {
   $country = trim($location['country']);
   $service = variable_get('location_geocode_'. $country, 'none');
   if (!empty($country) && $service != 'none') {
-    $exact_latlon_function = 'location_geocode_'. $country .'_'. $service;
+    // figure out what the exact function should be
+    if (strpos($service, '|')) {
+      $exact_latlon_function = 'location_geocode_'. $country .'_'. $service;
+    }
+    else {
+      $exact_latlon_function = $service .'_geocode_location';
+    }
     if (function_exists($exact_latlon_function)) {
       return $exact_latlon_function($location);
     }
@@ -1446,6 +1348,19 @@ function location_address2singleline($location = array()) {
   return $address;
 }
 
+function location_get_general_geocoder_list() {
+  static $list;
+  
+  if (!count($list)) {
+    $files = file_scan_directory(LOCATION_PATH .'/geocoding', '\.inc$', array('.', '..', 'CVS', '.svn'));
+    foreach ($files as $full_path_name => $fileinfo) {
+      $list[] = $fileinfo->name;
+    }
+  }
+  
+  return $list;
+}
+
 function location_get_iso3166_list() {
   return _location_get_iso3166_list();
 }
@@ -1701,6 +1616,3 @@ function _location_get_iso3166_list() {
     "zw" => "Zimbabwe",
   );
 }
-
- 
-?>

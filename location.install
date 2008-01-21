@@ -224,3 +224,65 @@ function location_update_6() {
   
   return $ret;
 }
+
+function location_update_7() {
+  $ret = array();
+  
+  $services = array('google');
+  $general_geocoders_in_use = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $result = db_query('SELECT * FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]$\'');
+      
+      while ($row = db_fetch_object($result)) {
+        $value_decoded = unserialize($row->value);
+        if (!in_array($value_decoded, $services)) {
+          $ret[] = update_sql('UPDATE {variable} SET value = \''. serialize($value_decoded .'|'. substr($row->name, 17)) .'\' WHERE name = \''. $row->name .'\'');
+        }
+        else {
+          $general_geocoders_in_use[$value_decoded] = $value_decoded;
+        }
+      }
+      
+      $key = db_result(db_query('SELECT value FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\' LIMIT 1'));
+      
+      $ret[] = update_sql('DELETE FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\'');
+      
+      $ret[] = update_sql('INSERT INTO {variable} (name, value) VALUES (\'location_geocode_google_apikey\', \''. $key .'\')');
+      
+      $ret[] = update_sql('DELETE FROM {cache} WHERE cid = \'variables\'');
+      
+      variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
+      
+      break;
+    case 'pgsql':
+      $result = db_query('SELECT * FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]$\'');
+      
+      while ($row = db_fetch_object($result)) {
+        $value_decoded = unserialize($row->value);
+        if (!in_array($value_decoded, $services)) {
+          $ret[] = update_sql('UPDATE {variable} SET value = \''. serialize($value_decoded .'|'. substr($row->name, 17)) .'\' WHERE name = \''. $row->name .'\'');
+        }
+        else {
+          $general_geocoders_in_use[$value_decoded] = $value_decoded;
+        }
+      }
+      
+      $key = db_result(db_query('SELECT value FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\' LIMIT 1'));
+      
+      $ret[] = update_sql('DELETE FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\'');
+      
+      $ret[] = update_sql('INSERT INTO {variable} (name, value) VALUES (\'location_geocode_google_apikey\', \''. $key .'\')');
+      
+      $ret[] = update_sql('DELETE FROM {cache} WHERE cid = \'variables\'');
+      
+      variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
+      
+      break;
+  }
+  
+  return $ret;
+  
+}

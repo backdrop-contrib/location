@@ -88,17 +88,28 @@ function earth_distance($longitude1, $latitude1, $longitude2, $latitude2) {
   return acos($cosangle) * $radius;
 }
 
-function earth_distance_sql($longitude, $latitude) {
+/*
+ * Returns the SQL fragment needed to add a column called 'distance'
+ * to a query that includes the location table
+ *
+ * @param $longitude   The measurement point
+ * @param $latibude    The measurement point
+ * @param $tbl_alias   If necessary, the alias name of the location table to work from.  Only required when working with named {location} tables
+ */
+function earth_distance_sql($longitude, $latitude, $tbl_alias = '') {
   // Make a SQL expression that estimates the distance to the given location.
   $long = deg2rad($longitude);
   $lat = deg2rad($latitude);
   $radius = earth_radius($latitude);
 
+  // If the table alias is specified, add on the separator.
+  $tbl_alias = empty($tbl_alias) ? $tbl_alias : ($tbl_alias . '.');
+
   $coslong = cos($long);
   $coslat = cos($lat);
   $sinlong = sin($long);
   $sinlat = sin($lat);
-  return "(IFNULL(ACOS($coslat*COS(RADIANS(latitude))*($coslong*COS(RADIANS(longitude)) + $sinlong*SIN(RADIANS(longitude))) + $sinlat*SIN(RADIANS(latitude))), 0.00000)*$radius)";
+  return "(IFNULL(ACOS($coslat*COS(RADIANS({$tbl_alias}latitude))*($coslong*COS(RADIANS({$tbl_alias}longitude)) + $sinlong*SIN(RADIANS({$tbl_alias}longitude))) + $sinlat*SIN(RADIANS({$tbl_alias}latitude))), 0.00000)*$radius)";
 }
 
 function earth_longitude_range($longitude, $latitude, $distance) {

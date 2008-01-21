@@ -1,5 +1,74 @@
-/* $Id$ */
-.container-inline input {
-  width: auto;
-  display: inline;
+table.location-search-form {
+  margin:0;
+  border:0;
+  padding:0;
 }
+
+table.location-search-form-table tbody {
+  margin:0;
+  border:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+
+
+table.location-search-form-table tbody tr td table tbody tr {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody tr td {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody tr td table {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody tr td table tbody {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody tr td table tbody tr {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+table.location-search-form-table tbody tr td table tbody tr td table tbody tr td {
+  border:0;
+  margin:0;
+  padding:0;
+}
+
