@@ -19,5 +19,3 @@ function location_province_list_uz() {
     'TO' => "Toshkent region",
     'XO' => "Xorazm");
 }
-
-?>

@@ -13,5 +13,3 @@ function location_province_list_kg() {
     'T' => "Talas",
     'Y' => "Ysyk-Kol");
 }
-
-?>

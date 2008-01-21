@@ -13,5 +13,3 @@ function location_province_list_om() {
     'MU' => "Musandam",
     'ZU' => "Zufar");
 }
-
-?>

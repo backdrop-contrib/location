@@ -26,5 +26,3 @@ function location_province_list_hr() {
     '20' => "Medjimurje county",
     '21' => "Zagreb (city)");
 }
-
-?>

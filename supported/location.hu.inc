@@ -44,5 +44,3 @@ function location_province_list_hu() {
     'VZ' => "Veszprem",
     'ZA' => "Zala");
 }
-
-?>

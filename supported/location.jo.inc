@@ -17,5 +17,3 @@ function location_province_list_jo() {
     'MN' => "Ma'an",
     'MD' => "Madaba");
 }
-
-?>

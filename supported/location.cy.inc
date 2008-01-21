@@ -11,5 +11,3 @@ function location_province_list_cy() {
     'N' => "Nicosia",
     'P' => "Paphos");
 }
-
-?>

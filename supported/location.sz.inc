@@ -9,5 +9,3 @@ function location_province_list_sz() {
     'M' => "Manzini",
     'S' => "Shishelweni");
 }
-
-?>

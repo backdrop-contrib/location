@@ -10,5 +10,3 @@ function location_province_list_kw() {
     'J' => "Al Jahra",
     'H' => "Hawalli");
 }
-
-?>

@@ -9,5 +9,3 @@ function location_province_list_fm() {
     'P' => "Pohnpei",
     'Y' => "Yap");
 }
-
-?>

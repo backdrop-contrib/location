@@ -21,5 +21,3 @@ function location_province_list_pw() {
     'PE' => "Peleliu",
     'SO' => "Sonsorol");
 }
-
-?>

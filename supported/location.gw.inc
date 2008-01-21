@@ -14,5 +14,3 @@ function location_province_list_gw() {
     'QU' => "Quinara Region",
     'TO' => "Tombali Region");
 }
-
-?>

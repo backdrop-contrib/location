@@ -26,5 +26,3 @@ function location_province_list_se() {
     'VB' => "Vasterbotten",
     'NO' => "Norrbotten");
 }
-
-?>

@@ -23,5 +23,3 @@ function location_province_list_hn() {
     'VA' => "Valle",
     'YO' => "Yoro");
 }
-
-?>

@@ -24,5 +24,3 @@ function location_province_list_ye() {
     'SH' => "Shabwah",
     'TA' => "Ta'izz");
 }
-
-?>

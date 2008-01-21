@@ -15,5 +15,3 @@ function location_province_list_dm() {
     'PAU' => "Saint Paul Parish",
     'PET' => "Saint Peter Parish");
 }
-
-?>

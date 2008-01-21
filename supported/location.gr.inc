@@ -18,5 +18,3 @@ function location_province_list_gr() {
     'WG' => "West Greece",
     'WM' => "West Macedonia");
 }
-
-?>

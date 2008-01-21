@@ -14,5 +14,3 @@ function location_province_list_lk() {
     'UV' => "Uva",
     'WE' => "Western");
 }
-
-?>

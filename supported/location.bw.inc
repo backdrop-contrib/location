@@ -15,5 +15,3 @@ function location_province_list_bw() {
     'SE' => "South East",
     'SO' => "Southern");
 }
-
-?>

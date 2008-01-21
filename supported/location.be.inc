@@ -15,5 +15,3 @@ function location_province_list_be() {
     'WLX' => "Luxembourg",
     'WNA' => "Namur");
 }
-
-?>

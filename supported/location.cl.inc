@@ -18,5 +18,3 @@ function location_province_list_cl() {
     'TA' => "Tarapaca (I)",
     'VS' => "Valparaiso (V)");
 }
-
-?>

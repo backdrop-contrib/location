@@ -19,5 +19,3 @@ function location_province_list_mm() {
     'RK' => "Rakhine State",
     'SH' => "Shan State");
 }
-
-?>

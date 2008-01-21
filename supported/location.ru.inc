@@ -94,5 +94,3 @@ function location_province_list_ru() {
     'EVE' => "Evenkia",
     'YAN' => "Yamalia");
 }
-
-?>

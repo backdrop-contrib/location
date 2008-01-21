@@ -14,5 +14,3 @@ function location_province_list_ht() {
     'SD' => "Sud",
     'SE' => "Sud-Est");
 }
-
-?>

@@ -32,5 +32,3 @@ function location_province_list_br() {
     'SP' => "Sao Paulo",
     'TO' => "Tocantins");
 }
-
-?>

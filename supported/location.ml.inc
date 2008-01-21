@@ -14,5 +14,3 @@ function location_province_list_ml() {
     'TB' => "Tombouctou",
     'CD' => "Bamako Capital District");
 }
-
-?>

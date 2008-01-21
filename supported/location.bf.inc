@@ -50,5 +50,3 @@ function location_province_list_bf() {
     'ZOD' => "Zondoma",
     'ZOW' => "Zoundweogo");
 }
-
-?>

@@ -8,5 +8,3 @@ function location_province_list_to() {
     'T' => "Tongatapu",
     'V' => "Vava'u");
 }
-
-?>

@@ -17,5 +17,3 @@ function location_province_list_ge() {
     'SJ' => "Samtskhe-Javakheti",
     'SK' => "Shida Kartli");
 }
-
-?>

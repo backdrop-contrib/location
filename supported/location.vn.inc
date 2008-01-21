@@ -37,5 +37,3 @@ function location_province_list_vn() {
     'HU' => "Hau Giang",
     'HY' => "Hung Yen");
 }
-
-?>

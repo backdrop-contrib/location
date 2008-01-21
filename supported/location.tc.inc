@@ -19,5 +19,3 @@ function location_province_list_tc() {
     'PR' => "Providenciales",
     'WC' => "West Caicos");
 }
-
-?>

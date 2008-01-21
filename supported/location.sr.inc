@@ -15,5 +15,3 @@ function location_province_list_sr() {
     'SI' => "Sipaliwini",
     'WA' => "Wanica");
 }
-
-?>

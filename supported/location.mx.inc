@@ -37,5 +37,3 @@ function location_province_list_mx() {
     'ZAC' => "Zacatecas",
     'DIF' => "Distrito Federal");
 }
-
-?>

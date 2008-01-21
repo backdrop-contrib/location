@@ -82,5 +82,3 @@ function location_province_list_th() {
     '96' => "Narathiwat",
     'S' => "Pattaya");
 }
-
-?>

@@ -15,5 +15,3 @@ function location_province_list_ls() {
     'QT' => "Quthing",
     'TT' => "Thaba-Tseka");
 }
-
-?>

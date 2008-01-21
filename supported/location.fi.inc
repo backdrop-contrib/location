@@ -11,5 +11,3 @@ function location_province_list_fi() {
     'LL' => "Lapin laani",
     'AH' => "Ahvenanmaan laani");
 }
-
-?>

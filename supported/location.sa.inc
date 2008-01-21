@@ -18,5 +18,3 @@ function location_province_list_sa() {
     'NR' => "Najran",
     'TB' => "Tabuk");
 }
-
-?>

@@ -9,5 +9,3 @@ function location_province_list_hm() {
     'S' => "Shag Island",
     'H' => "Heard Island");
 }
-
-?>

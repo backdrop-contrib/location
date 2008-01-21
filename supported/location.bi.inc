@@ -21,5 +21,3 @@ function location_province_list_bi() {
     'RT' => "Rutana",
     'RY' => "Ruyigi");
 }
-
-?>

@@ -21,5 +21,3 @@ function location_province_list_nz() {
     'WKO' => "Waikato",
     'WTC' => "West Coast");
 }
-
-?>

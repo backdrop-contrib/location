@@ -9,5 +9,3 @@ function location_province_list_cs() {
     'SER' => "Serbia",
     'VOJ' => "Vojvodina");
 }
-
-?>

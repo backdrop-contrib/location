@@ -8,5 +8,3 @@ function location_province_list_nc() {
     'N' => "Nord",
     'S' => "Sud");
 }
-
-?>

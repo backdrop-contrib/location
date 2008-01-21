@@ -55,5 +55,3 @@ function location_province_list_fr() {
     'U83' => "Var",
     'U84' => "Vaucluse");
 }
-
-?>

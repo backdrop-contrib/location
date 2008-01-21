@@ -16,5 +16,3 @@ function location_province_list_cd() {
     'OR' => "Orientale",
     'SK' => "Sud-Kivu");
 }
-
-?>

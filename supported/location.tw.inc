@@ -30,5 +30,3 @@ function location_province_list_tw() {
     'KC' => "Kao-hsiung city ",
     'TC' => "T'ai-pei city ");
 }
-
-?>

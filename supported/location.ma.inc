@@ -47,5 +47,3 @@ function location_province_list_ma() {
     'BJD' => "Boujdour",
     'ESM' => "Es Smara");
 }
-
-?>

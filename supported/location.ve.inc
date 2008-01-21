@@ -30,5 +30,3 @@ function location_province_list_ve() {
     'A' => "Federal District",
     'W' => "Federal Dependency");
 }
-
-?>

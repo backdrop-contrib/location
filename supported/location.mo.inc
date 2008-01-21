@@ -10,5 +10,3 @@ function location_province_list_mo() {
     'CAT' => "Cathedral Parish",
     'LAW' => "St. Lawrence Parish");
 }
-
-?>

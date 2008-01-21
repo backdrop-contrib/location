@@ -55,5 +55,3 @@ function location_province_list_es() {
     'ZM' => "Zamora",
     'ZR' => "Zaragoza");
 }
-
-?>

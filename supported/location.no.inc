@@ -24,5 +24,3 @@ function location_province_list_no() {
     'VA' => "Vest-Agder",
     'VF' => "Vestfold");
 }
-
-?>

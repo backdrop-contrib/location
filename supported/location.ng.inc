@@ -42,5 +42,3 @@ function location_province_list_ng() {
     'YO' => "Yobe",
     'ZA' => "Zamfara");
 }
-
-?>

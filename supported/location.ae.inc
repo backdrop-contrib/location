@@ -12,5 +12,3 @@ function location_province_list_ae() {
     'RK' => "R'as al Khaymah",
     'UQ' => "Umm al Qaywayn");
 }
-
-?>

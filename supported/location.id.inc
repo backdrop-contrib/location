@@ -35,5 +35,3 @@ function location_province_list_id() {
     'AC' => "Aceh",
     'YO' => "Yogyakarta");
 }
-
-?>

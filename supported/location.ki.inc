@@ -26,5 +26,3 @@ function location_province_list_ki() {
     'TW' => "Tarawa",
     'TE' => "Teraina");
 }
-
-?>

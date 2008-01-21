@@ -16,5 +16,3 @@ function location_province_list_bb() {
     'PHI' => "Saint Philip",
     'THO' => "Saint Thomas");
 }
-
-?>

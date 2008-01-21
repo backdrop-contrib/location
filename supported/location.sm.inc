@@ -14,5 +14,3 @@ function location_province_list_sm() {
     'SM' => "Citta di San Marino",
     'SE' => "Serravalle");
 }
-
-?>

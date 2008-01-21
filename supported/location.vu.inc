@@ -11,5 +11,3 @@ function location_province_list_vu() {
     'TA' => "Tafea",
     'TO' => "Torba");
 }
-
-?>

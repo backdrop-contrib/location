@@ -27,9 +27,7 @@ function location_province_list_ch() {
     'TI' => "Ticino",
     'VD' => "Vaud",
     'VS' => "Valais",
-    'NE' => "Neuchâtel",
+    'NE' => "Neuchï¿½tel",
     'GE' => "Geneva",
     'JU' => "Jura");
 }
-
-?>

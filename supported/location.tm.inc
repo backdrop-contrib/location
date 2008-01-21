@@ -10,5 +10,3 @@ function location_province_list_tm() {
     'L' => "Lebap Welayaty",
     'M' => "Mary Welayaty");
 }
-
-?>

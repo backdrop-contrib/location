@@ -22,5 +22,3 @@ function location_province_list_mu() {
     'RR' => "Riviere du Rempart",
     'SA' => "Savanne");
 }
-
-?>

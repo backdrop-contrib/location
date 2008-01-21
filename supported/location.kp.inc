@@ -16,5 +16,3 @@ function location_province_list_kp() {
     'NAJ' => "Rason Directly Governed City",
     'PYO' => "P'yongyang Special City");
 }
-
-?>

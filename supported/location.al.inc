@@ -41,5 +41,3 @@ function location_province_list_al() {
     'TR' => "Tirane",
     'VL' => "Vlore");
 }
-
-?>

@@ -15,5 +15,3 @@ function location_province_list_gy() {
     'UD' => "Upper Demerara-Berbice",
     'UT' => "Upper Takutu-Upper Essequibo");
 }
-
-?>

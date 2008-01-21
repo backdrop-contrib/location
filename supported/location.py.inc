@@ -23,5 +23,3 @@ function location_province_list_py() {
     'PH' => "Presidente Hayes",
     'SP' => "San Pedro");
 }
-
-?>

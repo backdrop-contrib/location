@@ -27,5 +27,3 @@ function location_province_list_gt() {
     'TO' => "Totonicapan",
     'ZA' => "Zacapa");
 }
-
-?>

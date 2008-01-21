@@ -18,5 +18,3 @@ function location_province_list_na() {
     'OO' => "Oshikoto",
     'OJ' => "Otjozondjupa");
 }
-
-?>

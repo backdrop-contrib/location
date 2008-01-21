@@ -23,5 +23,3 @@ function location_province_list_hk() {
     'NTM' => "Tuen Mun New Territories",
     'NYL' => "Yuen Long New Territories");
 }
-
-?>

@@ -16,5 +16,3 @@ function location_province_list_ws() {
     'VF' => "Va'a-o-Fonoti",
     'VS' => "Vaisigano");
 }
-
-?>

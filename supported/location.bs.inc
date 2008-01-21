@@ -36,5 +36,3 @@ function location_province_list_bs() {
     'SWE' => "Spanish Wells",
     'WGB' => "West Grand Bahama");
 }
-
-?>

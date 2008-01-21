@@ -6,5 +6,3 @@
 function location_province_list_pr() {
   return array();
 }
-
-?>

@@ -28,5 +28,3 @@ function location_province_list_sc() {
     'SL' => "Saint Louis",
     'TA' => "Takamaka");
 }
-
-?>

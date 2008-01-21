@@ -15,5 +15,3 @@ function location_province_list_sb() {
     'TM' => "Temotu",
     'WE' => "Western");
 }
-
-?>

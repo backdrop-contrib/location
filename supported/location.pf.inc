@@ -10,5 +10,3 @@ function location_province_list_pf() {
     'V' => "Iles du Vent",
     'S' => "Iles Sous-le-Vent ");
 }
-
-?>

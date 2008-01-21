@@ -15,5 +15,3 @@ function location_province_list_pa() {
     'SB' => "San Blas",
     'VG' => "Veraguas");
 }
-
-?>

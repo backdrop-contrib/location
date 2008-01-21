@@ -27,5 +27,3 @@ function location_province_list_mn() {
     '071' => "Bayan-Olgiy",
     '073' => "Arhangay");
 }
-
-?>

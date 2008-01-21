@@ -23,5 +23,3 @@ function location_province_list_ao() {
     'UIG' => "Uige",
     'ZAI' => "Zaire");
 }
-
-?>

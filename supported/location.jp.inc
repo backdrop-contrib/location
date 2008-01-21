@@ -52,5 +52,3 @@ function location_province_list_jp() {
     '46' => "Kagosima (Kagoshima)",
     '47' => "Okinawa");
 }
-
-?>

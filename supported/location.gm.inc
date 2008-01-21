@@ -18,5 +18,3 @@ function location_province_list_gm() {
     'UR' => "Upper River",
     'WE' => "Western");
 }
-
-?>

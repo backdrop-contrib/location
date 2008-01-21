@@ -14,7 +14,5 @@ function location_province_list_md() {
     'SO' => "Soroca",
     'TI' => "Tighina",
     'UN' => "Ungheni",
-    'SN' => "Stânga Nistrului");
+    'SN' => "Stï¿½nga Nistrului");
 }
-
-?>

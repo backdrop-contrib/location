@@ -19,5 +19,3 @@ function location_province_list_jm() {
     'TRL' => "Trelawny Parish",
     'WML' => "Westmoreland Parish");
 }
-
-?>

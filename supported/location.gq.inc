@@ -12,5 +12,3 @@ function location_province_list_gq() {
     'LI' => "Provincia Litoral",
     'WN' => "Provincia Wele-Nzas");
 }
-
-?>

@@ -16,5 +16,3 @@ function location_province_list_mz() {
     'TE' => "Tete",
     'ZA' => "Zambezia");
 }
-
-?>

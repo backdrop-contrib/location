@@ -23,5 +23,3 @@ function location_province_list_ba() {
     'SFO' => "Foca",
     'STR' => "Trebinje");
 }
-
-?>

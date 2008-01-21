@@ -13,5 +13,3 @@ function location_province_list_au() {
     'VIC' => "Victoria",
     'WA' => "Western Australia");
 }
-
-?>

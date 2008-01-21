@@ -38,5 +38,3 @@ function location_province_list_co() {
     'VIC' => "Vichada",
     'BDC' => "Bogota D.C.");
 }
-
-?>

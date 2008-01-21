@@ -19,5 +19,3 @@ function location_province_list_kn() {
     'STM' => "Saint Thomas Middle Island",
     'TPP' => "Trinity Palmetto Point");
 }
-
-?>

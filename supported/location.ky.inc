@@ -13,5 +13,3 @@ function location_province_list_ky() {
     'WD' => "West End ",
     'WN' => "Western");
 }
-
-?>

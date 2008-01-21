@@ -8,5 +8,3 @@ function location_province_list_km() {
     'A' => "Anjouan",
     'M' => "Moheli");
 }
-
-?>

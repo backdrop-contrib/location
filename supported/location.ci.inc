@@ -63,5 +63,3 @@ function location_province_list_ci() {
     'YAM' => "Yamoussoukro",
     'ZUE' => "Zuenoula");
 }
-
-?>

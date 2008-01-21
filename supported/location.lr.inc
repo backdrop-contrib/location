@@ -18,5 +18,3 @@ function location_province_list_lr() {
     'RC' => "River Cess",
     'SN' => "Sinoe");
 }
-
-?>

@@ -17,5 +17,3 @@ function location_province_list_bj() {
     'PL' => "Plateau",
     'ZO' => "Zou");
 }
-
-?>

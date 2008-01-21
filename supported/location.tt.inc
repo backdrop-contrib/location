@@ -20,5 +20,3 @@ function location_province_list_tt() {
     'CH' => "Chaguanas",
     'TO' => "Tobago");
 }
-
-?>

@@ -38,5 +38,3 @@ function location_province_list_lv() {
     'RGA' => "Riga",
     'VSL' => "Ventspils");
 }
-
-?>

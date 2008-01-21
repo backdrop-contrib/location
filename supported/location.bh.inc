@@ -10,5 +10,3 @@ function location_province_list_bh() {
     'NOR' => "Northern",
     'SOU' => "Southern");
 }
-
-?>

@@ -53,5 +53,3 @@ function location_province_list_dz() {
     'TOU' => "Tizi Ouzou",
     'TLE' => "Tlemcen");
 }
-
-?>

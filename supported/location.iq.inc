@@ -23,5 +23,3 @@ function location_province_list_iq() {
     'TM' => "At Ta'mim",
     'SL' => "As Sulaymaniyah");
 }
-
-?>

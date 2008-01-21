@@ -10,7 +10,5 @@ function location_province_list_ad() {
     'ESE' => "Escaldes-Engordany",
     'LMA' => "La Massana",
     'ORD' => "Ordino",
-    'SJL' => "Sant Julia de Lòria");
+    'SJL' => "Sant Julia de Lï¿½ria");
 }
-
-?>

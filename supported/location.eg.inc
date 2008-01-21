@@ -31,5 +31,3 @@ function location_province_list_eg() {
     'SHS' => "Shamal Sina'",
     'SUH' => "Suhaj");
 }
-
-?>
