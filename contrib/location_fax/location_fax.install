@@ -1,31 +1,37 @@
 <?php
-// $Id$
+/**
+ * $Id$
+ * @author Location Dev Team
+ * @file location_fax.install
+ * Install and uninstall all required databases.
+ *
+ * Install and uninstall all required databases.
+ * Also do incremental database updates.
+ */
 
+/**
+ * Implentation of hook_install().
+ */
 function location_fax_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("
-      CREATE TABLE {location_fax} (
-        lid int(10) unsigned NOT NULL default '0',
-        fax varchar(31) default NULL,
-        PRIMARY KEY  (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
-      ");
-      break;
-    
-    case 'pgsql':
-      db_query("
-        CREATE TABLE {location_fax} (
-        lid int NOT NULL default '0' CHECK (eid >= 0),
-        fax varchar(31) default NULL,
-        PRIMARY KEY  (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
-      ");
-      break;
+  $table_config = '';
+
+  // Check if its using MySQL
+  if ($GLOBALS['db_type'] == 'mysql' or $GLOBALS['db_type'] == 'mysqli') {
+    $table_config = ' /*!40100 DEFAULT CHARACTER SET utf8 */';
   }
-  drupal_set_message(t('Installed tables for module location_fax'));
+
+  db_query('CREATE TABLE {location_fax} (
+    lid       INTEGER     PRIMARY KEY,
+    fax       VARCHAR(31)
+    )'. $table_config);
 }
 
-
-?>
+/**
+ * Implentation of hook_uninstall().
+ */
+function location_fax_uninstall() {
+  // delete tables
+  if (db_table_exists('location_fax')) {
+    db_query('DROP TABLE {location_fax}');
+  }
+}
