@@ -1,10 +1,16 @@
 <?php
-
+/**
+ * $Id$
+ * @author Location Dev Team
+ * @file location.theme.inc
+ * Coordinates the theming
+ * @todo Consider merge this file
+ */
 function theme_location_search_form(&$form) {
   $row = array();
 
   $row[] = array(
-    'data'=> drupal_render($form['proximity'])
+    'data' => drupal_render($form['proximity'])
   );
 
   $row[] = array(
@@ -148,13 +154,13 @@ function theme_location($location = array(), $hide = array()) {
     $output .= "\n";
     $output .= '<div class="location vcard"><div class="adr">'."\n";
     if (!empty($location['name']) and !in_array('name', $hide)) {
-       $output .= theme('placeholder', $location['name']);
+      $output .= theme('placeholder', $location['name']);
     }
 
     if (!empty($location['street']) and !in_array('street', $hide)) {
       $output .= '<div class="street-address">'. $location['street'];
       if (!empty($location['additional']) and !in_array('street', $hide)) {
-        $output .= ' ' . $location['additional'];
+        $output .= ' '. $location['additional'];
       }
       $output .='</div>';
     }
