@@ -18,7 +18,7 @@
  *      'lon' => approximate longitude of the center of the postal code's area
  *
  */
-function location_latlon_rough_us($location = array()) {
+function _location_latlon_rough_us($location = array()) {
   if (!isset($location['postal_code'])) {
     return NULL;
   }

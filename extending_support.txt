@@ -210,7 +210,7 @@ to be a replacement for the location_get_latlon_rough_xx hook, described next.
 
 
 --------------------------------------------------------------------------------------------------
-function location_latlon_rough_be($location = array());                                            |
+function _location_latlon_rough_be($location = array());                                            |
 --------------------------------------------------------------------------------------------------
 @param $location
   An associative array $location where

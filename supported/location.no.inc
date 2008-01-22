@@ -25,7 +25,7 @@ function location_province_list_no() {
     'VF' => "Vestfold");
 }
 
-function location_latlon_rough_no($location = array()) {
+function _location_latlon_rough_no($location = array()) {
   if (!isset($location['postal_code'])) {
     return NULL;
   }

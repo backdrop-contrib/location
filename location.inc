@@ -9,7 +9,7 @@
  */
 
 include_once LOCATION_PATH .'/earth.inc';
-_location_include_configured();
+_location_include_country_inc();
 
 /**
  * Generates a Drupal HTML form for collecting locationes.
@@ -56,10 +56,10 @@ _location_include_configured();
  * using the location submitted via the generated form.  For example, if
  * $function == 'latlon_rough', then the returned location_address_form (if it includes
  * a country field) will only generate a list of countries in the HTML select
- * for which function location_latlon_rough() is supported. To figure out
+ * for which function _location_latlon_rough() is supported. To figure out
  * which countries these are, we check to see which of the configured
  * countries have existing functions to support the call.  In this case,
- * we would check to see if there existed a function called "location_latlon_rough_us()"
+ * we would check to see if there existed a function called "__location_latlon_rough_us()"
  * before listing the United States in the HTML SELECT for the generated
  * location form.  $function is defaulted to NULL. If $function is NULL,
  * the HTML SELECT that is generated will list all countries.
@@ -420,7 +420,7 @@ function _location_country_address_form($value = '', $required = FALSE, $functio
     $function = ($function == 'nearby_postalcodes_bylocation' or
       $function == 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
     $countrycodes = array();
-    foreach (_location_country_configured() as $code => $full_name) {
+    foreach (_location_country_enabled() as $code => $full_name) {
       if (function_exists('location_'. $function .'_'. strtolower($code))) {
         $countrycodes[$code] = $full_name;
       }
@@ -457,7 +457,7 @@ function _location_country_address_form($value = '', $required = FALSE, $functio
  * to support the country while "configured" implies that the site admin has
  * configured the site to actually use that country's include file.
  */
-function _location_country_configured() {
+function _location_country_enabled() {
   static $countries_list;
 
   if (empty($countries_list)) {
@@ -485,7 +485,7 @@ function _location_country_configured() {
  * array where the keys are the ISO codes (see location.inc) and the values
  * are the shortened names.
  */
-function _location_country_configured_get() {
+function _location_country_enabled_get() {
   $configured_countries = variable_get('location_configured_countries', array('us' => 1));
 
   $countries = array();
@@ -1172,8 +1172,8 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
  * This function simply loads the include file for each country whose
  * locationes are configured to be recognized by the location system.
  */
-function _location_include_configured() {
-  $configured_country_codes = array_keys(_location_country_configured());
+function _location_include_country_inc() {
+  $configured_country_codes = array_keys(_location_country_enabled());
   foreach ($configured_country_codes as $country_code) {
     $filename = LOCATION_PATH .'/supported/location.'. $country_code .'.inc';
     if (file_exists($filename)) {
@@ -1185,7 +1185,7 @@ function _location_include_configured() {
 /**
  * Currently, this is not a priority until there is an implementable use for exact longitude,
  * latitude coordinates for an location.  The idea is that this call will eventually retrieve
- * information through a web-service.  Whereas location_latlon_rough() returns an approximate
+ * information through a web-service.  Whereas __location_latlon_rough() returns an approximate
  * lat/lon pair based strictly on the postal code where this lat/lon pair is pulled from a
  * database table, this function is intended to send the entire location to a web-service and
  * to retrieve exact lat/lon coordinates.
@@ -1318,12 +1318,12 @@ function _location_latlon_postalcode($location) {
  *     'lat' => is a floating point of the latitude coordinate of this location
  *     'lon' => is a floating point of the longitude coordinate of this location
  */
-function location_latlon_rough($location = array()) {
+function __location_latlon_rough($location = array()) {
   if (!isset($location['country']) or !isset($location['postal_code'])) {
     return NULL;
   }
 
-  $latlon_function = 'location_latlon_rough_'. $location['country'];
+  $latlon_function = '__location_latlon_rough_'. $location['country'];
   if (function_exists($latlon_function)) {
     return $latlon_function($location);
   }
@@ -1450,7 +1450,7 @@ function location_nearby_postalcodes_bylocation($location, $distance, $distance_
   // DEBUG: commented code is for testing/debugging purposes
   //$start_time = microtime();
 
-  $latlon = location_latlon_rough($location);
+  $latlon = __location_latlon_rough($location);
 
   // If we could not get lat/lon coordinates for the given location, return an empty search result set.
   if (!isset($latlon['lat']) or !isset($latlon['lon'])) {
@@ -1576,7 +1576,7 @@ function _location_province_get($country = NULL) {
 
   if (empty($provinces)) {
     // Get the enabled countries
-    $countrycodes = _location_country_configured();
+    $countrycodes = _location_country_enabled();
 
     foreach ($countrycodes as $country_code => $country_name) {
       // Load country specifice code .inc file if it exists.

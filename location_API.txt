@@ -14,9 +14,9 @@ FUNCTION SPECIFICATIONS DESCRIBED IN THIS FILE:
                   a specified latitude and longitude.
 
   _location_latlon_postalcode(): A function that takes a (postalcode,country) pair an returns lat/lon, city, province.  This
-                  function is meant to replace location_latlon_rough(); see below.
+                  function is meant to replace _location_latlon_rough(); see below.
 
-  location_latlon_rough(): A function that returns the latitude and longitude of the specified postal-code/country pair.
+  _location_latlon_rough(): A function that returns the latitude and longitude of the specified postal-code/country pair.
                   This latitude and longitude will be of the approximate center of the postal-code's area.  This function
                   will soon be removed from the API as it has been replaced by the more comprehensive
                   _location_latlon_postalcode() described above. [TO BE DEPRECATED]
@@ -78,8 +78,8 @@ Delegation
 ---
 With the exception of _location_address_form() and _location_distance_proximity_form(), the calls to functions listed here are, in the end,
 dispatched to country-specific location libraries which are implemented in country-specific '.inc' files.  For example,
-location_latlon_rough(), when given a U.S. location, really returns a result that is determined by call to
-"location_latlon_rough_us()" which is implemented in the file "location.us.inc".
+_location_latlon_rough(), when given a U.S. location, really returns a result that is determined by call to
+"_location_latlon_rough_us()" which is implemented in the file "location.us.inc".
 
 Current Implementation
 ---
@@ -191,7 +191,7 @@ city, province, and lat/lon dat for that postal code.
     'province' => the province of the given postal code.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function location_latlon_rough($location = array());                                                   +
+function _location_latlon_rough($location = array());                                                   +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Takes an location and returns a "rough" latitude/longitude pair based on the postal code
@@ -220,7 +220,7 @@ function location_latlon_exact($location = array());                            
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Currently, this is not a priority until there is an implementable use for exact longitude,
 latitude coordinates for an location.  The idea is that this call will eventually retrieve
-information through a web-service.  Whereas location_latlon_rough() returns an approximate
+information through a web-service.  Whereas _location_latlon_rough() returns an approximate
 lat/lon pair based strictly on the postal code where this lat/lon pair is pulled from a
 database table, this function is intended to send the entire location to a web-service and
 to retrieve exact lat/lon coordinates.
@@ -347,9 +347,9 @@ Generates a Drupal HTML form for collecting locationes.
 @param $function
   A string that tells _location_address_form() which location API function will be using the location submitted via the
   generated form.  For example, if $function == 'latlon_rough', then the returned _location_address_form (if it includes
-  a country field) will only generate a list of countries in the HTML select for which function location_latlon_rough()
+  a country field) will only generate a list of countries in the HTML select for which function _location_latlon_rough()
   is supported.  To figure out which countries these are, we check to see which of the configured countries have existing
-  functions to support the call.  In this case, we would check to see if there existed a function called "location_latlon_rough_us()"
+  functions to support the call.  In this case, we would check to see if there existed a function called "_location_latlon_rough_us()"
   before listing the United States in the HTML SELECT for the generated location form.  $function is defaulted to NULL.
   If $function is NULL, the HTML SELECT that is generated will list all countries.
 

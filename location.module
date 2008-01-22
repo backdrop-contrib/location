@@ -38,7 +38,7 @@ function _location_admin_settings() {
 
   $default_country = variable_get('location_default_country', 'us');
 
-  $configured_countries = _location_country_configured_get();
+  $configured_countries = _location_country_enabled_get();
 
   $iso_list_sorted = _location_country_get();
   array_multisort($iso_list_sorted);
@@ -119,7 +119,7 @@ function _location_admin_settings() {
   $form['countries']['location_configured_countries'] = array(
     '#type'           => 'checkboxes',
     '#title'          => t('Enable all <em>available</em> features for locations from the following countries'),
-    '#default_value'  => _location_country_configured_get(),
+    '#default_value'  => _location_country_enabled_get(),
     '#options'        => $supported_countries,
   );
 
@@ -353,6 +353,8 @@ function location_form_alter($form_id, &$form) {
       'system_settings_form_submit' => array()),
       $form['#submit'] ? $form['#submit'] : array());
   }
+
+  // Add the options to the Node Type form
   elseif ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
 
@@ -522,6 +524,8 @@ function location_form_alter($form_id, &$form) {
       views_invalidate_cache();
     }
   }
+
+  // Add the Location fields on the Node form
   elseif (isset($form['type']['#value'])
       and $form['type']['#value'] .'_node_form' == $form_id
       and variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
@@ -544,15 +548,18 @@ function location_form_alter($form_id, &$form) {
       variable_get('location_defaultnum_'. $node->type, 1);
 
     $form['locations'] = array_merge(
-      is_array($form['locations']) ? $form['locations'] : array(),
+      empty($form['locations']) ? array() : $form['locations'],
       array(
         '#type' => 'fieldset',
         '#title' => format_plural($location_form_count, 'Location', 'Locations'),
         '#tree' => TRUE,
-        '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
-        '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
-        '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
-        '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE
+        '#attributes' => array_merge(
+          empty($form['locations']['#attributes']) ? array() : $form['locations']['#attributes'],
+          array('class' => 'locations')
+        ),
+        '#weight'       => variable_get('location_weight_'. $form['type']['#value'], 9),
+        '#collapsible'  => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
+        '#collapsed'    => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE
       )
     );
 
@@ -582,9 +589,10 @@ function location_form_alter($form_id, &$form) {
       }
     }
 
-    $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
+    $suppressed_values = variable_get('location_suppress_country', 0) ?
+      array('country' => variable_get('location_default_country', 'us')) : array();
 
-    if ($_POST['op'] == t('Preview') or ($_POST['op'] == t('Submit') and form_get_errors())) {
+    if (!empty($_POST['op']) and ($_POST['op'] == t('Preview') or ($_POST['op'] == t('Submit')) and form_get_errors())) {
       for ($index = 0; $index < $location_form_count; $index++) {
         $form['locations'][$index] = array_merge($form['locations'][$index], _location_address_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
       }
@@ -604,7 +612,7 @@ function location_form_alter($form_id, &$form) {
           '#value' => "<br/>\n"
         );
 
-        if ($node->nid or isset($node->locations[$index]['previous_source'])) {
+        if (!empty($node->nid) or !empty($node->locations[$index]['previous_source'])) {
           $form['locations'][$index]['previous_source'] = array(
             '#type' => 'hidden',
             '#value' => $node->locations[$index]['source']
@@ -627,7 +635,8 @@ function location_form_alter($form_id, &$form) {
     for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index]['lid'] = array(
         '#type' => 'hidden',
-        '#value' => $node->locations[$index]['lid']
+        '#value' => empty($node->locations[$index]['lid']) ?
+          NULL : $node->locations[$index]['lid']
       );
     }
   }
@@ -671,7 +680,7 @@ function location_geocoding_options_form() {
     }
   }
 
-  foreach (_location_country_configured() as $country_iso => $country_name) {
+  foreach (_location_country_enabled() as $country_iso => $country_name) {
     $geocoding_options = array();
 
     $form['countries'][$country_iso] = array(
@@ -880,7 +889,7 @@ function location_map_link_options_form() {
     '#value' => ''
   );
 
-  foreach (_location_country_configured() as $country_iso => $country_name) {
+  foreach (_location_country_enabled() as $country_iso => $country_name) {
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
       '#value' => ''
@@ -1486,7 +1495,7 @@ function location_search_results($location_params, $proximity_params) {
 
   // First things first: find lat/lon for submitted postal_code
   // TODO: will need to replace be able to get lat/lon of search point for more than just postal_code
-  $latlon = location_latlon_rough($location_params);
+  $latlon = _location_latlon_rough($location_params);
 
   if (!$latlon['lat'] or !$latlon['lon']) {
     drupal_set_message(t('No search results; could not determine the location of the submitted postal code.'));
@@ -1500,9 +1509,21 @@ function location_search_results($location_params, $proximity_params) {
   $latrange = earth_latitude_range($latlon['lon'], $latlon['lat'], $distance_float);
   $lonrange = earth_longitude_range($latlon['lon'], $latlon['lat'], $distance_float);
 
-  $count_query = 'SELECT COUNT(n.nid) AS count FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f';
+  $count_query = 'SELECT COUNT(n.nid) AS count
+    FROM {node} n
+    INNER JOIN {location} l ON n.vid = l.eid
+    WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f
+    AND l.longitude > %f AND l.longitude < %f AND '.
+    earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f';
 
-  $query = 'SELECT n.nid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' as distance FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f GROUP BY n.nid ORDER by distance';
+  $query = 'SELECT n.nid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' AS distance
+    FROM {node} n
+    INNER JOIN {location} l ON n.vid = l.eid
+    WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f
+    AND l.longitude > %f AND l.longitude < %f AND '.
+    earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f
+    GROUP BY n.nid
+    ORDER by distance';
 
   $query_args = array(
     $latrange[0],
@@ -1512,9 +1533,22 @@ function location_search_results($location_params, $proximity_params) {
     $distance_float
   );
 
-  $pager_count_query = 'SELECT COUNT(DISTINCT nid) AS count FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float;
+  $pager_count_query = 'SELECT COUNT(DISTINCT nid) AS count
+    FROM {node} n
+    INNER JOIN {location} l ON n.vid = l.eid
+    WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .'
+    AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .'
+    AND l.longitude < '. $lonrange[1] .' AND '.
+    earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float;
 
-  $pager_query = 'SELECT n.nid, n.vid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' AS distance FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float .' GROUP BY n.nid ORDER by distance';
+  $pager_query = 'SELECT n.nid, n.vid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .'
+    AS distance FROM {node} n
+    INNER JOIN {location} l ON n.vid = l.eid
+    WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .'
+    AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .'
+    AND l.longitude < '. $lonrange[1] .' AND '.
+    earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float .'
+    GROUP BY n.nid ORDER by distance';
 
   $result = pager_query(db_rewrite_sql($query), 10, 0, db_rewrite_sql($count_query), $query_args);
 
@@ -1528,7 +1562,12 @@ function location_search_results($location_params, $proximity_params) {
 
     $page_count = db_num_rows($result);
 
-    $output = '<p>'. t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $result_count, '%c' => filter_xss($_GET['postal_code']))) .'</p>';
+    $output = '<p>'. t('Displaying results %a - %b of %count for search on %c',
+      array(
+      '%a'      => $results_offset + 1,
+      '%b'      => $results_offset + $page_count,
+      '%count'  => $result_count,
+      '%c'      => filter_xss($_GET['postal_code']))) .'</p>';
 
     while ($row = db_fetch_object($result)) {
 
@@ -1542,9 +1581,8 @@ function location_search_results($location_params, $proximity_params) {
           }
 
           if ($row->postal_code and $row->city) {
-            $location_line .= ' ('. $row->city;
-            $location_line .= $row->province ? ', '. $row->province : '';
-            $location_line .= ')';
+            $location_line .= ' ('. $row->city .
+              ($row->province ? ', '. $row->province : '') .')';
           }
           elseif ($row->city) {
             $location_line .= $row->city . ($row->province ? ', '. $row->province : '');
@@ -1558,7 +1596,8 @@ function location_search_results($location_params, $proximity_params) {
 
       if (($row->postal_code == $location_params['postal_code'] and $row->country == $location_params['country']) or
           ($row->distance < 10)) {
-        $extra['distance'] = t('Result is <strong>also from %postal_code</strong>', array('%postal_code' => $location_params['postal_code']));
+        $extra['distance'] = t('Result is <strong>also from %postal_code</strong>',
+          array('%postal_code' => $location_params['postal_code']));
       }
       else {
         $adjusted_distance = round($row->distance / (($proximity_params['unit'] == 'km') ? 1000.0 : 1609.347), 1);
@@ -1569,7 +1608,10 @@ function location_search_results($location_params, $proximity_params) {
         else {
           $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('mile');
         }
-        $extra['distance'] = t('Approximately %distance %distanceunit from <strong>%location</strong> ', array('%distance' => round($adjusted_distance, 1), '%distanceunit' => $distance_unit, '%location' => $location_params['postal_code']));
+        $extra['distance'] = t('Approximately %distance %distanceunit from <strong>%location</strong> ',
+          array('%distance' => round($adjusted_distance, 1),
+          '%distanceunit' => $distance_unit,
+          '%location' => $location_params['postal_code']));
       }
 
       $node = node_load($row->nid);

@@ -910,7 +910,7 @@ function location_views_provinces($country = '') {
 function location_views_countries() {
   $countries = array();
   $provinces = array();
-  $configured = _location_country_configured_get();
+  $configured = _location_country_enabled_get();
   $country_list = _location_country_get();
 
   foreach ($configured as $country) {
