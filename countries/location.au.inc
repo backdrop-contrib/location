@@ -87,7 +87,6 @@ function location_latlon_exact_au($location = array()) {
   //return _location_latlon_exact_us_geocoder($location);
 }
 
-
 /**
  * Calls up a web-service to retrieve a lat/lon pair for a full, correct U.S. location.
  *
@@ -132,7 +131,6 @@ function _location_latlon_exact_au_geocoder($location = array()) {
   return NULL;
 }
 
-
 function location_map_link_au_yahoo($location = array()) {
   $get_query = '?';
   if (isset($location['street'])) {
@@ -144,7 +142,6 @@ function location_map_link_au_yahoo($location = array()) {
   $get_query .= 'country='. urlencode($location['country']);
   return ('http://maps.yahoo.com/maps_result'. $get_query);
 }
-
 
 function location_map_link_au_google($location = array()) {
   $query_params = array();
@@ -205,7 +202,6 @@ function location_map_link_au_providers() {
               );
 }
 
-
 /**
  * @return
  *   An array of values that work as keys to the array returned by location_map_link_us_providers.  The idea is that if the
@@ -230,7 +226,7 @@ function location_geocode_au_providers() {
   );
 }
 
-function location_geocode_au_yahoo_settings(){
+function location_geocode_au_yahoo_settings() {
   $form = array();
 
   $form['location_geocode_au_yahoo_appid'] = array(
@@ -244,8 +240,6 @@ function location_geocode_au_yahoo_settings(){
 
   return $form;
 }
-
-
 
 function location_geocode_au_yahoo($location = array()) {
   $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=". variable_get('location_geocode_au_yahoo_appid', "YahooDemo") ."&location=";
@@ -321,7 +315,7 @@ function location_geocode_au_google($location = array()) {
   return array('lat' => $latlon_exploded[1], 'lon' => $latlon_exploded[0]);
 }
 
-function location_geocode_au_google_settings(){
+function location_geocode_au_google_settings() {
   $form = array();
 
   $form['location_geocode_au_google_apikey'] = array(
@@ -338,13 +332,13 @@ function location_geocode_au_google_settings(){
 
 /**
  * Parameters:
- *   -> $locationA is an associative array that represents a full location where
+ *   -> $location_a is an associative array that represents a full location where
  *        'street'       => the street portions of the location
  *        'supplemental' => additional street portion of the location
  *        'province'     => the province, state, or territory
  *        'country'      => lower-cased two-letter ISO code (REQUIRED)
- *   -> $locationB is associative array that represents a full location in the same way that
- *       parameter $locationB does.
+ *   -> $location_b is associative array that represents a full location in the same way that
+ *       parameter $location_b does.
  *
  * Returns: a link to driving directions
  *
@@ -352,8 +346,8 @@ function location_geocode_au_google_settings(){
  * Maybe later, we can add some kind of country-specific settings page that allows the site-admin to
  * decide which site to link to for driving directions.
  */
-function location_driving_directions_link_au($locationA, $locationB) {
-  return _location_driving_directions_link_au_yahoo($locationA, $locationB);
+function location_driving_directions_link_au($location_a, $location_b) {
+  return _location_driving_directions_link_au_yahoo($location_a, $location_b);
 }
 
 /**
@@ -368,8 +362,8 @@ function location_driving_directions_link_au($locationA, $locationB) {
  *    Yahoo! driving directions where the form is filled with whatever fields have been provided
  *    for the partial location(es).
  */
-function _location_driving_directions_link_au_yahoo($locationA, $locationB) {
-  if (trim($locationB['country']) != 'ca' && trim($locationB['country']) != 'au') {
+function _location_driving_directions_link_au_yahoo($location_a, $location_b) {
+  if (trim($location_b['country']) != 'ca' && trim($location_b['country']) != 'au') {
     return '';
   }
 
@@ -379,15 +373,15 @@ function _location_driving_directions_link_au_yahoo($locationA, $locationB) {
   // directions themselves.
 
 
-  foreach ($locationA as $field => $value) {
-    $locationA[$field] = trim($value);
+  foreach ($location_a as $field => $value) {
+    $location_a[$field] = trim($value);
   }
 
-  foreach ($locationB as $field => $value) {
-    $locationB[$field] = trim($value);
+  foreach ($location_b as $field => $value) {
+    $location_b[$field] = trim($value);
   }
 
-  if (_location_au_enough_fields_for_yahoo($locationA) && _location_au_enough_fields_for_yahoo($locationB)) {
+  if (_location_au_enough_fields_for_yahoo($location_a) && _location_au_enough_fields_for_yahoo($location_b)) {
     $yahoo_maps_path = 'dd_result';
   }
   else {
@@ -396,19 +390,18 @@ function _location_driving_directions_link_au_yahoo($locationA, $locationB) {
 
   $get_query  = '?';
 
-  $get_query .= 'addr='. urlencode($locationA['street']) .'&amp;';
-  $get_query .= 'csz=' . _location_au_yahoo_csz_get_field($locationA) .'&amp;';
-  $get_query .= 'country='. urlencode($locationA['country']) .'&amp;';
+  $get_query .= 'addr='. urlencode($location_a['street']) .'&amp;';
+  $get_query .= 'csz='. _location_au_yahoo_csz_get_field($location_a) .'&amp;';
+  $get_query .= 'country='. urlencode($location_a['country']) .'&amp;';
 
-  $get_query .= 'taddr='. urlencode($locationB['street']) .'&amp;';
-  $get_query .= 'tcsz=' . _location_au_yahoo_csz_get_field($locationB) .'&amp;';
-  $get_query .= 'tcountry='. urlencode($locationB['country']);
+  $get_query .= 'taddr='. urlencode($location_b['street']) .'&amp;';
+  $get_query .= 'tcsz='. _location_au_yahoo_csz_get_field($location_b) .'&amp;';
+  $get_query .= 'tcountry='. urlencode($location_b['country']);
 
   $get_query .= '&amp;getrte='. urlencode('Get Directions');
 
   return ('http://maps.yahoo.com/'. $yahoo_maps_path . $get_query);
 }
-
 
 function _location_au_enough_fields_for_yahoo($location) {
   // These are the fields that need to be in each location if we are to provide a direct
@@ -430,8 +423,10 @@ function _location_au_enough_fields_for_yahoo($location) {
   return FALSE;
 }
 
-// Don't mess with this function unless you understand its logic.  It has to do with
-// the question of "to comma or not to comma?"
+/**
+ * Don't mess with this function unless you understand its logic.  It has to do with
+ * the question of "to comma or not to comma?"
+ */
 function _location_au_yahoo_csz_get_field($location) {
   // For some reasons, to the end of pinpointing a location, Yahoo! Maps and Driving Directions
   // do better a better job with retrieving info based strictly on a Canadian city/province
@@ -469,7 +464,7 @@ function _location_au_yahoo_csz_get_field($location) {
 function _location_au_geocoder_oneline($location = array()) {
   $line = '';
 
-  $line .= $location['street'] . ', ';
+  $line .= $location['street'] .', ';
 
   if (strlen($location['city']) && strlen($location['province']) && strlen($location['postal_code'])) {
     $line .= $location['city'] .', '. $location['province'] .' '. $location['postal_code'];
@@ -495,8 +490,6 @@ function _location_au_geocoder_oneline($location = array()) {
   return $line;
 }
 
-
-
 /**
  * Returns an associative array of states/territories where
  *   -> the keys are integers starting from 1
@@ -519,7 +512,6 @@ function location_province_list_au() {
     'VIC' => "Victoria",
     'WA' => "Western Australia");
 }
-
 
 /**
  * Returns an associative array of states/territories where

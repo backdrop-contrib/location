@@ -1677,9 +1677,8 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 
   elseif ($op == 'view'
       and variable_get('location_display_location', 1)
-      and !_location_is_empty($user->location)
-      and (user_access('administer users') or $GLOBALS['user']->uid == $user->uid)
-      ) {
+      and !_location_is_empty($user->location) and
+      (user_access('administer users') or $GLOBALS['user']->uid == $user->uid)) {
 
     $items[] = array(
       'value' => theme('location', $user->location),

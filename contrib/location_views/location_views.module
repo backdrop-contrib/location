@@ -14,8 +14,7 @@ define('LOCATION_VIEWS_UNKNOWN', t('unknown'));
 function location_views_help($section) {
   switch ($section) {
     case 'admin/help#location_views':
-      return t('The Location Views module makes all the location fields available to the Views module, ' .
-        'and creates a default location view using all the location fields. If the usernode module is installed user location information is Views-enabled, too. ');
+      return t('The Location Views module makes all the location fields available to the Views module, and creates a default location view using all the location fields. If the usernode module is installed user location information is Views-enabled, too.');
   }
 }
 
@@ -23,8 +22,7 @@ function location_views_help($section) {
  * For operation with the views.module.
  */
 function location_views_tables() {
-
-   $tables['location'] = array(
+  $tables['location'] = array(
     'name' => 'location',
     'join' => array(
       'left' => array(
@@ -146,7 +144,7 @@ function location_views_tables() {
     'handler'   => 'location_views_field_handler_address',
     'notafield' => true,
     'sortable'  => false,
-    'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
+    'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
     'help' => t('Complete formatted address in a single cell, using the location theme.'),
     );
 
@@ -176,7 +174,7 @@ function location_views_tables() {
     'handler'   => 'location_views_field_handler_distance',
     'notafield' => true,
     'sortable'  => false,
-    'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+    'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
     'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
     );
 
@@ -239,7 +237,7 @@ function location_views_tables() {
           'name' => t('User Location: Street'),
           'operator' => 'views_handler_operator_like',
           'handler' => 'views_handler_filter_like',
-       ),
+        ),
         'city' => array(
           'field' => 'city',
           'name' => t('User Location: City'),
@@ -303,7 +301,7 @@ function location_views_tables() {
       'handler'   => 'location_views_field_handler_user_address',
       'notafield' => true,
       'sortable'  => false,
-      'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
+      'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
       'help' => t('Complete formatted address in a single cell, using the location theme.'),
       );
 
@@ -333,7 +331,7 @@ function location_views_tables() {
       'handler'   => 'location_views_field_handler_distance',
       'notafield' => true,
       'sortable'  => false,
-      'addlfields'=> array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+      'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
       'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
       );
   }
@@ -357,7 +355,7 @@ function location_views_default_views() {
   $view->name = 'location_table';
   $view->description = 'Node location table.';
   $view->disabled = TRUE;
-  $view->access = array (
+  $view->access = array(
     );
   $view->view_args_php = '';
   $view->page = TRUE;
@@ -377,12 +375,12 @@ function location_views_default_views() {
   $view->menu_tab = FALSE;
   $view->menu_tab_default = FALSE;
   $view->menu_weight = '';
-  $view->sort = array (
+  $view->sort = array(
   );
-  $view->argument = array (
+  $view->argument = array(
   );
-  $view->field = array (
-    array (
+  $view->field = array(
+    array(
       'tablename' => 'node',
       'field' => 'title',
       'label' => 'Title:',
@@ -390,53 +388,53 @@ function location_views_default_views() {
       'sortable' => '1',
       'defaultsort' => 'ASC',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'street',
       'label' => 'Street:',
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'city',
       'label' => 'City:',
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'province',
       'label' => 'Province:',
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'postal_code',
       'label' => 'Postal Code:',
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'country',
       'label' => 'Country:',
       'sortable' => '1',
     ),
   );
-  $view->filter = array (
-    array (
+  $view->filter = array(
+    array(
       'tablename' => 'node',
       'field' => 'status',
       'operator' => '=',
       'options' => '',
       'value' => '1',
     ),
-    array (
+    array(
       'tablename' => 'node',
       'field' => 'type',
       'operator' => 'OR',
       'options' => '',
       'value' => $location_node_types,
     ),
-    array (
+    array(
     'tablename' => 'location',
     'field' => 'type',
     'operator' => '=',
@@ -446,7 +444,7 @@ function location_views_default_views() {
   );
 
 
-  $view->exposed_filter = array ();
+  $view->exposed_filter = array();
   $view->requires = array('node', 'location');
   $views[$view->name] = $view;
 
@@ -455,7 +453,7 @@ function location_views_default_views() {
   $view->name = 'location_directory';
   $view->description = 'Location directory filtered by arguments in the url.';
   $view->disabled = TRUE;
-  $view->access = array ();
+  $view->access = array();
   $view->view_args_php = '';
   $view->page = TRUE;
   $view->page_title = '';
@@ -474,83 +472,83 @@ function location_views_default_views() {
   $view->menu_tab = FALSE;
   $view->menu_tab_default = FALSE;
   $view->menu_weight = '';
-  $view->sort = array (
+  $view->sort = array(
   );
-  $view->argument = array (
-    array (
+  $view->argument = array(
+    array(
       'type' => 'country',
       'argdefault' => '6',
       'title' => t('Country'),
       'options' => '',
     ),
-    array (
+    array(
       'type' => 'province',
       'argdefault' => '6',
       'title' => t('State'),
       'options' => '',
     ),
-    array (
+    array(
       'type' => 'city',
       'argdefault' => '6',
       'title' => t('City'),
       'options' => '1',
     ),
   );
-  $view->field = array (
-    array (
+  $view->field = array(
+    array(
       'tablename' => 'node',
       'field' => 'title',
       'label' => t('Title:'),
       'handler' => 'views_handler_field_nodelink',
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'street',
       'label' => t('Street:'),
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'city',
       'label' => t('City:'),
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'province',
       'label' => t('Province:'),
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'postal_code',
       'label' => t('Postal Code:'),
       'sortable' => '1',
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'country',
       'label' => 'Country:',
       'sortable' => '1',
     ),
   );
-  $view->filter = array (
-    array (
+  $view->filter = array(
+    array(
       'tablename' => 'node',
       'field' => 'status',
       'operator' => '=',
       'options' => '',
       'value' => '1',
     ),
-    array (
+    array(
       'tablename' => 'node',
       'field' => 'type',
       'operator' => 'OR',
       'options' => '',
       'value' => $location_node_types,
     ),
-    array (
+    array(
       'tablename' => 'location',
       'field' => 'type',
       'operator' => '=',
@@ -558,7 +556,7 @@ function location_views_default_views() {
       'value' => 'node',
     ),
   );
-  $view->exposed_filter = array ();
+  $view->exposed_filter = array();
   $view->requires = array('node', 'location');
   $views[$view->name] = $view;
 
@@ -567,7 +565,7 @@ function location_views_default_views() {
     $view->name = 'user_location_table';
     $view->description = 'User location table.';
     $view->disabled = TRUE;
-    $view->access = array (
+    $view->access = array(
       );
     $view->view_args_php = '';
     $view->page = TRUE;
@@ -587,12 +585,12 @@ function location_views_default_views() {
     $view->menu_tab = FALSE;
     $view->menu_tab_default = FALSE;
     $view->menu_weight = '';
-    $view->sort = array (
+    $view->sort = array(
     );
-    $view->argument = array (
+    $view->argument = array(
     );
-    $view->field = array (
-      array (
+    $view->field = array(
+      array(
         'tablename' => 'node',
         'field' => 'title',
         'label' => 'Title:',
@@ -600,61 +598,61 @@ function location_views_default_views() {
         'sortable' => '1',
         'defaultsort' => 'ASC',
       ),
-      array (
+      array(
         'tablename' => 'user_location',
         'field' => 'street',
         'label' => 'Street:',
         'sortable' => '1',
       ),
-      array (
+      array(
         'tablename' => 'user_location',
         'field' => 'city',
         'label' => 'City:',
         'sortable' => '1',
       ),
-      array (
+      array(
         'tablename' => 'user_location',
         'field' => 'province',
         'label' => 'Province:',
         'sortable' => '1',
       ),
-      array (
+      array(
         'tablename' => 'user_location',
         'field' => 'postal_code',
         'label' => 'Postal Code:',
         'sortable' => '1',
       ),
-      array (
+      array(
         'tablename' => 'user_location',
         'field' => 'country',
         'label' => 'Country:',
         'sortable' => '1',
       ),
     );
-    $view->filter = array (
-      array (
+    $view->filter = array(
+      array(
         'tablename' => 'node',
         'field' => 'status',
         'operator' => '=',
         'options' => '',
         'value' => '1',
       ),
-      array (
+      array(
         'tablename' => 'node',
         'field' => 'type',
         'operator' => 'OR',
         'options' => '',
         'value' => array(0 => 'usernode'),
       ),
-      array (
-      'tablename' => 'user_location',
-      'field' => 'type',
-      'operator' => '=',
-      'options' => '',
-      'value' => 'user',
+      array(
+        'tablename' => 'user_location',
+        'field' => 'type',
+        'operator' => '=',
+        'options' => '',
+        'value' => 'user',
       ),
     );
-    $view->exposed_filter = array ();
+    $view->exposed_filter = array();
     $view->requires = array(node, location);
     $views[$view->name] = $view;
 
@@ -711,17 +709,17 @@ function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '')
 }
 
 function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $table = 'location') {
-  switch($op) {
-  case 'summary':
+  switch ($op) {
+    case 'summary':
 
       // if a length option has been provided, display only the $len left letters of the name
       $len = intval($arg);
       $query->ensure_table($table, true);
       if ($len <= 0) {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '" . LOCATION_VIEWS_UNKNOWN . "', $table.city)";
+        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". LOCATION_VIEWS_UNKNOWN ."', $table.city)";
       }
       else {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '" . LOCATION_VIEWS_UNKNOWN . "', LEFT($table.city, $len))";
+        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". LOCATION_VIEWS_UNKNOWN ."', LEFT($table.city, $len))";
       }
       $fieldinfo['fieldname'] = 'city';
       return $fieldinfo;
@@ -737,7 +735,8 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       $len = intval($argtype['options']);
       if ($len <= 0) {
         $query->add_where("$table.city = '%s'", strcasecmp($arg, LOCATION_VIEWS_UNKNOWN) ? $arg : '');
-      } else {
+      }
+      else {
         $query->add_where("LEFT($table.city, $len) = '%s'", strcasecmp($arg, LOCATION_VIEWS_UNKNOWN) ? $arg : '');
       }
       break;
@@ -745,7 +744,8 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       // if using first letter directory, use strtoupper on the link
       if ($len) {
         return l($query->city == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : strtoupper($query->city), "$arg/$query->city");
-      } else {
+      }
+      else {
         return l($query->city == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : $query->city, "$arg/$query->city");
       }
     case 'title':
@@ -762,10 +762,10 @@ function location_views_handler_arg_user_province($op, &$query, $argtype, $arg =
 
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
   $provinces = location_views_provinces($country = '');
-  switch($op) {
+  switch ($op) {
     case 'summary':
       $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'" . LOCATION_VIEWS_UNKNOWN . "',$table.province)";
+      $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'". LOCATION_VIEWS_UNKNOWN ."',$table.province)";
       $fieldinfo['fieldname'] = 'province';
 
       // Make sure the country gets added so we can do a lookup on the province name.
@@ -800,10 +800,10 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
   $all_countries=_location_country_get();
   $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
 
-  switch($op) {
+  switch ($op) {
     case 'summary':
       $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'" . LOCATION_VIEWS_UNKNOWN . "',$table.country)";
+      $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'". LOCATION_VIEWS_UNKNOWN ."',$table.country)";
       $fieldinfo['fieldname'] = 'country';
       return $fieldinfo;
       break;
@@ -827,7 +827,7 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
  * A list of options to be used in = queries
  */
 function location_handler_operator_eq() {
-  return array('' => t('<All>'), '=' => t('='), '!=' => t('not ='));
+  return array('' => t('<all>'), '=' => t('='), '!=' => t('not ='));
 }
 
 /**
@@ -835,18 +835,18 @@ function location_handler_operator_eq() {
  */
 function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
 
-  switch($filter[value]) {
-    case(''):
+  switch ($filter[value]) {
+    case '':
       return;
       break;
   }
-  switch($filter['operator']) {
-    case (''):
+  switch ($filter['operator']) {
+    case '':
       return;
       break;
   }
-  switch($filterinfo['field']) {
-    case ('province'):
+  switch ($filterinfo['field']) {
+    case 'province':
       $filter['value'] = _location_form2api(array('province' => $filter['value']));
       $filter['value'] = $filter['value']['province'];
       break;
@@ -859,19 +859,19 @@ function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
  *  Format a country name
  */
 function location_views_country_handler($fieldinfo, $fielddata, $value, $data)  {
-   $countries = location_views_countries();
-   return $countries[$value];
+  $countries = location_views_countries();
+  return $countries[$value];
 }
 
 /**
  *  Format a province name
  */
 function location_views_province_handler($fieldinfo, $fielddata, $value, $data)  {
-   $provinces = _location_province_get();
-   $location['province'] = $data->location_province;
-   $location['country']  = $data->location_country;
-   $values = _location_api2form($location);
-   return $provinces[$values['province']];
+  $provinces = _location_province_get();
+  $location['province'] = $data->location_province;
+  $location['country']  = $data->location_country;
+  $values = _location_api2form($location);
+  return $provinces[$values['province']];
 }
 
 /**
@@ -931,11 +931,11 @@ function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $
  *  not sure yet how to add another selector into the mix so user can select units
  */
 function location_views_proximity_form() {
- return array(
+  return array(
     '#title' => t('from Postal Code'),
     '#type' => 'textfield',
     '#size' => 15,
-    );
+  );
 }
 
 function location_views_proximity_operators() {
@@ -963,7 +963,8 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
     $lat = $_GET['edit']['gmap_latitude'];
     $lon = $_GET['edit']['gmap_longitude'];
 
-  } else {
+  }
+  else {
 
     $zip      = $filter['value'];
     $result   = db_query("SELECT * FROM {zipcodes} WHERE zip='$zip'");
@@ -995,7 +996,7 @@ function location_views_map_input_form() {
   if (!module_exists('gmap')) return $form;
 
   $user = $GLOBALS['user'];
-  $res=db_query("SELECT * FROM {location} WHERE eid=%d AND type='user'",$user->uid);
+  $res = db_query("SELECT * FROM {location} WHERE eid=%d AND type='user'", $user->uid);
   if ($gmap_user = db_fetch_array($res)) {
     $user->latitude  = $gmap_user['latitude'];
     $user->longitude = $gmap_user['longitude'];
@@ -1007,8 +1008,8 @@ function location_views_map_input_form() {
     '#description' => t('Click on the map to mark the center point for your search, then submit the values.')
     );
   $form['map']['gmap_user'] = array(
-    '#type'=>'markup',
-    '#value'=>''
+    '#type' => 'markup',
+    '#value' => ''
     );
   $form['coordinates'] = array(
     '#type' => 'fieldset',
@@ -1022,7 +1023,7 @@ function location_views_map_input_form() {
     '#default_value' => $_GET['edit']['gmap_latitude'] ? $_GET['edit']['gmap_latitude'] : $user->latitude,
     '#size' => 30,
     '#maxlength' => 120,
-    '#attributes' => array('onchange'=>'gmap_textchange();')
+    '#attributes' => array('onchange' => 'gmap_textchange();')
     );
   $form['coordinates']['gmap_longitude'] = array(
     '#type' => 'textfield',
@@ -1030,12 +1031,14 @@ function location_views_map_input_form() {
     '#default_value' => $_GET['edit']['gmap_longitude'] ? $_GET['edit']['gmap_longitude'] : $user->longitude,
     '#size' => 30,
     '#maxlength' => 120,
-    '#attributes' => array('onchange'=>'gmap_textchange();')
+    '#attributes' => array('onchange' => 'gmap_textchange();')
     );
 
-  $form['map']['gmap_user']['#value'] = gmap_set_location(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|control=Large|zoom=16|width=100%|height=400px]'),
-                                         $form['coordinates']['gmap_longitude'],
-                                         $form['coordinates']['gmap_latitude']);
+  $form['map']['gmap_user']['#value'] = gmap_set_location(variable_get('gmap_user_map',
+    '[gmap|id=usermap|center=0,30|control=Large|zoom=16|width=100%|height=400px]'),
+    $form['coordinates']['gmap_longitude'],
+    $form['coordinates']['gmap_latitude']
+  );
   return  $form;
 
 }
