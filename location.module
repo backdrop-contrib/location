@@ -1303,68 +1303,73 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   }
 }
 
+/**
+ * Implementation of hook_perm().
+ */
 function location_perm() {
   return array('search content by location', 'submit latitude/longitude');
 }
 
 /**
- * Saves a location.  Needs a $user or $node object.
+ * Saves a location and link it to its main object.
+ * Needs a $user or $node object.
  *
- * @param $posted_location
- * The array
+ * @param $location
+ *   Array. The location data to be saved.
+ * @param &$user_or_node
+ *   Object. It might be or the $user object or the $node.
+ *   We will extract its ID to correct link it to the
+ *   location
+ * @param $type
+ *   String (optional). 'node' to link the location to a
+ *   node or 'user' to link it to a site user
  */
-function _location_save($posted_location, &$user_or_node, $type = 'node') {
+function _location_save($location, &$user_or_node, $type = 'node') {
+  // Since the location can be from a User
+  // or ia Node Location, we need to choose the right
+  // ID: node version or user ID
   $field = ($type == 'node' ? 'vid': 'uid');
-  if (isset($posted_location) and count($posted_location)) {
 
-    $lid = $posted_location['lid'] ? $posted_location['lid'] : db_next_id('{location}_lid');
-    $posted_location['lid'] = $lid;
+  if (!empty($location)) {
+    // Get the Location ID: if its a new Location,
+    // generate a ID. If its a existing location,
+    // use it.
+    $lid = empty($location['lid']) ? db_next_id('{location}_lid') : $location['lid'];
+    $location['lid'] = $lid;
 
-    location_invoke_locationapi($posted_location, 'save');
+    // Let other modules change the standard behaviour
+    location_invoke_locationapi($location , 'save');
 
-    if (isset($posted_location['lat']) and isset($posted_location['lon'])) {
-      db_query("DELETE FROM {location} WHERE lid = %d", $lid);
-      db_query("INSERT INTO {location}
-        (lid, type, eid, name, street,
-        additional, city, province, postal_code, country,
-        latitude, longitude, source)
-        VALUES (%d, '%s', %d, '%s', '%s',
-        '%s', '%s', '%s', '%s', '%s',
-        '%f', '%f', %d)",
-        $lid,
-        $type,
-        $user_or_node->$field,
-        (empty($posted_location['name'])) ? '' : $posted_location['name'],
-        (empty($posted_location['street'])) ? '' : $posted_location['street'],
-        (empty($posted_location['additional'])) ? '' : $posted_location['additional'],
-        (empty($posted_location['city'])) ? '' : $posted_location['city'],
-        (empty($posted_location['province'])) ? '' : $posted_location['province'],
-        (empty($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-        (empty($posted_location['country'])) ? '' : $posted_location['country'],
-        $posted_location['lat'],
-        $posted_location['lon'],
-        $posted_location['source']
-      );
-    }
-    else {
-      db_query("DELETE FROM {location} WHERE lid = %d", $lid);
-      db_query("INSERT INTO {location} (lid, type, eid, name, street, additional, city, province, postal_code, country, source) VALUES (%d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
-              $lid,
-              $type,
-              $user_or_node->$field,
-              (!isset($posted_location['name']) or is_null($posted_location['name'])) ? '' : $posted_location['name'],
-              (!isset($posted_location['street']) or is_null($posted_location['street'])) ? '' : $posted_location['street'],
-              (!isset($posted_location['additional']) or is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
-              (!isset($posted_location['city']) or is_null($posted_location['city'])) ? '' : $posted_location['city'],
-              (!isset($posted_location['province']) or is_null($posted_location['province'])) ? '' : $posted_location['province'],
-              (!isset($posted_location['postal_code']) or is_null($posted_location['postal_code'])) ? '' : $posted_location['postal_code'],
-              (!isset($posted_location['country']) or is_null($posted_location['country'])) ? NULL : $posted_location['country'],
-              $posted_location['source']
-            );
-    }
+    // Get the latitude and longitude, if it exists
+    $lat = empty($location['lat']) ? 0 : $location['lat'];
+    $lon = empty($location['lon']) ? 0 : $location['lon'];
+
+    // Instead of create INSERT and UPDATE SQL
+    // instrauctions, we DELETE (if exists) the given
+    // Location and create another one in its place
+    db_query('DELETE FROM {location} WHERE lid = %d', $lid);
+    db_query("INSERT INTO {location}
+      (lid, type, eid, name, street,
+      additional, city, province, postal_code, country,
+      latitude, longitude, source)
+      VALUES (%d, '%s', %d, '%s', '%s',
+      '%s', '%s', '%s', '%s', '%s',
+      '%f', '%f', %d)",
+      $lid,
+      $type,
+      $user_or_node->$field,
+      (empty($location['name'])) ? '' : $location['name'],
+      (empty($location['street'])) ? '' : $location['street'],
+      (empty($location['additional'])) ? '' : $location['additional'],
+      (empty($location['city'])) ? '' : $location['city'],
+      (empty($location['province'])) ? '' : $location['province'],
+      (empty($location['postal_code'])) ? '' : $location['postal_code'],
+      (empty($location['country'])) ? '' : $location['country'],
+      $location['lat'],
+      $location['lon'],
+      $location['source']
+    );
   }
-
-
 }
 
 function location_search_form($location_params = array(), $proximity_params = array()) {
