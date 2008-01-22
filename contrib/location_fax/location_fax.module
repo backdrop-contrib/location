@@ -88,8 +88,10 @@ function location_fax_locationapi(&$location, $op) {
   switch ($op) {
     case 'save':
       db_query('DELETE FROM {location_fax} WHERE lid = %d', $location['lid']);
-      db_query("INSERT INTO {location_fax} (lid, fax)
-        VALUES (%d, '%s')", $location['lid'], $location['fax']);
+      if (!empty($location['fax'])) {
+        db_query("INSERT INTO {location_fax} (lid, fax)
+          VALUES (%d, '%s')", $location['lid'], $location['fax']);
+      }
       break;
     case 'load':
       if ($row = db_fetch_object(db_query('SELECT fax FROM {location_fax}

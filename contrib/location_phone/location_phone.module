@@ -88,8 +88,10 @@ function location_phone_locationapi(&$location, $op) {
   switch ($op) {
     case 'save':
       db_query('DELETE FROM {location_phone} WHERE lid = %d', $location['lid']);
-      db_query("INSERT INTO {location_phone} (lid, phone)
-        VALUES (%d, '%s')", $location['lid'], $location['phone']);
+      if (!empty($location['phone'])) {
+        db_query("INSERT INTO {location_phone} (lid, phone)
+          VALUES (%d, '%s')", $location['lid'], $location['phone']);
+      }
       break;
     case 'load':
       if ($row = db_fetch_object(db_query('SELECT phone FROM {location_phone}
