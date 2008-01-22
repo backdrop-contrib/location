@@ -165,9 +165,6 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
           );
     }
     else {
-//       $province_list = _location_province_get((in_array('country', array_keys($suppressed)) ? $suppressed['country'] : NULL));
-//       array_unshift($province_list, array('' => '', 'xx' => t('NOT LISTED')));
-
       $form['province'] = array(
         '#autocomplete_path'  => 'admin/settings/location/autocomplete',
         '#default_value'      => isset($prefilled['province']) ? $prefilled['province'] : '',
@@ -221,7 +218,7 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
 
   // Add the submit button
   if (1) {
-    if (!empty($edit['aid'])) {
+    if (!empty($prefilled['lid'])) {
       $form['submit'] = array(
         '#type'   => 'submit',
         '#value'  => t('Update address')
