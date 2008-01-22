@@ -348,7 +348,10 @@ function location_form_alter($form_id, &$form) {
   if ($form_id == 'location_geocoding_options_form') {
     //$form_exp = var_export($form, TRUE);
     //drupal_set_message("\$form == <pre>$form_exp</pre>");
-    $form['#submit'] = array_merge(array('location_geocoding_options_form_submit' => array(), 'system_settings_form_submit' => array()), $form['#submit'] ? $form['#submit'] : array());
+    $form['#submit'] = array_merge(array(
+      'location_geocoding_options_form_submit' => array(),
+      'system_settings_form_submit' => array()),
+      $form['#submit'] ? $form['#submit'] : array());
   }
   elseif ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
@@ -361,130 +364,157 @@ function location_form_alter($form_id, &$form) {
     $form['location'] = array_merge(
       is_array($form['location']) ? $form['location'] : array(),
       array(
-        '#type' => 'fieldset',
-        '#title' => t('Locative information'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#weight' => 0
+        '#type'         => 'fieldset',
+        '#title'        => t('Locative information'),
+        '#collapsible'  => TRUE,
+        '#collapsed'    => TRUE,
+        '#weight'       => 0
       )
     );
 
-    // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
+    // Variables for how many default location forms should
+    // show on edit forms and how many maximum locations
+    // can be submitted for this node type
 
     $form['location']['multiple_locations'] = array_merge(
-      is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
+      empty($form['location']['multiple_locations']) ? array() : $form['location']['multiple_locations'],
       array(
-        '#type' => 'fieldset',
-        '#title' => t('Number of locations'),
-        '#collapsible' => FALSE,
-        '#collapsed' => FALSE,
-        '#weight' => 0
+        '#type'         => 'fieldset',
+        '#title'        => t('Number of locations'),
+        '#collapsible'  => FALSE,
+        '#collapsed'    => FALSE,
+        '#weight'       => 0
       )
     );
 
     $form['location']['multiple_locations']['location_maxnum'] = array(
-      '#type' => 'select',
-      '#title' => t('Maximum number of locations allowed for this type.'),
-      '#default_value' => variable_get('location_maxnum_'. $type, 0),
-      '#options' => drupal_map_assoc(range(0, 100)),
-      '#description' => t('This setting determines the maximum number of locations that can be assigned to a node of this type.  This number must be greater than or equal to the default number of location forms selected below.  By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
+      '#type'           => 'select',
+      '#title'          => t('Maximum number of locations allowed for this type.'),
+      '#default_value'  => variable_get('location_maxnum_'. $type, 0),
+      '#options'        => drupal_map_assoc(range(0, 100)),
+      '#description'    => t('This setting determines the maximum number of locations that can be assigned to a node of this type. This number must be greater than or equal to the default number of location forms selected below. By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
     );
 
     $form['location']['multiple_locations']['location_defaultnum'] = array(
-      '#type' => 'select',
-      '#title' => t('Default number of location forms'),
-      '#default_value' => variable_get('location_defaultnum_'. $type, 0),
-      '#options' => drupal_map_assoc(range(0, 10)),
-      '#description' => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
+      '#type'           => 'select',
+      '#title'          => t('Default number of location forms'),
+      '#default_value'  => variable_get('location_defaultnum_'. $type, 0),
+      '#options'        => drupal_map_assoc(range(0, 10)),
+      '#description'    => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
     );
 
     // End of variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
 
     $options = array();
-    for ($i=-10; $i<11; $i++) {
+    for ($i = -10; $i < 11; $i++) {
       $options[$i] = $i;
     }
 
     $form['location']['location_weight'] = array(
-      '#prefix' => '<div style="margin-left: 40px">',
-      '#type' => 'select',
-      '#title' => t('Location weight'),
-      '#options' => $options,
-      '#default_value' => variable_get('location_weight_'. $type, 9),
-      '#description' => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.')
+      '#prefix'         => '<div style="margin-left: 40px">',
+      '#type'           => 'select',
+      '#title'          => t('Location weight'),
+      '#options'        => $options,
+      '#default_value'  => variable_get('location_weight_'. $type, 9),
+      '#description'    => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.')
     );
 
     $form['location']['location_collapsible'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Collapsible'),
-      '#return_value' => 1,
-      '#default_value' => variable_get('location_collapsible_'. $type, 1),
-      '#description' => t('Make the location box collapsible.')
+      '#type'           => 'checkbox',
+      '#title'          => t('Collapsible'),
+      '#return_value'   => 1,
+      '#default_value'  => variable_get('location_collapsible_'. $type, 1),
+      '#description'    => t('Make the location box collapsible.')
     );
 
     $form['location']['location_collapsed'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Collapsed'),
-      '#return_value' => 1,
-      '#default_value' => variable_get('location_collapsed_'. $type, 1),
-      '#description' => t('Display the location box collapsed.')
+      '#type'           => 'checkbox',
+      '#title'          => t('Collapsed'),
+      '#return_value'   => 1,
+      '#default_value'  => variable_get('location_collapsed_'. $type, 1),
+      '#description'    => t('Display the location box collapsed.')
     );
 
     $form['location']['location_addanother'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Add another location from node view page'),
-      '#return_value' => 1,
-      '#default_value' => variable_get('location_addanother_'. $type, 0),
-      '#description' => t('Display the "Add another location" option on the node view page.')
+      '#type'           => 'checkbox',
+      '#title'          => t('Add another location from node view page'),
+      '#return_value'   => 1,
+      '#default_value'  => variable_get('location_addanother_'. $type, 0),
+      '#description'    => t('Display the "Add another location" option on the node view page.')
     );
 
     $form['location']['required_field_notice'] = array(
-      '#type' => 'markup',
-      '#value' => '<p><strong>'. t('NOTE:') .'</strong> '. t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
+      '#type'           => 'markup',
+      '#value'          => '<p><strong>'. t('NOTE:') .'</strong> '.
+        t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
     );
 
     $form['location']['location_name'] = array(
-      '#type' => 'radios',
-      '#title' => t('Location names'),
-      '#default_value' => variable_get('location_name_'. $type, $default),
-      '#options' => array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.'))
+      '#type'           => 'radios',
+      '#title'          => t('Location names'),
+      '#default_value'  => variable_get('location_name_'. $type, TRUE),
+      '#options'        => array(
+        t('Do not collect'),
+        t('Use'),
+        t('Require')
+      )
     );
 
     $form['location']['location_street'] = array(
-      '#type' => 'radios',
-      '#title' => t('Street locations'),
-      '#default_value' => variable_get('location_street_'. $type, $default),
-      '#options' => array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.'))
+      '#type'           => 'radios',
+      '#title'          => t('Street locations'),
+      '#default_value'  => variable_get('location_street_'. $type, TRUE),
+      '#options'        => array(
+        t('Do not collect'),
+        t('Use'),
+        t('Require')
+      )
     );
 
     $form['location']['location_city'] = array(
-      '#type' => 'radios',
-      '#title' => t('City names'),
-      '#default_value' => variable_get('location_city_'. $type, 0),
-      '#options' => array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.'))
+      '#type'           => 'radios',
+      '#title'          => t('City names'),
+      '#default_value'  => variable_get('location_city_'. $type, 0),
+      '#options'        => array(
+        t('Do not collect'),
+        t('Use'),
+        t('Require')
+      )
     );
 
     $form['location']['location_province'] = array(
-      '#type' => 'radios',
-      '#title' => 'State/Province names',
-      '#default_value' => variable_get('location_province_'. $type, 0),
-      '#options' => array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.'))
+      '#type'           => 'radios',
+      '#title'          => 'State/Province names',
+      '#default_value'  => variable_get('location_province_'. $type, 0),
+      '#options'        => array(
+        t('Do not collect'),
+        t('Use'),
+        t('Require')
+      )
     );
 
     $form['location']['location_postal_code'] = array(
-      '#type' => 'radios',
-      '#title' => 'Postal codes',
-      '#default_value' => variable_get('location_postal_code_'. $type, 0),
-      '#options' => array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.'))
+      '#type'           => 'radios',
+      '#title'          => 'Postal codes',
+      '#default_value'  => variable_get('location_postal_code_'. $type, 0),
+      '#options'        => array(
+        t('Do not collect'),
+        t('Use'),
+        t('Require')
+      )
     );
 
     $form['location']['location_country'] = array(
-      '#type' => 'radios',
-      '#title' => 'Country names',
-      '#default_value' => variable_get('location_country_'. $type, 1),
-      '#options' => array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')),
-      '#description' => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
-      '#suffix' => '</div>'
+      '#type'           => 'radios',
+      '#title'          => 'Country names',
+      '#default_value'  => variable_get('location_country_'. $type, 1),
+      '#options'        => array(
+        1 => t('Use'),
+        2 => t('Require')
+      ),
+      '#description'    => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".',
+        array('@location_settings' => url('admin/settings/location'))),
+      '#suffix'         => '</div>'
     );
 
     // clear the views cache in case anything was changed
