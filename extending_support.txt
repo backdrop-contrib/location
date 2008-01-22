@@ -1,3 +1,5 @@
+<?php
+/**
 This file is a PHP programmer's description of what needs to be done in order to extend the
 location system to support locationes from a new country.
 
@@ -254,3 +256,5 @@ function location_latlon_exact_be($location = array());                         
 Typically, this function will be implemented on top of a web-service for retrieving exact lat/lon information
 for a full location.  This function is not a necessity, but a sample implementation would be helpful for
 future users.  If not, it can always be added on a supply and demand basis.
+ */
+php?>

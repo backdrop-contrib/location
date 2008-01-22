@@ -1,4 +1,5 @@
-
+<?php
+/**
 This file describes the public API for the CivicSpace location system as defined by
 in the library implemented by "location.inc" and its supporting files.
 
@@ -540,14 +541,5 @@ Inverse of _location_form2api()
   Meant to take the standard location array format used by the public API (minus the form generating functions) and convert them
   into values that can be used by _location_address_form() to fill in the prefilled values.
 
-
-
-
-
-
-
-
-
-
-
-
+ */
+php?>
