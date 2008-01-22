@@ -208,66 +208,6 @@ function theme_location($location = array(), $hide = array()) {
 }
 
 /**
- * Theme the Location Address form
- *
- * @param &$form
- *   Array. The form structure
- * @ingroup themeable
- */
-function theme_location_address_form(&$form) {
-  // If the country and state fields are present,
-  // enable the extra JS
-  if (!empty($form['province'])
-      and $form['province']['#type'] != 'hidden'
-      and $form['country']['#type'] != 'hidden') {
-    drupal_add_js(drupal_get_path('module', 'location') .'/location.js');
-  }
-
-  // The required field notation
-  $req_str = '<span class="form-required" title="'. t('This field is required.') .'">*</span>';
-
-  foreach (element_children($form) as $field_name) {
-    $col = array();
-    if ($form[$field_name]['#type'] == 'markup') {
-      $col[] = array('data' => $form[$field_name]['#value'], 'colspan' => 2);
-    }
-    elseif ($form[$field_name]['#type'] != 'hidden') {
-      $required = !empty($form[$field_name]['#required']) ? $req_str : '';
-
-      // Check if the element has a title
-      if (!empty($form[$field_name]['#title'])) {
-        $col[] = array(
-          'align' => 'right',
-          'data'  => '<div class="form-item"><label'. ($form[$field_name]['#id'] ?
-          ' for="'. $form[$field_name]['#id'] .'" ' : '') .'>'.
-          filter_xss_admin($form[$field_name]['#title']) .": $required</label></div>"
-        );
-        unset($form[$field_name]['#title']);
-      }
-      else {
-        $col[] = array('');
-      }
-
-      // The field itselt
-      $col[] = array(
-        'align' => 'left',
-        'data' => drupal_render($form[$field_name])
-      );
-
-      $rows[] = array(
-        'data'  => $col,
-        'class' => 'odd'
-      );
-    }
-  }
-
-  $output = theme('table', NULL, $rows);
-  $output .= drupal_render($form);
-
-  return $output;
-}
-
-/**
  * List all addresses from a given user
  *
  * @param $uid
