@@ -186,7 +186,7 @@ function _location_autocomplete($country, $string = '') {
   exit();
 }
 
-function location_field_names() {
+function _location_field_names() {
   return array('name' => t('Location name'), 'street' => t('Street location'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 }
 
@@ -392,7 +392,7 @@ function location_form_alter($form_id, &$form) {
 
     $location_fields = array();
     $required_fields = array();
-    foreach (array_keys(location_field_names()) as $field_name) {
+    foreach (array_keys(_location_field_names()) as $field_name) {
       $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
       if ($workflow_setting) {
         $location_fields[] = $field_name;
@@ -895,7 +895,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // For now, validation just makes sure that required fields have any value
         // If syntax specific checks are implemented for locations in the future, they can be called as well.
 
-        foreach (location_field_names() as $field_name => $display_name) {
+        foreach (_location_field_names() as $field_name => $display_name) {
           $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
           // We only enforce required fields on the first location if there are multiple locations
           if ($index == 0) {
@@ -949,7 +949,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       // handy to have these field names later
       $location_fields = array();
       $required_fields = array();
-      foreach (array_keys(location_field_names()) as $field_name) {
+      foreach (array_keys(_location_field_names()) as $field_name) {
         $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
         if ($workflow_setting) {
           $location_fields[] = $field_name;

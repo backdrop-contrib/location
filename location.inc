@@ -580,7 +580,7 @@ function location_driving_directions_link($location_a = array(), $location_b = a
 function _location_extra_form(&$node) {
   $location_fields = array();
   $required_fields = array();
-  foreach (array_keys(location_field_names()) as $field_name) {
+  foreach (array_keys(_location_field_names()) as $field_name) {
     $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
     if ($workflow_setting) {
       $location_fields[] = $field_name;
@@ -673,7 +673,7 @@ function _location_extra_form_submit($form_id, &$form) {
   // handy to have these field names later
   $location_fields = array();
   $required_fields = array();
-  foreach (array_keys(location_field_names()) as $field_name) {
+  foreach (array_keys(_location_field_names()) as $field_name) {
     $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
     if ($workflow_setting) {
       $location_fields[] = $field_name;
