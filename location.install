@@ -36,6 +36,7 @@ function location_install() {
     is_primary  SMALLINT      DEFAULT 0,
     PRIMARY KEY (lid)
   )". $table_config);
+  db_query("CREATE INDEX {location}_eid      ON {location} (eid)");
 
   db_query("CREATE TABLE {zipcodes} (
     zip         VARCHAR(16)   DEFAULT 0,
@@ -278,4 +279,21 @@ function location_update_7() {
 
   return $ret;
 
+}
+
+/**
+ * Implentation of hook_upgrade().
+ *
+ * It adds a new index to the location table: the eid.
+ * It might speed many operations up.
+ *
+ * @note Following the new code standards for D6, all update
+ * functions will be composed by: XYZZ pattern, where:
+ * X  is the main Drupal version
+ * Y  is the main Location module version
+ * ZZ is the 2-digit unique update ID
+ */
+function location_update_5301() {
+  $update[] = update_sql("CREATE INDEX {location}_eid      ON {location} (eid)");
+  return $update;
 }
