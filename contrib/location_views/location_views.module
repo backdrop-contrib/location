@@ -447,7 +447,7 @@ function location_views_default_views() {
 
 
   $view->exposed_filter = array ();
-  $view->requires = array(node, location);
+  $view->requires = array('node', 'location');
   $views[$view->name] = $view;
 
 
@@ -559,7 +559,7 @@ function location_views_default_views() {
     ),
   );
   $view->exposed_filter = array ();
-  $view->requires = array(node, location);
+  $view->requires = array('node', 'location');
   $views[$view->name] = $view;
 
   if (module_exists('usernode')) {
