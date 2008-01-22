@@ -57,6 +57,7 @@ function google_geocode_info() {
 }
 
 function google_geocode_location($location = array()) {
+  include_once LOCATION_PATH .'/location.address.inc';
 
   switch ($location['country']) {
     case 'li':

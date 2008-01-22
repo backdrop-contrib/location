@@ -316,6 +316,8 @@ function location_geocode_ca_geocoder($location = array()) {
 
   // geocoder gives better results when not usong postal code, country and ,
   unset($location['postal_code'], $location['country']);
+
+  include_once LOCATION_PATH .'/location.address.inc';
   $address = strtr(_location_address_singleline($location), array(', ' => ' '));
 
   $http_reply = drupal_http_request($service_url . urlencode($address));

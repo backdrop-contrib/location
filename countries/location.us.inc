@@ -246,6 +246,7 @@ function location_geocode_us_yahoo_settings() {
 function location_geocode_us_yahoo($location = array()) {
   $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=". variable_get('location_geocode_us_yahoo_appid', "YahooDemo") ."&location=";
 
+  include_once LOCATION_PATH .'/location.address.inc';
   $address = _location_address_singleline($location);
 
   $http_reply = drupal_http_request($service_url . urlencode($address));

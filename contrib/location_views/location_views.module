@@ -847,6 +847,7 @@ function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
   }
   switch ($filterinfo['field']) {
     case 'province':
+      include_once LOCATION_PATH .'/location.address.inc';
       $filter['value'] = _location_form2api(array('province' => $filter['value']));
       $filter['value'] = $filter['value']['province'];
       break;
@@ -867,6 +868,8 @@ function location_views_country_handler($fieldinfo, $fielddata, $value, $data)  
  *  Format a province name
  */
 function location_views_province_handler($fieldinfo, $fielddata, $value, $data)  {
+  include_once LOCATION_PATH .'/location.address.inc';
+
   $provinces = _location_province_get();
   $location['province'] = $data->location_province;
   $location['country']  = $data->location_country;
