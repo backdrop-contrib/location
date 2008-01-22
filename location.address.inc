@@ -261,17 +261,26 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
  * Validate an address being saved
  */
 function _location_address_form_validate($form_id, $form) {
-  // Check if its a valid province
+  // Check if its a valid province.
+  // It should be the Province code listed on the
+  // given COUNTRY.inc file
   if ($states = _location_province_get($form['country']) and
       empty($states[$form['province']])) {
     form_set_error('province', t('Invalid state. Try to use the state code.'));
   }
 }
 
+/**
+ * Submit the address
+ */
 function _location_address_form_submit($form_id, $form) {
   $edit = _location_form2api($form);
 
-  // Get the Latitude and Longitude data
+  // Get the Latitude and Longitude data.
+  // Try different methods:
+  // * Exact Lat/Lon,
+  // * Approximate value, based on Postal Code
+  // * None
   if ($latlon = location_latlon_exact($edit)) {
     $edit['source'] = LOCATION_LATLON_GEOCODED_EXACT;
     $edit['lat'] = $latlon['lat'];
@@ -290,7 +299,6 @@ function _location_address_form_submit($form_id, $form) {
 
   global $user;
   _location_save($edit, $user, 'user');
-//   unset($edit);
 }
 
 /**
