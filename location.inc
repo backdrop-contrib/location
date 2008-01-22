@@ -1175,7 +1175,7 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
 function _location_include_country_inc() {
   $configured_country_codes = array_keys(_location_country_enabled());
   foreach ($configured_country_codes as $country_code) {
-    $filename = LOCATION_PATH .'/supported/location.'. $country_code .'.inc';
+    $filename = LOCATION_PATH .'/countries/location.'. $country_code .'.inc';
     if (file_exists($filename)) {
       include_once $filename;
     }
@@ -1581,7 +1581,7 @@ function _location_province_get($country = NULL) {
     foreach ($countrycodes as $country_code => $country_name) {
       // Load country specifice code .inc file if it exists.
       // For example, if country_code for U.S. == 'us', load 'location.us.inc'
-      $include_file = LOCATION_PATH .'/supported/location.'. $country_code .'.inc';
+      $include_file = LOCATION_PATH .'/countries/location.'. $country_code .'.inc';
       $province_listing_function = 'location_province_list_'. $country_code;
 
       if (function_exists($province_listing_function)) {
@@ -1725,10 +1725,10 @@ function _location_supported_countries() {
     // '<ISO two-letter code>' => '<English name for country>'
     $iso_list = _location_country_get();
     $iso_keys = array_keys($iso_list);
-    if (is_dir(LOCATION_PATH .'/supported') and $handle = opendir(LOCATION_PATH .'/supported')) {
+    if (is_dir(LOCATION_PATH .'/countries') and $handle = opendir(LOCATION_PATH .'/countries')) {
       $matches = array();
       while ($file = readdir($handle)) {
-        if (ereg('location.([a-z]{2}).inc', $file, $matches) and is_file(LOCATION_PATH .'/supported/'. $file)) {
+        if (ereg('location.([a-z]{2}).inc', $file, $matches) and is_file(LOCATION_PATH .'/countries/'. $file)) {
           if (in_array($matches[1], $iso_keys)) {
             $supported_countries[] = $matches[1];
             $matches = array();

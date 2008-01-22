@@ -2,7 +2,7 @@ Step 1
 ------
 To support proximity searches and most useful features, you will need a
 postal codes database for each country for which you plan to use a file from
-the "supported/" directory. The database structure can be loaded from the
+the "countries/" directory. The database structure can be loaded from the
 database/zipcodes.mysql file, and the data can be loaded from
 database/zipcodes.CC.mysql (where CC is the two-letter country code).
 
@@ -32,7 +32,7 @@ different machine.
 Step 2
 ------
 In the "modules/" directory, create a subdirectory called "location/" which
-itself contains a subdirectory called "supported/".
+itself contains a subdirectory called "countries/".
 
 Download "location.inc" to "modules/location/"
 
@@ -40,7 +40,7 @@ Download "location.module" to "modules/location/"
 
 Download "earth.inc" to "modules/location/"
 
-Download "supported/location.us.inc" to "modules/location/supported/" (for
+Download "countries/location.us.inc" to "modules/location/countries/" (for
 support of US locations)
 
 Step 3
