@@ -1379,6 +1379,81 @@ function _location_province_get($country = NULL) {
   return $provinces;
 }
 
+function _location_search_form($location_params = array(), $proximity_params = array()) {
+  $form = array();
+
+  $search_distance_unit = variable_get('location_search_distance_unit', 0);
+  $proximity_suppressed_values = $search_distance_unit ? array('unit' => $search_distance_unit) : array();
+  $form['proximity'] = location_proximity_form($proximity_params, $proximity_suppressed_values);
+
+  $location_suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
+
+  include_once LOCATION_PATH .'/location.address.inc';
+  $form['location'] = _location_address_form(
+    array('postal_code', 'country'),
+    $location_params,
+    array('postal_code', 'country'),
+    $location_suppressed_values,
+    '',
+    'nearby_postalcodes_bylocation'
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search')
+  );
+
+  //$form_exp = var_export($form, TRUE);
+  //drupal_set_message("_location_search_form() returning <pre>$form_exp</pre>");
+
+
+  $form['#submit'] = array_merge(
+    empty($form['#submit']) ? array() : $form['#submit'],
+    array('_location_search_form_submit' => array())
+  );
+
+
+  return $form;
+}
+
+function _location_search_form_validate($form_id, &$form) {
+  //$form_exp = var_export($form, TRUE);
+  //drupal_set_message("IN _location_search_form_validate(): \$form_id == $form_id, \$form == <pre>$form_exp</pre>");
+
+  // TODO: Need to offer ability to configure which fields are included in the search form
+  // TODO: And need to adjust how fields are validated
+  // For now, just require postal code
+  if (!$form['postal_code']) {
+    //form_set_error('postal_code', t('You must include a postal code in your search.'));
+  }
+
+  if (!$form['country']) {
+    //form_set_error('country', t('You much include a country in your search.'));
+  }
+}
+
+function _location_search_form_submit($form_id, &$form) {
+  //$form_exp = var_export($form, TRUE);
+  //drupal_set_message("IN _location_search_form_submit(): \$form_id == $form_id and \$form == <pre>$form_exp</pre>");
+
+  /*
+  $location_fields = array('street', 'additional', 'province', 'postal_code', 'country');
+  foreach ($locations_fields as $field_name) {
+    if ($form[$field_name]) {
+      if ($query_string) {
+        $query_string .= '&'. $field_name .'='. $form[$field_name];
+      }
+      else {
+        $query_string = $field_name .'='. $form[$field_name];
+      }
+    }
+  }
+
+  $query_string = '&distance='. $form['distance'] .'&unit='. $unit;
+  */
+  return array('search/location', 'postal_code='. $form['postal_code'] .'&country='. $form['country'] .'&distance='. $form['distance'] .'&unit='. $form['unit']);
+}
+
 /**
  * Helper function: this function is intended ONLY for use by _location_nearby_postalcodes().
  * It checks the cache for search-results on a given point and returns the appropriate subset
