@@ -100,7 +100,7 @@ function _location_admin_settings() {
   );
 
   $form['location_usegmap'] = array(
-    '#default_value'  => variable_get('location_usegmap', 1),
+    '#default_value'  => variable_get('location_usegmap', FALSE),
     '#description'    => t('If the gmap.module is installed and <a href="@enabled">enabled</a>, and this is setting is turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a <a href="@google_maps_api_key">Google Maps API key</a> into your <a href="@gmap_module_settings">gmap module settings</a>.', array('@enabled' => 'admin/build/modules', '@google_maps_api_key' => 'http://www.google.com/apis/maps', '@gmap_module_settings' => 'admin/settings/gmap')),
     '#disabled'       => !module_exists('gmap'),
     '#return_value'   => 1,
@@ -1587,16 +1587,9 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   }
 
   elseif ($op == 'load' ) {
-    // Get user location
+    // Get user location data
     /// @todo It will search for the Firt result found, and not the default
-    $locations = db_query("SELECT * FROM {location}
-      WHERE type = 'user' AND eid = %d", $user->uid);
-    if ($location = db_fetch_array($locations)) {
-      $user->location = $location;
-    }
-    else {
-      $user->location = array();
-    }
+    $user->location = _location_address_get(NULL, $user->uid);
   }
 
   elseif ($op == 'view'
@@ -1639,20 +1632,19 @@ function _location_user_address($action = NULL, $lid = NULL) {
   switch ($action) {
     case 'add':
     case 'edit':
-      $edit = !empty($lid) ? address_address_load($lid) : array();
+      $edit = !empty($lid) ? _location_address_get($lid) : array();
 
       if (empty($edit)) {
-        $edit['uid'] = $uid;
+        $edit['eid'] = $uid;
       }
-      elseif (empty($access) or $edit['uid'] != $uid) {
+      elseif (empty($access) or $edit['eid'] != $uid) {
         return drupal_access_denied();
       }
 
-      $output .= drupal_get_form('_location_address_form');
-      break;
+      return drupal_get_form('_location_address_form', NULL, $edit);
 
     case 'delete':
-      db_query('DELETE FROM {ec_address} WHERE aid = %d', $lid);
+      db_query('DELETE FROM {location} WHERE lid = %d', $lid);
       drupal_set_message(t('The address has been deleted.'));
       drupal_goto("user/$uid/location-address");
       break;
@@ -1665,8 +1657,6 @@ function _location_user_address($action = NULL, $lid = NULL) {
         $addresses[] = $data;
       }
 
-      $output .= theme('location_address_overview', $uid, $addresses);
+      return theme('location_address_overview', $uid, $addresses);
   }
-
-  return $output;
 }

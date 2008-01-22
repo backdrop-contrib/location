@@ -217,7 +217,7 @@ function theme_location($location = array(), $hide = array()) {
 function theme_location_address_form(&$form) {
   // If the country and state fields are present,
   // enable the extra JS
-  if ($form[$field_name]['#type'] != 'hidden' and $form['country']['#type'] != 'hidden') {
+  if ($form['province']['#type'] != 'hidden' and $form['country']['#type'] != 'hidden') {
     drupal_add_js(drupal_get_path('module', 'location') .'/location.js');
   }
 

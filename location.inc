@@ -277,6 +277,34 @@ function _location_address_form_submit($form_id, $form) {
 }
 
 /**
+ * Load the full address from a given Location ID or User ID
+ *
+ * @param $lid
+ *   Number. The Location ID
+ * @param $eid
+ *   Number (optional). The User ID
+ * @param $all
+ *   Boolean (optional). TRUE if all location should be return. Otherwise (the
+ *   default behaviour), return only the first address
+ */
+function _location_address_get($lid, $eid = NULL, $all = FALSE) {
+  if (!empty($eid)) {
+    $loc = db_query("SELECT * FROM {location}
+      WHERE type = 'user' AND eid = %d", $eid);
+  }
+  else {
+    $loc = db_query('SELECT * FROM {location} WHERE lid = %d', $lid);
+  }
+
+  $locations = array();
+  while ($location = db_fetch_array($loc)) {
+    $locations[] = $location;
+  }
+
+  return empty($all) ? $locations[0]: $locations;
+}
+
+/**
  * Create a single line address.
  *
  * @param $location
@@ -1183,9 +1211,9 @@ function location_latlon_exact($location) {
 function location_latlon_form($description = '', $prefilled = array()) {
   $form = array();
 
-  $usegmap = (function_exists('gmap_set_location') and variable_get('location_usegmap', 1));
+  $usegmap = (function_exists('gmap_set_location') and variable_get('location_usegmap', FALSE));
 
-  if ($usegmap) {
+  if (!empty($usegmap)) {
     $form['map'] = array();  //reserve spot at top of form for map
   }
 
