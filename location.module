@@ -1335,7 +1335,6 @@ function _location_save($location, &$user_or_node, $type = 'node') {
     // generate a ID. If its a existing location,
     // use it.
     $lid = empty($location['lid']) ? db_next_id('{location}_lid') : $location['lid'];
-    $location['lid'] = $lid;
 
     // Let other modules change the standard behaviour
     location_invoke_locationapi($location , 'save');
@@ -1365,8 +1364,8 @@ function _location_save($location, &$user_or_node, $type = 'node') {
       (empty($location['province'])) ? '' : $location['province'],
       (empty($location['postal_code'])) ? '' : $location['postal_code'],
       (empty($location['country'])) ? '' : $location['country'],
-      $location['lat'],
-      $location['lon'],
+      $lat,
+      $lon,
       $location['source']
     );
   }

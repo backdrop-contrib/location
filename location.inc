@@ -118,6 +118,7 @@ _location_include_configured();
  *        Note that in both cases, the first and third argument can take the same array since all the fields are being required.
  */
 function _location_address_form($fields = array(), $prefilled = array(), $required_fields = array(), $suppressed = array(), $description = '', $function = NULL) {
+  // If no field was specified, use all
   if (empty($fields)) {
     $fields = array('name', 'street', 'city', 'province', 'postal_code', 'country');
   }
@@ -127,11 +128,23 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
   $fields = array_flip($fields);
 
   $form = array();
+
+  // If its a existing location, save the Location ID
+  // for further processing
+  if (!empty($prefilled['lid'])) {
+    $form['lid'] = array(
+      '#type'   => 'hidden',
+      '#value'  => $prefilled['lid']
+    );
+  }
+
+  // Add the Description, if any
   $form['description'] = array(
     '#type'   => 'markup',
     '#value'  => $description
   );
 
+  // Adds the Location Name (Home, Office, Rio de Janeiro...)
   if (!empty($fields['name'])) {
     $form['name'] = array(
       '#type'           => 'textfield',
@@ -144,6 +157,8 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
       '#required'       => in_array('name', $required_fields)
     );
   }
+
+  // Adds the Country
   if (!empty($fields['country'])) {
     if (in_array('country', array_keys($suppressed))) {
       $form['country'] = array(
@@ -157,12 +172,14 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
         in_array('country', $required_fields), $function);
     }
   }
+
+  // Adds the Province field
   if (!empty($fields['province'])) {
     if (in_array('province', array_keys($suppressed))) {
       $form['province'] = array(
-          '#type'             => 'hidden',
-          '#value'            => $suppressed['province']
-          );
+        '#type'             => 'hidden',
+        '#value'            => $suppressed['province']
+      );
     }
     else {
       $form['province'] = array(
@@ -176,6 +193,8 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
       );
     }
   }
+
+  // Adds the City
   if (!empty($fields['city'])) {
     $form['city'] = array(
       '#type'           => 'textfield',
@@ -188,6 +207,8 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
       '#required'       => in_array('city', $required_fields)
     );
   }
+
+  // Adds the Streets and the Additional fields
   if (!empty($fields['street'])) {
     $form['street'] = array(
       '#type'           => 'textfield',
@@ -205,6 +226,8 @@ function _location_address_form($fields = array(), $prefilled = array(), $requir
       '#maxlength'      => 64
     );
   }
+
+  // Adds the Postal Code
   if (!empty($fields['postal_code'])) {
     $form['postal_code'] = array(
       '#type'           => 'textfield',
