@@ -84,6 +84,7 @@ function location_update_2() {
     $configured_countries['us'] = 'us';
     variable_set('location_configured_countries', $configured_countries);
   }
+  return array();
 }
 
 /**
