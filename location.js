@@ -4,17 +4,29 @@
  * to autcomplete the pronvice for a given country
  */
 $(function() {
+  // Use this ID to 'simplify' the callings
+  var id = '#edit-locations-';
+
   // Record the original URL
-  var pronvice = $("#edit-province-autocomplete").val() + '/';
+  var url = $(id + '0-autocomplete').val() + '/';
 
-  // Set the country code at the begging
-  if ($("#edit-country").val()) {
-    $("#edit-province-autocomplete").val(pronvice + $("#edit-country").val());
+  // Get all locations
+  for (var n = 0; true; n++) {
+    // Check if this Field exists.
+    // If not, stop the script
+    if (!$(id + n +'-country').id()) {
+      break;
+    }
+
+    // Set the country code at the begging
+    if ($(id + n +'-country').val()) {
+      $(id + n +'-autocomplete').val(url + $(id + n +'-country').val());
+    }
+
+    // Change the country code everytime the country field changes
+    $(id + n +'-country').change(function() {
+      $(id + n +'-autocomplete').val(url + $(this).val());
+      Drupal.autocompleteAutoAttach();
+    })
   }
-
-  // Change the country code everytime the country field changes
-  $("#edit-country").change(function() {
-    $("#edit-province-autocomplete").val(pronvice + $(this).val());
-    Drupal.autocompleteAutoAttach();
-  })
 });
