@@ -1168,20 +1168,18 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
             }
           }
-
-          if ($output = theme('locations', $posted_locations, variable_get('location_suppress_country', 0) ? array('country') : array())) {
-            $node->content['locations']['#value'] .= $output;
-          }
         }
         else {
-          if ($themed_locations = theme('locations', $node->locations, variable_get('location_suppress_country', 0) ? array('country') : array())) {
-            $node->content['locations']['#value'] .= $themed_locations;
-          }
+          // Show ALL location that this node has
+          $posted_locations = $node->locations;
+        }
 
+        // Get the list of suppressed countries
+        $countries = variable_get('location_suppress_country', 0) ? array('country') : array();
 
-          //if (!$teaser) {
-            //drupal_set_html_head(location_geocode_meta_tags($node->location));
-          //}
+        // Show all locations
+        if ($output = theme('locations', $posted_locations, $countries)) {
+          $node->content['locations']['#value'] .= $output;
         }
       }
 
