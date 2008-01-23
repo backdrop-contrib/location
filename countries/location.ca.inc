@@ -140,7 +140,6 @@ function location_map_link_ca_providers() {
               );
 }
 
-
 function location_map_link_ca_default_providers() {
   return array('google');
 }
@@ -239,9 +238,10 @@ function _location_ca_enough_fields_for_yahoo($location) {
   return FALSE;
 }
 
-
-// Don't mess with this function unless you understand its logic.  It has to do with
-// the question of "to comma or not to comma?"
+/**
+ * Don't mess with this function unless you understand its logic.  It has to do with
+ * the question of "to comma or not to comma?"
+ */
 function _location_ca_yahoo_csz_get_field($location) {
   // For some reasons, to the end of pinpointing a location, Yahoo! Maps and Driving Directions
   // do better a better job with retrieving info based strictly on a Canadian city/province
