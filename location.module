@@ -714,14 +714,6 @@ function location_load_locations($type, $node_or_user) {
   return array('locations' => $locations, 'location' => $location);
 }
 
-/**
- *
- *
- */
-function location_map_link_options_page() {
-  return drupal_get_form('location_map_link_options_form');
-}
-
 function location_map_link_options_form() {
   $form = array();
 
@@ -809,7 +801,8 @@ function location_menu($may_cache) {
     $items[] = array(
       'path'                => 'admin/settings/location/maplinking',
       'title'               => t('Map links'),
-      'callback'            => 'location_map_link_options_page',
+      'callback'            => 'drupal_get_form',
+      'callback arguments'  => array('location_map_link_options_form'),
       'access'              => user_access('administer site configuration'),
       'type'                => MENU_LOCAL_TASK,
       'weight'              => 1
