@@ -35,5 +35,3 @@ function location_province_list_ir() {
     'RKH' => "Razavi Khorasan",
     'SKH' => "South Khorasan");
 }
-
-?>

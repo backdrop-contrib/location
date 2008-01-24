@@ -13,5 +13,3 @@ function location_province_list_is() {
     'VF' => "Vestfiroir",
     'VL' => "Vesturland");
 }
-
-?>

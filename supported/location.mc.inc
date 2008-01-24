@@ -9,5 +9,3 @@ function location_province_list_mc() {
     'MV' => "Monaco-Ville",
     'MC' => "Monte-Carlo");
 }
-
-?>

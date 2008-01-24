@@ -15,5 +15,3 @@ function location_province_list_zw() {
     'MS' => "Matabeleland South",
     'MD' => "Midlands");
 }
-
-?>

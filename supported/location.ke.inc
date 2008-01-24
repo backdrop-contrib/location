@@ -13,5 +13,3 @@ function location_province_list_ke() {
     'RV' => "Rift Valley",
     'WE' => "Western");
 }
-
-?>

@@ -10,5 +10,3 @@ function location_province_list_tg() {
     'C' => "Centrale",
     'M' => "Maritime");
 }
-
-?>

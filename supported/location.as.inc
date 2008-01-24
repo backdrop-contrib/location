@@ -10,5 +10,3 @@ function location_province_list_as() {
     'S' => "Swains Island",
     'W' => "Western");
 }
-
-?>

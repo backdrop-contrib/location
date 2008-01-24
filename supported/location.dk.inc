@@ -23,5 +23,3 @@ function location_province_list_dk() {
     'GL' => "Greenland",
     'FO' => "Faroe Islands");
 }
-
-?>

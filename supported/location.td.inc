@@ -19,5 +19,3 @@ function location_province_list_td() {
     'SA' => "Salamat",
     'TA' => "Tandjile");
 }
-
-?>

@@ -8,5 +8,3 @@ function location_province_list_sh() {
     'S' => "Saint Helena",
     'T' => "Tristan da Cunha");
 }
-
-?>

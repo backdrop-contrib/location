@@ -11,5 +11,4 @@ function location_province_list_er() {
     'DE' => "Southern (Debub)",
     'BR' => "Gash-Barka (Barentu)");
 }
-
-?>
+>

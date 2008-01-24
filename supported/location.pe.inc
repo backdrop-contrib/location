@@ -30,5 +30,3 @@ function location_province_list_pe() {
     'TU' => "Tumbes",
     'UC' => "Ucayali");
 }
-
-?>

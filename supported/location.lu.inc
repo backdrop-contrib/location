@@ -17,5 +17,3 @@ function location_province_list_lu() {
     'LE' => "Esch-sur-Alzette",
     'LM' => "Mersch");
 }
-
-?>

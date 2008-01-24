@@ -8,5 +8,3 @@ function location_province_list_vi() {
     'J' => "Saint John",
     'T' => "Saint Thomas");
 }
-
-?>

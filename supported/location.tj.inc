@@ -8,5 +8,3 @@ function location_province_list_tj() {
     'KT' => "Khatlon",
     'SU' => "Sughd");
 }
-
-?>

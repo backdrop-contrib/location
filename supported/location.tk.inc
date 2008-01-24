@@ -8,5 +8,3 @@ function location_province_list_tk() {
     'F' => "Fakaofo",
     'N' => "Nukunonu");
 }
-
-?>

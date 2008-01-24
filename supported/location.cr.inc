@@ -12,5 +12,3 @@ function location_province_list_cr() {
     'PU' => "Puntarenas",
     'SJ' => "San Jose");
 }
-
-?>

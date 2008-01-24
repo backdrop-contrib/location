@@ -32,5 +32,3 @@ function location_province_list_mw() {
     'THY' => "Thyolo",
     'ZBA' => "Zomba");
 }
-
-?>

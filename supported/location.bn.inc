@@ -9,5 +9,3 @@ function location_province_list_bn() {
     'TEM' => "Temburong",
     'TUT' => "Tutong");
 }
-
-?>

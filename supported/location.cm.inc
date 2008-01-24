@@ -7,7 +7,7 @@ function location_province_list_cm() {
   return array('ADA' => "Adamawa Province (Adamaoua)",
     'CEN' => "Centre Province",
     'EST' => "East Province (Est)",
-    'EXN' => "Extreme North Province (Extrême-Nord)",
+    'EXN' => "Extreme North Province (Extrï¿½me-Nord)",
     'LIT' => "Littoral Province",
     'NOR' => "North Province (Nord)",
     'NOT' => "Northwest Province (Nord-Ouest)",
@@ -15,5 +15,3 @@ function location_province_list_cm() {
     'SUD' => "South Province (Sud)",
     'SOU' => "Southwest Province (Sud-Ouest).");
 }
-
-?>

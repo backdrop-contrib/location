@@ -61,5 +61,3 @@ function location_province_list_ug() {
     'NTU' => "Ntungamo",
     'RUK' => "Rukungiri");
 }
-
-?>

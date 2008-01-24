@@ -8,5 +8,3 @@ function location_province_list_wf() {
     'S' => "Sigave",
     'W' => "Wallis");
 }
-
-?>

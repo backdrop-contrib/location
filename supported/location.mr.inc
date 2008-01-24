@@ -18,5 +18,3 @@ function location_province_list_mr() {
     'TR' => "Trarza",
     'NO' => "Nouakchott");
 }
-
-?>

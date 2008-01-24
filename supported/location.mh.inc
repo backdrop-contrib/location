@@ -38,5 +38,3 @@ function location_province_list_mh() {
     'WTH' => "Wotho",
     'WTJ' => "Wotje");
 }
-
-?>

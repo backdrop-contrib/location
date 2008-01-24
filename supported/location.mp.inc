@@ -9,5 +9,3 @@ function location_province_list_mp() {
     'S' => "Saipan",
     'T' => "Tinian");
 }
-
-?>

@@ -37,7 +37,7 @@ function location_province_list_it() {
     'FE' => "Ferrara",
     'FI' => "Firenze",
     'FG' => "Foggia",
-    'FO' => "Forlì-Cesena",
+    'FO' => "Forlï¿½-Cesena",
     'FR' => "Frosinone",
     'GE' => "Genova",
     'GO' => "Gorizia",
@@ -108,5 +108,3 @@ function location_province_list_it() {
     'VI' => "Vicenza",
     'VT' => "Viterbo");
 }
-
-?>

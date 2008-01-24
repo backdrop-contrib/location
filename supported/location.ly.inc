@@ -30,5 +30,3 @@ function location_province_list_ly() {
     'YA' => "Yafran",
     'ZL' => "Zlitan");
 }
-
-?>

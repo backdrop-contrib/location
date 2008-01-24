@@ -31,5 +31,3 @@ function location_province_list_ua() {
     'ZA' => "Zaporizhzhya",
     'ZH' => "Zhytomyr");
 }
-
-?>

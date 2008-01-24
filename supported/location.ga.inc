@@ -14,5 +14,3 @@ function location_province_list_ga() {
     'OM' => "Ogooue-Maritime",
     'WN' => "Woleu-Ntem");
 }
-
-?>

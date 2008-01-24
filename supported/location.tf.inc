@@ -10,5 +10,3 @@ function location_province_list_tf() {
     'P' => "Ile Saint-Paul",
     'D' => "Adelie Land");
 }
-
-?>

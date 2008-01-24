@@ -24,7 +24,7 @@ function location_latlon_rough_ca($location = array()) {
   }
 
   $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], $location['postal_code']);
-  
+
   if ($row = db_fetch_object($result)) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
   }
@@ -61,7 +61,7 @@ function location_get_postalcode_data_ca($location = array()) {
   }
   else {
     return NULL;
-  } 
+  }
 }
 
 /**
@@ -93,13 +93,13 @@ function location_map_link_ca_yahoo($location = array()) {
 
 function location_map_link_ca_google($location = array()) {
   $query_params = array();
-  
+
   foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
     if (isset($location[$field])) {
       $query_params[] = $location[$field];
     }
   }
-  
+
   if (count($query_params)) {
     return ('http://maps.google.ca?q='. urlencode(implode(", ", $query_params)));
   }
@@ -112,19 +112,19 @@ function location_map_link_ca_mapquest($location = array()) {
   if (isset($location['street'])) {
     $get_query .= 'address='. urlencode($location['street']) .'&amp;';
   }
-  
+
   if (isset($location['city'])) {
     $get_query .= 'city='. urlencode($location['city']) .'&amp;';
   }
-  
+
   if (isset($location['province'])) {
     $get_query .= 'state='. urlencode($location['province']) .'&amp;';
   }
-  
+
   if (isset($location['postal_code'])) {
     $get_query .= 'zipcode='. urlencode($location['postal_code']);
   }
-  
+
   if (strlen($get_query)) {
     return 'http://www.mapquest.com/maps/map.adp?searchtype=address&amp;country=CA&amp;'. $get_query;
   }
@@ -147,13 +147,13 @@ function location_map_link_ca_default_providers() {
 
 /**
  * Parameters:
- *   -> $locationA is an associative array that represents a full location where
+ *   -> $location_a is an associative array that represents a full location where
  *        'street'       => the street portions of the location
  *        'supplemental' => additional street portion of the location
  *        'province'     => the province, state, or territory
  *        'country'      => lower-cased two-letter ISO code (REQUIRED)
- *   -> $locationB is associative array that represents a full location in the same way that
- *       parameter $locationB does.
+ *   -> $location_b is associative array that represents a full location in the same way that
+ *       parameter $location_b does.
  *
  * Returns: a link to driving directions
  *
@@ -161,8 +161,8 @@ function location_map_link_ca_default_providers() {
  * Maybe later, we can add some kind of country-specific settings page that allows the site-admin to
  * decide which site to link to for driving directions.
  */
-function location_driving_directions_link_ca($locationA, $locationB) {
-  return _location_driving_directions_link_ca_yahoo($locationA, $locationB);
+function location_driving_directions_link_ca($location_a, $location_b) {
+  return _location_driving_directions_link_ca_yahoo($location_a, $location_b);
 }
 
 
@@ -176,46 +176,46 @@ function location_driving_directions_link_ca($locationA, $locationB) {
  *    Depending on how full the locationes are, the URL will either point to the driving directions
  *    on Yahoo! or, if only partial locationes are provided, a URL that points to the *form* for
  *    Yahoo! driving directions where the form is filled with whatever fields have been provided
- *    for the partial location(es).  
+ *    for the partial location(es).
  */
-function _location_driving_directions_link_ca_yahoo($locationA, $locationB) {
-  if (trim($locationB['country']) != 'ca' && trim($locationB['country']) != 'us') {
+function _location_driving_directions_link_ca_yahoo($location_a, $location_b) {
+  if (trim($location_b['country']) != 'ca' && trim($location_b['country']) != 'us') {
     return '';
   }
-  
+
   // These are the fields that need to be in each location if we are to provide a direct
   // link to yahoo directions.  If all of these fields don't have values, then we generate
   // a link to the *form* for Yahoo! driving directions rather than directly to the driving
   // directions themselves.
-   
-  
-  foreach ($locationA as $field => $value) {
-    $locationA[$field] = trim($value);
+
+
+  foreach ($location_a as $field => $value) {
+    $location_a[$field] = trim($value);
   }
-  
-  foreach ($locationB as $field => $value) {
-    $locationB[$field] = trim($value);
+
+  foreach ($location_b as $field => $value) {
+    $location_b[$field] = trim($value);
   }
-  
-  if (_location_ca_enough_fields_for_yahoo($locationA) && _location_ca_enough_fields_for_yahoo($locationB)) {
+
+  if (_location_ca_enough_fields_for_yahoo($location_a) && _location_ca_enough_fields_for_yahoo($location_b)) {
     $yahoo_maps_path = 'dd_result';
   }
   else {
     $yahoo_maps_path = 'dd';
   }
-  
+
   $get_query  = '?';
-  
-  $get_query .= 'addr='. urlencode($locationA['street']) .'&amp;';
-  $get_query .= 'csz=' . _location_ca_yahoo_csz_get_field($locationA) .'&amp;';
-  $get_query .= 'country='. urlencode($locationA['country']) .'&amp;';
-  
-  $get_query .= 'taddr='. urlencode($locationB['street']) .'&amp;';
-  $get_query .= 'tcsz=' . _location_ca_yahoo_csz_get_field($locationB) .'&amp;';
-  $get_query .= 'tcountry='. urlencode($locationB['country']);
-  
+
+  $get_query .= 'addr='. urlencode($location_a['street']) .'&amp;';
+  $get_query .= 'csz='. _location_ca_yahoo_csz_get_field($location_a) .'&amp;';
+  $get_query .= 'country='. urlencode($location_a['country']) .'&amp;';
+
+  $get_query .= 'taddr='. urlencode($location_b['street']) .'&amp;';
+  $get_query .= 'tcsz='. _location_ca_yahoo_csz_get_field($location_b) .'&amp;';
+  $get_query .= 'tcountry='. urlencode($location_b['country']);
+
   $get_query .= '&amp;getrte='. urlencode('Get Directions');
-  
+
   return ('http://ca.maps.yahoo.com/'. $yahoo_maps_path . $get_query);
 }
 
@@ -227,15 +227,15 @@ function _location_ca_enough_fields_for_yahoo($location) {
   if (strlen($location['street']) && strlen($location['city']) && strlen($location['province'])) {
     return TRUE;
   }
-  
+
   if (strlen($location['street']) && strlen($location['postal_code'])) {
     return TRUE;
   }
-  
+
   if (strlen($location['street']) && strlen($location['city']) && strlen($location['province'])) {
     return TRUE;
   }
-  
+
   return FALSE;
 }
 
@@ -250,7 +250,7 @@ function _location_ca_yahoo_csz_get_field($location) {
     if (strlen($location['city']) && strlen($location['province'])) {
       return urlencode($location['city'] .', '. $location['province']);
     }
-    
+
     if (strlen($location['postal_code'])) {
       return urlencode($location['postal_code']);
     }
@@ -259,18 +259,18 @@ function _location_ca_yahoo_csz_get_field($location) {
     if (strlen($location['postal_code'])) {
       return urlencode($location['postal_code']);
     }
-  
+
     if (strlen($location['city']) && strlen($location['province'])) {
       return urlencode($location['city'] .', '. $location['province']);
     }
   }
-  
-  if (strlen($location['city']) || strlen($location['state'])) {
+
+  if (strlen($location['city']) || strlen($location['province'])) {
     if (strlen($location['city'])) {
       return urlencode($location['city']);
     }
     else {
-      return urlencode($location['state']);
+      return urlencode($location['province']);
     }
   }
   return '';
@@ -283,7 +283,7 @@ function location_geocode_ca_providers() {
 }
 
 
-function location_geocode_ca_geocoder_settings(){
+function location_geocode_ca_geocoder_settings() {
   $form = array();
 
   $form['location_geocode_ca_geocoder_apikey'] = array(
@@ -366,10 +366,6 @@ function location_province_list_ca() {
                'YT' => 'Yukon Territory');
 }
 
-
-
-
-
 function location_province_list_numeric_ca() {
   return array('001' => 'Alberta',
                '002' => 'British Columbia',
@@ -385,5 +381,3 @@ function location_province_list_numeric_ca() {
                '012' => 'Nunavut',
                '013' => 'Yukon Territory');
 }
-
-?>

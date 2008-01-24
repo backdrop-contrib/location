@@ -19,5 +19,3 @@ function location_province_list_sy() {
     'RD' => "Rif Dimashq",
     'TA' => "Tartus");
 }
-
-?>

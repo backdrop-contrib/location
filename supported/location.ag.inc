@@ -13,5 +13,3 @@ function location_province_list_ag() {
     'BAR' => "Barbuda",
     'RED' => "Redonda");
 }
-
-?>

@@ -40,5 +40,3 @@ function location_province_list_in() {
     'LD' => "Lakshadweep",
     'PY' => "Pondicherry");
 }
-
-?>

@@ -84,5 +84,3 @@ function location_province_list_ph() {
     'ZSU' => "Zamboanga del Sur",
     'ZSI' => "Zamboanga Sibugay");
 }
-
-?>

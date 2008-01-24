@@ -37,5 +37,3 @@ function location_province_list_do() {
     'SD' => "Santo Domingo",
     'VA' => "Valverde");
 }
-
-?>

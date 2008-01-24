@@ -15,5 +15,3 @@ function location_province_list_qa() {
     'UD' => "Umm Sa'id",
     'UL' => "Umm Salal");
 }
-
-?>

@@ -29,5 +29,3 @@ function location_province_list_tn() {
     'TU' => "Tunis",
     'ZA' => "Zaghouan");
 }
-
-?>

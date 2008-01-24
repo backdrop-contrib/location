@@ -23,5 +23,3 @@ function location_province_list_la() {
     'XI' => "Xiangkhoang",
     'XN' => "Xaisomboun");
 }
-
-?>

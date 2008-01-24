@@ -19,5 +19,3 @@ function location_province_list_cz() {
     'US' => "Usti nad Labem Region (Ustecky kraj)",
     'ZL' => "Zlin Region (Zlinsky kraj)");
 }
-
-?>

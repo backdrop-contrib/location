@@ -23,5 +23,3 @@ function location_province_list_uy() {
     'SJ' => "San Jose",
     'TT' => "Treinta y Tres");
 }
-
-?>

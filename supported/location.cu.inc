@@ -20,5 +20,3 @@ function location_province_list_cu() {
     'SCU' => "Santiago de Cuba",
     'GUA' => "Guantanamo");
 }
-
-?>

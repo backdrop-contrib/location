@@ -20,5 +20,3 @@ function location_province_list_ck() {
     'RR' => "Rarotonga",
     'MG' => "Mangaia");
 }
-
-?>

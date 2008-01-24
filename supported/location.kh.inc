@@ -30,5 +30,3 @@ function location_province_list_kh() {
     'SR' => "Svay Rieng",
     'TK' => "Takeo");
 }
-
-?>

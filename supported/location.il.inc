@@ -11,5 +11,3 @@ function location_province_list_il() {
     'S' => "Southern",
     'T' => "Tel Aviv");
 }
-
-?>

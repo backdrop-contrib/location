@@ -9,5 +9,3 @@ function location_province_list_sl() {
     'S' => "Southern",
     'W' => "Western");
 }
-
-?>

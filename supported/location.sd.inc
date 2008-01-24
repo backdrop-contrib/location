@@ -31,5 +31,3 @@ function location_province_list_sd() {
     'SNR' => "Sinnar",
     'WRB' => "Warab");
 }
-
-?>

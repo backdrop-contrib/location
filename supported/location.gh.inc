@@ -15,5 +15,3 @@ function location_province_list_gh() {
     'VO' => "Volta Region",
     'WE' => "Western Region");
 }
-
-?>

@@ -16,5 +16,3 @@ function location_province_list_bm() {
     'SH' => "Southampton",
     'WA' => "Warwick");
 }
-
-?>

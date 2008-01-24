@@ -25,5 +25,3 @@ function location_province_list_mv() {
     'FMU' => "Fua Mulaku",
     'ADD' => "Addu");
 }
-
-?>

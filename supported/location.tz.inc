@@ -31,5 +31,3 @@ function location_province_list_tz() {
     'ZN' => "Zanzibar North",
     'ZU' => "Zanzibar Urban/West");
 }
-
-?>

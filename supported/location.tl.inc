@@ -18,5 +18,3 @@ function location_province_list_tl() {
     'OE' => "Oecussi",
     'VI' => "Viqueque");
 }
-
-?>

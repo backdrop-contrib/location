@@ -47,5 +47,3 @@ function location_province_list_ro() {
     'VI' => "Vilcea",
     'VR' => "Vrancea");
 }
-
-?>

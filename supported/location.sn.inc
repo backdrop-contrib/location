@@ -16,5 +16,3 @@ function location_province_list_sn() {
     'TH' => "Thies ",
     'ZI' => "Ziguinchor");
 }
-
-?>

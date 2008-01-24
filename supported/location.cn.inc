@@ -28,7 +28,7 @@ function location_province_list_cn() {
     '51' => "Sichuan",
     '52' => "Guizhou",
     '53' => "Yunnan",
-    '54' => "Xizang Zìzhìqu (Tibet)",
+    '54' => "Xizang Zï¿½zhï¿½qu (Tibet)",
     '61' => "Shaanxi",
     '62' => "Gansu",
     '63' => "Qinghai",
@@ -37,9 +37,7 @@ function location_province_list_cn() {
     '71' => "Taiwan",
     '91' => "Xianggang",
     '92' => "Aomen",
-    '97' => "Chongqìng",
+    '97' => "Chongqï¿½ng",
     '98' => "Gaoxiong",
     '99' => "Taibei");
 }
-
-?>

@@ -16,5 +16,3 @@ function location_province_list_cg() {
     'PO' => "Pool ",
     'SA' => "Sangha");
 }
-
-?>

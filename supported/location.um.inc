@@ -14,5 +14,3 @@ function location_province_list_um() {
     'PA' => "Palmyra Atoll",
     'WI' => "Wake Island");
 }
-
-?>

@@ -33,5 +33,3 @@ function location_province_list_bg() {
     '27' => "Shumen",
     '28' => "Yambol");
 }
-
-?>

@@ -17,5 +17,3 @@ function location_province_list_rw() {
     'RU' => "Ruhengeri",
     'UM' => "Umutara");
 }
-
-?>

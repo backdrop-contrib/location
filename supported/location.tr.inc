@@ -86,5 +86,3 @@ function location_province_list_tr() {
     'YOZ' => "Yozgat",
     'ZON' => "Zonguldak");
 }
-
-?>

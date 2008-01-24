@@ -21,5 +21,3 @@ function location_province_list_pl() {
     'WP' => "Wielkopolskie",
     'ZA' => "Zachodniopomorskie");
 }
-
-?>

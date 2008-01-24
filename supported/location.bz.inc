@@ -11,5 +11,3 @@ function location_province_list_bz() {
     'SC' => "Stann Creek District",
     'TO' => "Toledo District");
 }
-
-?>

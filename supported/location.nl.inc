@@ -17,5 +17,3 @@ function location_province_list_nl() {
     'ZE' => "Zeeland",
     'ZH' => "Zuid Holland");
 }
-
-?>

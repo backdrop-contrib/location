@@ -8,5 +8,3 @@ function location_province_list_gl() {
     'T' => "Tunu ",
     'K' => "Kitaa");
 }
-
-?>

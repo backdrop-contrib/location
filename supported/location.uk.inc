@@ -237,5 +237,3 @@ function location_province_list_uk() {
     'VGL' => "Vale of Glamorgan",
     'WRX' => "Wrexham");
 }
-
-?>

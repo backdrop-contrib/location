@@ -73,5 +73,3 @@ function location_province_list_mt() {
     'XEW' => "Xewkija",
     'ZEB' => "Zebbug");
 }
-
-?>

@@ -21,5 +21,3 @@ function location_province_list_kz() {
     'SEV' => "Soltustik Qazaqstan ",
     'ZHA' => "Zhambyl");
 }
-
-?>

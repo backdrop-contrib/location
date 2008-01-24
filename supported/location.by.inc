@@ -11,5 +11,3 @@ function location_province_list_by() {
     'MI' => "Minsk voblast",
     'VI' => "Vitsebsk voblast");
 }
-
-?>

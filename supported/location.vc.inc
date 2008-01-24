@@ -11,5 +11,3 @@ function location_province_list_vc() {
     'G' => "Saint George ",
     'P' => "Saint Patrick");
 }
-
-?>

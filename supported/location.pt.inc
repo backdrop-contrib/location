@@ -25,5 +25,3 @@ function location_province_list_pt() {
     'VR' => "Vila Real",
     'VS' => "Viseu");
 }
-
-?>

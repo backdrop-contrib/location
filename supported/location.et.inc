@@ -16,5 +16,3 @@ function location_province_list_et() {
     'AA' => "Addis Ababa",
     'DD' => "Dire Dawa");
 }
-
-?>

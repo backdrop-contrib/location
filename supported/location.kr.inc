@@ -21,5 +21,3 @@ function location_province_list_kr() {
     '48' => "Gyeongsangnam-do",
     '49' => "Jeju-do");
 }
-
-?>

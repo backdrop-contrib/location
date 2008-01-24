@@ -8,5 +8,3 @@ function location_province_list_ms() {
     'G' => "Saint Georges",
     'P' => "Saint Peter");
 }
-
-?>

@@ -11,5 +11,3 @@ function location_province_list_mg() {
     'TM' => "Toamasina province",
     'TL' => "Toliara province");
 }
-
-?>

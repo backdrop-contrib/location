@@ -25,5 +25,3 @@ function location_province_list_pg() {
     'WH' => "Western Highlands",
     'WB' => "West New Britain");
 }
-
-?>

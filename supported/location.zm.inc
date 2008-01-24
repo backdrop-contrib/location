@@ -14,5 +14,3 @@ function location_province_list_zm() {
     'SO' => "Southern Province",
     'WE' => "Western Province");
 }
-
-?>

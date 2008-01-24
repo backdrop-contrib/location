@@ -19,5 +19,3 @@ function location_province_list_np() {
     'SA' => "Sagarmatha",
     'SE' => "Seti");
 }
-
-?>

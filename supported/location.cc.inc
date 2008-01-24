@@ -10,5 +10,3 @@ function location_province_list_cc() {
     'S' => "South Island",
     'W' => "West Island");
 }
-
-?>

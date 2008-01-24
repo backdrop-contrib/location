@@ -39,5 +39,3 @@ function location_province_list_gn() {
     'TOG' => "Tougue",
     'YOM' => "Yomou");
 }
-
-?>

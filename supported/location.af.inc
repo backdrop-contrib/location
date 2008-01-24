@@ -37,5 +37,3 @@ function location_province_list_af() {
     'WAR' => "Wardak province",
     'ZAB' => "Zabol province");
 }
-
-?>

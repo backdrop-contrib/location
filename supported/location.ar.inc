@@ -29,5 +29,3 @@ function location_province_list_ar() {
     'Y' => "Jujuy",
     'Z' => "Santa Cruz");
 }
-
-?>

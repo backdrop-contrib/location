@@ -16,5 +16,3 @@ function location_province_list_am() {
     'VAY' => "Vayots' Dzor",
     'YER' => "Yerevan");
 }
-
-?>

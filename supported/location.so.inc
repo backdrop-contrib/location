@@ -23,5 +23,3 @@ function location_province_list_so() {
     'TO' => "Togdheer",
     'WG' => "Woqooyi Galbeed");
 }
-
-?>

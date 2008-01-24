@@ -14,5 +14,3 @@ function location_province_list_bo() {
     'SCZ' => "Departmento Santa Cruz",
     'TAR' => "Departmento Tarija");
 }
-
-?>

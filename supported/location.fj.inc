@@ -10,5 +10,3 @@ function location_province_list_fj() {
     'W' => "Western Division",
     'R' => "Rotuma");
 }
-
-?>

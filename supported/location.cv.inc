@@ -22,5 +22,3 @@ function location_province_list_cv() {
     'SV' => "Sao Vicente",
     'TA' => "Tarrafal");
 }
-
-?>

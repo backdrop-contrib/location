@@ -25,5 +25,3 @@ function location_province_list_bt() {
     'WPH' => "Wangdue Phodrang",
     'ZHE' => "Zhemgang");
 }
-
-?>

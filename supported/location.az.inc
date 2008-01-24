@@ -81,5 +81,3 @@ function location_province_list_az() {
     'ZAR' => "Zardab",
     'NX' => "Naxcivan");
 }
-
-?>

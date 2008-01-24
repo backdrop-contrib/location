@@ -22,5 +22,3 @@ function location_province_list_ni() {
     'AN' => "Region Autonoma del Atlantico Norte",
     'AS' => "Region Autonoma del Atlantico Sur");
 }
-
-?>

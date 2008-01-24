@@ -27,5 +27,3 @@ function location_province_list_ec() {
     'Y' => "Pastaza",
     'Z' => "Zamora-Chinchipe");
 }
-
-?>

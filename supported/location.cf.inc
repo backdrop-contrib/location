@@ -10,7 +10,7 @@ function location_province_list_cf() {
     'HMB' => "Haut-Mbomou",
     'KEM' => "Kemo",
     'LOB' => "Lobaye",
-    'MKD' => "Mambere-Kadeï",
+    'MKD' => "Mambere-Kadeï¿½",
     'MBO' => "Mbomou",
     'NMM' => "Nana-Mambere",
     'OMP' => "Ombella-M'Poko",
@@ -22,5 +22,3 @@ function location_province_list_cf() {
     'SMB' => "Sangha-Mbaere",
     'BAN' => "Bangui");
 }
-
-?>
