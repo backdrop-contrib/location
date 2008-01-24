@@ -1,3 +1,5 @@
+$Id$
+
 Step 1
 ------
 To support proximity searches and most useful features, you will need a
@@ -54,5 +56,3 @@ Finally, go to the default workflow settings for each node type and enable
 (or require) location collection on a field-by-field basis. It is encouraged
 that you enable postal codes and country fields for node types for which you
 want to enable proximity searches.
-
-
