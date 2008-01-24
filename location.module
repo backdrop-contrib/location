@@ -27,7 +27,7 @@ function location_menu($may_cache = FALSE) {
   $items = array();
   if ($may_cache) {
     $items[] = array('path' => 'search/location', 'title' => t('By location'), 'callback' => 'location_search_view', 'access' => user_access('search content by location'), 'type' => MENU_LOCAL_TASK, 'weight' => 9);
-    
+
     $items[] = array('path' => 'admin/settings/location/main', 'title' => t('Main settings'), 'type' => MENU_DEFAULT_LOCAL_TASK,);
     $items[] = array('path' => 'admin/settings/location/maplinking', 'title' => t('Map links'), 'callback' => 'location_map_link_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK, 'weight' => 1,);
     $items[] = array('path' => 'admin/settings/location/geocoding', 'title' => t('Geocoding options'), 'callback' => 'location_geocoding_options_page', 'access' => user_access('administer site configuration'), 'type' => MENU_LOCAL_TASK, 'weight' => 2,);
@@ -64,6 +64,15 @@ function location_help($section) {
 //TODO: check/fix this: admin/content/configure/types above (still use %? still same url?)
 
 
+/**
+ * Implementation of hook_simpletest().
+ */
+function location_simpletest() {
+  $dir = drupal_get_path('module', 'location'). '/tests';
+  $tests = file_scan_directory($dir, '\.test$');
+  return array_keys($tests);
+}
+
 function location_search_view() {
   $location_params = array(
     //'street' => $_GET['street'],
@@ -72,30 +81,30 @@ function location_search_view() {
     'postal_code' => $_GET['postal_code'],
     'country' => $_GET['country'] ? $_GET['country'] : variable_get('location_default_country', 'us')
   );
-  
+
   $proximity_params = array(
     'distance' => $_GET['distance'],
     'unit' => $_GET['unit'],
   );
-  
+
   $output .= drupal_get_form('location_search_form', $location_params, $proximity_params);
-  
+
   if ($_GET['postal_code'] && $_GET['country'] && $_GET['distance'] && $_GET['country']) {
     $output .= location_search_results($location_params, $proximity_params);
   }
-  
+
   return $output;
 }
 
 function location_search_form($location_params = array(), $proximity_params = array()) {
   $form = array();
-  
+
   $location_search_distance_unit_setting = variable_get('location_search_distance_unit', 0);
   $proximity_suppressed_values = $location_search_distaince_unit_setting ? array('unit' => $location_search_distance_unit_setting) : array();
   $form['proximity'] = location_proximity_form($proximity_params, $proximity_suppressed_values);
-  
+
   $location_suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-  
+
   $form['location'] = location_form(
     array('postal_code', 'country'),
     $location_params,
@@ -109,31 +118,31 @@ function location_search_form($location_params = array(), $proximity_params = ar
     '#type' => 'submit',
     '#value' => t('Search')
   );
-  
+
   //$form_exp = var_export($form, TRUE);
   //drupal_set_message("location_search_form() returning <pre>$form_exp</pre>");
 
-  
+
   $form['#submit'] = array_merge(
     $form['#submit'] ? $form['#submit'] : array(),
     array('location_search_form_submit' => array())
   );
-  
-  
+
+
   return $form;
 }
 
 function location_search_form_validate($form_id, &$form_values) {
   //$form_values_exp = var_export($form_values, TRUE);
   //drupal_set_message("IN location_search_form_validate(): \$form_id == $form_id, \$form_values == <pre>$form_values_exp</pre>");
-  
+
   // TODO: Need to offer ability to configure which fields are included in the search form
   // TODO: And need to adjust how fields are validated
   // For now, just require postal code
   if (!$form_values['postal_code']) {
     //form_set_error('postal_code', t('You must include a postal code in your search.'));
   }
-  
+
   if (!$form_values['country']) {
     //form_set_error('country', t('You much include a country in your search.'));
   }
@@ -142,7 +151,7 @@ function location_search_form_validate($form_id, &$form_values) {
 function location_search_form_submit($form_id, &$form_values) {
   //$form_values_exp = var_export($form_values, TRUE);
   //drupal_set_message("IN location_search_form_submit(): \$form_id == $form_id and \$form_values == <pre>$form_values_exp</pre>");
-  
+
   /*
   $location_fields = array('street', 'additional', 'province', 'postal_code', 'country');
   foreach ($locations_fields as $field_name) {
@@ -155,65 +164,65 @@ function location_search_form_submit($form_id, &$form_values) {
       }
     }
   }
-  
+
   $query_string = '&distance='. $form_values['distance'] .'&unit='. $unit;
   */
   return array('search/location', 'postal_code='. $form_values['postal_code'] .'&country='. $form_values['country'] .'&distance='. $form_values['distance'] .'&unit='. $form_values['unit']);
 }
 
 function location_search_results($location_params, $proximity_params) {
-  
+
   // DEBUG: commented code for testing/debugging purposes
   $start_time = microtime();
 
   // First things first: find lat/lon for submitted postal_code
   // TODO: will need to replace be able to get lat/lon of search point for more than just postal_code
   $latlon = location_latlon_rough($location_params);
-  
+
   if (!$latlon['lat'] || !$latlon['lon']) {
     drupal_set_message(t('No search results; could not determine the location of the submitted postal code.'));
     return '';
   }
-  
+
   // If the distance parameters did not make sense, return an empty search result set.
   $distance_float = _location_convert_distance_to_meters($proximity_params['distance'], $proximity_params['unit']);
-  
+
   // Find the pairs of lats and lons that define the corners of a square that is $distance X $distance and centered on $latlon
   $latrange = earth_latitude_range($latlon['lon'], $latlon['lat'], $distance_float);
-  $lonrange = earth_longitude_range($latlon['lon'], $latlon['lat'], $distance_float); 
-  
+  $lonrange = earth_longitude_range($latlon['lon'], $latlon['lat'], $distance_float);
+
   $count_query = 'SELECT COUNT(n.nid) AS count FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f';
-  
+
   $query = 'SELECT n.nid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' as distance FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f GROUP BY n.nid ORDER by distance';
-  
+
   $query_args = array(
-    $latrange[0], 
-    $latrange[1], 
-    $lonrange[0], 
-    $lonrange[1], 
+    $latrange[0],
+    $latrange[1],
+    $lonrange[0],
+    $lonrange[1],
     $distance_float
   );
-  
+
   $pager_count_query = 'SELECT COUNT(DISTINCT nid) AS count FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float;
-  
+
   $pager_query = 'SELECT n.nid, n.vid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' AS distance FROM {node} n INNER JOIN {location} l ON n.vid = l.eid WHERE l.type =\'node\' AND l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float .' GROUP BY n.nid ORDER by distance';
-  
+
   $result = pager_query(db_rewrite_sql($query), 10, 0, db_rewrite_sql($count_query), $query_args);
-  
+
   $result_count = db_result(db_query(db_rewrite_sql($count_query), $query_args));
-  
+
   if (!$result_count) {
     $output = theme('box', t('Your search yielded no results.'), '');
   }
   else {
     $results_offset = isset($_GET['from']) ? $_GET['from'] : 0;
-    
+
     $page_count = db_num_rows($result);
-  
+
     $output = '<p>'. t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $result_count, '%c' => filter_xss($_GET['postal_code']))) .'</p>';
-    
+
     while ($row = db_fetch_object($result)) {
-    
+
       $extra = array();
       unset($location_line);
       if ($row->postal_code || $row->city) {
@@ -222,7 +231,7 @@ function location_search_results($location_params, $proximity_params) {
           if ($row->postal_code) {
             $location_line .= $row->postal_code;
           }
-          
+
           if ($row->postal_code && $row->city) {
             $location_line .= ' ('. $row->city;
             $location_line .= $row->province ? ', '. $row->province : '';
@@ -233,18 +242,18 @@ function location_search_results($location_params, $proximity_params) {
           }
         }
       }
-      
+
       if ($location_line) {
         $extra['location'] = $location_line;
       }
-      
+
       if (($row->postal_code == $location_params['postal_code'] && $row->country == $location_params['country']) ||
           ($row->distance < 10)) {
         $extra['distance'] = t('Result is <strong>also from %postal_code</strong>', array('%postal_code' => $location_params['postal_code']));
       }
       else {
         $adjusted_distance = round($row->distance / (($proximity_params['unit'] == 'km') ? 1000.0 : 1609.347), 1);
-      
+
         if ($adjusted_distance != 1) {
           $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('miles');
         }
@@ -253,34 +262,34 @@ function location_search_results($location_params, $proximity_params) {
         }
         $extra['distance'] = t('Approximately %distance %distanceunit from <strong>%location</strong> ', array('%distance' => round($adjusted_distance, 1), '%distanceunit' => $distance_unit, '%location' => $location_params['postal_code']));
       }
-      
+
       $node = node_load($row->nid);
-    
+
       $output .= theme(
         'search_item',
         array(
-          'link' => url('node/'. $row->nid), 
-          'title' => $node->title, 
+          'link' => url('node/'. $row->nid),
+          'title' => $node->title,
           'type' => $node->type,
-          'user' => db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $node->uid)), 
+          'user' => db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $node->uid)),
           'date' => $node->created,
           'snippet' => $row->teaser,
           'extra' => $extra
         ),
         'node'
       );
-                 
+
     }
-    
+
     $output .= theme('pager');
   }
-  
+
   return $output;
 }
 
 
 /**
- * 
+ *
  *
  */
 function location_map_link_options_page() {
@@ -296,18 +305,18 @@ function location_map_link_options_form() {
     '#type' => 'markup',
     '#value' => ''
   );
-  
+
   foreach (location_configured_countries() as $country_iso => $country_name) {
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
       '#value' => ''
     );
-  
+
     $form['countries'][$country_iso]['label_'. $country_iso] = array(
       '#type' => 'markup',
       '#value' => $country_name
     );
-    
+
     // Set up '#options' array for mapping providers for the current country
     $mapping_options = array();
     $provider_function = 'location_map_link_'. $country_iso .'_providers';
@@ -316,10 +325,10 @@ function location_map_link_options_form() {
     //print "Calling provider function $provider_function";
     if (function_exists($provider_function)) {
       foreach ($provider_function() as $name => $details) {
-        $mapping_options[$name] = '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)'; 
+        $mapping_options[$name] = '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)';
       }
     }
-    
+
     if (count($mapping_options)) {
       $form['countries'][$country_iso]['location_map_link_'. $country_iso] = array(
         '#title' => '',
@@ -335,7 +344,7 @@ function location_map_link_options_form() {
       );
     }
   }
-  
+
   $form['#theme'] = 'location_map_link_options';
   return system_settings_form($form);
 }
@@ -347,14 +356,14 @@ function location_field_names() {
 
 function location_geocoding_parameters_page($country_iso, $service) {
   drupal_set_title(t('Configure parameters for %service geocoding', array('%service' => $service)));
-  
+
   $breadcrumbs = drupal_get_breadcrumb();
   $breadcrumbs[] = l('location', 'admin/settings/locaiton');
   $breadcrumbs[] = l('geocoding', 'admin/settings/location/geocoding');
   $countries = location_get_iso3166_list();
   $breadcrumbs[] = l($countries[$country_iso], 'admin/settings/location/geocoding', array(), NULL, $country_iso);
   drupal_set_breadcrumb($breadcrumbs);
-  
+
   return drupal_get_form('location_geocoding_parameters_form', $country_iso, $service);
 }
 
@@ -392,12 +401,12 @@ function location_geocoding_options_form() {
 
   $form['countries'] = array(
   );
-  
+
   // First, we build two arrays to help us figure out on the fly whether a specific country is covered by a multi-country geocoder,
   // and what the details of the multi-country geocoder are
   // (1) Get list of geocoders
   $general_geocoders_list = location_get_general_geocoder_list();
-  
+
   // (2) get data about each geocoder and the list of coutnries covered by each geocoder
   $general_geocoders_data = array();
   $general_geocoders_countries = array();
@@ -407,26 +416,26 @@ function location_geocoding_options_form() {
     if (function_exists($info_function)) {
       $general_geocoders_data[$geocoder_name] = $info_function();
     }
-    
+
     $countries_function = $geocoder_name .'_geocode_country_list';
     if (function_exists($countries_function)) {
       $general_geocoders_countries[$geocoder_name] = $countries_function();
     }
   }
-  
+
   foreach (location_configured_countries() as $country_iso => $country_name) {
     $geocoding_options = array();
-  
+
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
       '#value' => ''
     );
-  
+
     $form['countries'][$country_iso]['label_'. $country_iso] = array(
       '#type' => 'markup',
       '#value' => '<div id="'. $country_iso .'">'. $country_name .'</div>'
     );
-    
+
     // Next, we look for options presented by country specific providers
     $country_specific_provider_function = 'location_geocode_'. $country_iso .'_providers';
     if (function_exists($country_specific_provider_function)) {
@@ -434,16 +443,16 @@ function location_geocoding_options_form() {
         $geocoding_options[$name . '|'. $country_iso] = '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)';
       }
     }
-    
+
     foreach ($general_geocoders_list as $geocoder_name) {
       if (in_array($country_iso, $general_geocoders_countries[$geocoder_name])) {
         $geocoding_options[$geocoder_name] = '<a href="'. $general_geocoders_data[$geocoder_name]['url'] .'">'. $general_geocoders_data[$geocoder_name]['name'] .'</a> (<a href="'. $general_geocoder_data[$geocoder_name]['tos'] .'">Terms of Use</a>)';
       }
     }
-    
+
     if (count($geocoding_options)) {
       $geocoding_options = array_merge(array('none' => t('None')), $geocoding_options);
-    
+
       $form['countries'][$country_iso]['location_geocode_'. $country_iso] = array(
         '#type' => 'radios',
         '#default_value' => variable_get('location_geocode_'. $country_iso, 'none'),
@@ -456,7 +465,7 @@ function location_geocoding_options_form() {
         '#value' => t('None supported.')
       );
     }
-    
+
     $current_value = variable_get('location_geocode_'. $country_iso, 'none');
     if ($current_value == 'none') {
       $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
@@ -468,7 +477,7 @@ function location_geocoding_options_form() {
       $current_val_chopped = substr($current_value, 0, strpos($current_value, '|'));
       $geocode_settings_form_function_specific = 'location_geocode_'. $country_iso .'_'. $current_val_chopped .'_settings';
       $geocode_settings_form_function_general = $current_value .'_geocode_settings';
-      
+
       if (function_exists($geocode_settings_form_function_specific)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'markup',
@@ -489,9 +498,9 @@ function location_geocoding_options_form() {
       }
     }
   }
-  
+
   $form['#theme'] = 'location_geocoding_options';
-  
+
   return system_settings_form($form);
 }
 
@@ -499,7 +508,7 @@ function location_geocoding_options_form() {
 function location_geocoding_options_form_submit($form_id, $form_values) {
   $general_geocoders = location_get_general_geocoder_list();
   $general_geocoders_in_use = array();
-  
+
   foreach ($form_values as $key => $value) {
     if (substr($key, 0, 17) == 'location_geocode_') {
       if (in_array($value, $general_geocoders)) {
@@ -507,7 +516,7 @@ function location_geocoding_options_form_submit($form_id, $form_values) {
       }
     }
   }
-  
+
   variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
 };
 
@@ -520,12 +529,12 @@ function location_form_alter($form_id, &$form) {
   }
   elseif ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
-    
+
     $form['#validate'] = array_merge(
       is_array($form['#validate']) ? $form['#validate'] : array(),
       array('location_node_settings_validate' => array())
-    ); 
-    
+    );
+
     $form['location'] = array_merge(
       is_array($form['location']) ? $form['location'] : array(),
       array(
@@ -536,9 +545,9 @@ function location_form_alter($form_id, &$form) {
         '#weight' => 0
       )
     );
-    
+
     // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
-    
+
     $form['location']['multiple_locations'] = array_merge(
       is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
       array(
@@ -557,22 +566,22 @@ function location_form_alter($form_id, &$form) {
       '#options' => drupal_map_assoc(range(0,100)),
       '#description' => t('This setting determines the maximum number of locations that can be assigned to a node of this type.  This number must be greater than or equal to the default number of location forms selected below.  By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
     );
-    
+
     $form['location']['multiple_locations']['location_defaultnum'] = array(
       '#type' => 'select',
       '#title' => t('Default number of location forms'),
       '#default_value' => variable_get('location_defaultnum_'. $type, 0),
       '#options' => drupal_map_assoc(range(0,10)),
       '#description' => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
-    );    
-        
+    );
+
     // End of variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
-    
+
     $options = array();
     for ($i=-10; $i<11; $i++) {
       $options[$i] = $i;
     }
-    
+
     $form['location']['location_weight'] = array(
       '#prefix' => '<div style="margin-left: 40px">',
       '#type' => 'select',
@@ -581,7 +590,7 @@ function location_form_alter($form_id, &$form) {
       '#default_value' => variable_get('location_weight_'. $type, 9),
       '#description' => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.')
     );
-    
+
     $form['location']['location_collapsible'] = array(
       '#type' => 'checkbox',
       '#title' => t('Collapsible'),
@@ -589,7 +598,7 @@ function location_form_alter($form_id, &$form) {
       '#default_value' => variable_get('location_collapsible_'. $type, 1),
       '#description' => t('Make the location box collapsible.')
     );
-    
+
     $form['location']['location_collapsed'] = array(
       '#type' => 'checkbox',
       '#title' => t('Collapsed'),
@@ -610,42 +619,42 @@ function location_form_alter($form_id, &$form) {
       '#type' => 'markup',
       '#value' => '<p><strong>'. t('NOTE:') .'</strong> '. t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
     );
-    
+
     $form['location']['location_name'] = array(
       '#type' => 'radios',
       '#title' => t('Location names'),
       '#default_value' => variable_get('location_name_'. $type, $default),
       '#options' => array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.'))
     );
-    
+
     $form['location']['location_street'] = array(
       '#type' => 'radios',
       '#title' => t('Street locations'),
       '#default_value' => variable_get('location_street_'. $type, $default),
       '#options' => array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.'))
     );
-    
+
     $form['location']['location_city'] = array(
       '#type' => 'radios',
       '#title' => t('City names'),
       '#default_value' => variable_get('location_city_'. $type, 0),
       '#options' => array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.'))
     );
-    
+
     $form['location']['location_province'] = array(
       '#type' => 'radios',
       '#title' => 'State/Province names',
       '#default_value' => variable_get('location_province_'. $type, 0),
       '#options' => array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.'))
     );
-    
+
     $form['location']['location_postal_code'] = array(
       '#type' => 'radios',
       '#title' => 'Postal codes',
       '#default_value' => variable_get('location_postal_code_'. $type, 0),
       '#options' => array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.'))
     );
-    
+
     $form['location']['location_country'] = array(
       '#type' => 'radios',
       '#title' => 'Country names',
@@ -654,7 +663,7 @@ function location_form_alter($form_id, &$form) {
       '#description' => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
       '#suffix' => '</div>'
     );
-    
+
     // clear the views cache in case anything was changed
     if (function_exists('views_invalidate_cache')) {
       views_invalidate_cache();
@@ -662,7 +671,7 @@ function location_form_alter($form_id, &$form) {
   }
   elseif (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
     $node = $form['#node'];
-    
+
     $location_fields = array();
     $required_fields = array();
     foreach (array_keys(location_field_names()) as $field_name) {
@@ -701,7 +710,7 @@ function location_form_alter($form_id, &$form) {
         )
       );
     }
-    
+
     if ($location_form_count == 1) {
       $form['locations'][0]['#title'] = t('Location');
     }
@@ -713,7 +722,7 @@ function location_form_alter($form_id, &$form) {
     }
 
     $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-    
+
     if ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors())) {
       for ($index = 0; $index < $location_form_count; $index++) {
         $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
@@ -722,18 +731,18 @@ function location_form_alter($form_id, &$form) {
     else {
       for ($index = 0; $index < $location_form_count; $index++) {
         if (!isset($form['locations'][$index])) $form['locations'][$index] = array();
-        
+
         $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
       }
     }
-    
+
     if (user_access('submit latitude/longitude')) {
       for ($index = 0; $index < $location_form_count; $index++) {
         $form['locations'][$index][] = array(
           '#type' => 'markup',
           '#value' => "<br/>\n"
         );
-        
+
         if ($node->nid || isset($node->locations[$index]['previous_source'])) {
           $form['locations'][$index]['previous_source'] = array(
             '#type' => 'hidden',
@@ -752,7 +761,7 @@ function location_form_alter($form_id, &$form) {
         $form['locations'][$index] = array_merge($form['locations'][$index], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->locations[$index] ? location_api2form($node->locations[$index]) : array()));
       }
     }
-    
+
     // foreach of the locations, make sure we have an lid field
     for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index]['lid'] = array(
@@ -767,12 +776,12 @@ function location_node_settings_validate($form_id, $form_values) {
   $type = $form_values['type'];
   $maxnum_name = 'location_maxnum_'. $type;
   $defaultnum_name = 'location_defaultnum_'. $type;
-  
-  
+
+
   if ($form_values[$defaultnum_name] > $form_values[$maxnum_name]) {
     form_set_error($defaultnum_name, t("Your default number of location-forms that show up can't be greater than the maximum number of locations allowed for this node type."));
   }
-  
+
   if (!$form_values[$defaultnum_name] && $form_values[$maxnum_name]) {
     form_set_error($defaultnum_name, t("You must have at least 1 default location-form enabled if you are going to allow locations to be submitted for nodes of this type.  If you don't intend to allow locations to be submitted for nodes of this type, set the maximum number of locations allowed for this type to 0."));
   }
@@ -791,7 +800,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       foreach ($node->locations as $index => $location) {
         // For now, validation just makes sure that required fields have any value
         // If syntax specific checks are implemented for locations in the future, they can be called as well.
-        
+
         foreach (location_field_names() as $field_name => $display_name) {
           $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
           // We only enforce required fields on the first location if there are multiple locations
@@ -802,11 +811,11 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               }
             }
           }
-          
+
           $node->locations[$index][$field_name] = trim($node->locations[$index][$field_name]);
         }
-        
-        
+
+
         // Check if the (province, country) pair is valid
         if (isset($node->locations[$index]['province']) && !empty($node->locations[$index]['province']) && $node->locations[$index]['province'] != 'xx' &&
             isset($node->locations[$index]['country']) && !empty($node->locations[$index]['country']) && $node->locations[$index]['country'] != 'xx') {
@@ -818,7 +827,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             }
           }
         }
-      
+
         // Check if submitted lat/lon are valid
         if (user_access('submit latitude/longitude')) {
           if ((!strlen(trim($node->locations[$index]['latitude'])) && strlen(trim($node->locations[$index]['longitude']))) ||
@@ -830,7 +839,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             if (!is_numeric($node->locations[$index]['latitude']) || $node->locations[$index]['latitude'] > 90.0 || $node->locations[$index]['latitude'] < -90.0) {
               form_set_error('locations]['. $index .'][latitude', t('Your latitude must be a numeric value between -90.0 and 90.0.'));
             }
-            
+
             if (!is_numeric($node->locations[$index]['longitude']) || $node->locations[$index]['longitude'] > 180.0 || $node->locations[$index]['longitude'] < -180.0) {
               form_set_error('locations]['. $index .'][longitude', t('Your longitude must be a numeric value between -180.0 and 180.0.'));
             }
@@ -838,7 +847,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
       }
       break;
-        
+
     case 'insert':
     case 'update':
       // handy to have these field names later
@@ -852,34 +861,34 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             $required_fields[] = $field_name;
           }
         }
-      }    
-    
+      }
+
       foreach ($node->locations as $index => $location) {
         $node->locations[$index] = location_form2api($node->locations[$index]);
 
         if (user_access('submit latitude/longitude')) {
           $node->locations[$index]['latitude'] = trim($node->locations[$index]['latitude']);
           $node->locations[$index]['longitude'] = trim($node->locations[$index]['longitude']);
-          // At this point, we know that the user has permission to submit lat/lons and that the 
+          // At this point, we know that the user has permission to submit lat/lons and that the
           // submitted lat/lons are either blank or valid numbers.  Now, we need to find out determine
           // the source of these lat/lons since they can either be prefilled from postalcode data
           // or manually entered by the user.
           if (!empty($node->locations[$index]['latitude']) && !empty($node->locations[$index]['longitude'])) {
- 
+
             if (($data = location_latlon_exact($node->locations[$index])) &&
                 _location_floats_are_equal(floatval($node->locations[$index]['latitude']), floatval($data['lat'])) &&
                 _location_floats_are_equal(floatval($node->locations[$index]['longitude']), floatval($data['lon']))) {
               $node->locations[$index]['lat'] = $node->locations[$index]['latitude'];
               $node->locations[$index]['lon'] = $node->locations[$index]['longitude'];
               $node->locations[$index]['source'] = LOCATION_LATLON_GEOCODED_EXACT;
-            }         
+            }
             elseif (($data = location_get_postalcode_data($node->locations[$index])) &&
                 _location_floats_are_equal(floatval($node->locations[$index]['latitude']), floatval($data['lat'])) &&
                 _location_floats_are_equal(floatval($node->locations[$index]['longitude']), floatval($data['lon']))) {
               $node->locations[$index]['lat'] = $node->locations[$index]['latitude'];
               $node->locations[$index]['lon'] = $node->locations[$index]['longitude'];
               $node->locations[$index]['source'] = LOCATION_LATLON_GEOCODED_APPROX;
-            }        
+            }
             else {
               $node->locations[$index]['lat'] = $node->locations[$index]['latitude'];
               $node->locations[$index]['lon'] = $node->locations[$index]['longitude'];
@@ -893,7 +902,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               $node->locations[$index]['lat'] = $data['lat'];
               $node->locations[$index]['lon'] = $data['lon'];
               $node->locations[$index]['source'] = LOCATION_LATLON_GEOCODED_EXACT;
-            }          
+            }
             elseif ($data = location_get_postalcode_data($node->locations[$index])) {
               $node->locations[$index]['latitude'] = $data['lat'];
               $node->locations[$index]['longitude'] = $data['lon'];
@@ -925,7 +934,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
                   $node->locations[$index]['latitude'] = $data['lat'];
                   $node->locations[$index]['longitude'] = $data['lon'];
                   $node->locations[$index]['source'] = LOCATION_LATLON_GEOCODED_EXACT;
-                }            
+                }
                 elseif ($data = location_get_postalcode_data($node->location)) {
                   $node->locations[$index]['lat'] = $data['lat'];
                   $node->locations[$index]['lon'] = $data['lon'];
@@ -962,7 +971,7 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
             unset($node->locations[$index]['lon']);
             unset($node->locations[$index]['latitude']);
             unset($node->locations[$index]['longitude']);
-            $node->locations[$index]['source'] = LOCATION_LATLON_UNDEFINED;          
+            $node->locations[$index]['source'] = LOCATION_LATLON_UNDEFINED;
           }
         }
 
@@ -972,18 +981,18 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $node->locations[$index]['city'] = (!isset($node->locations[$index]['city']) || strlen($node->locations[$index]['city']) == 0) ? $data['city'] : $node->locations[$index]['city'];
           $node->locations[$index]['province'] = (!isset($node->locations[$index]['province']) || strlen($node->locations[$index]['province']) == 0) ? $data['province'] : $node->locations[$index]['province'];
         }
-        
+
         // Finally, if there are multiple forms, it's possible for the default country to still be selected with all the other fields blank, and
         // very possible that the user didn't intend to fill out that default country value.  So, we use the following rules to determine whether
         // a location is bogus or not:
-        // IF $index == 0, then 
+        // IF $index == 0, then
         //   --> if no other fields are enabled, we consider the country to be important and save the location
         //   --> if other fields are enabled, but are all left blank, we consider the location empty and don't save
         //   --> if latitude and longitude coordinates are entered then we save the location
         // IF $index != 1, then
         //   --> if country is default and no other fields are saved, we don't save
         //   --> if latitude and longitude coordinates are entered then we save the location
-        
+
         $keep = FALSE;
         if (!empty($node->locations[$index]['country']) || (!empty($node->locations[$index]['latitude']) && !empty($node->locations[$index]['longitude']))) {
           if ($index == 0) {  // first location
@@ -1020,10 +1029,10 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
                 $keep = TRUE;
                 break;
               }
-            }            
+            }
           }
         }
-            
+
         if ($keep) {
           _location_save($node->locations[$index] ? $node->locations[$index] : array(), $node, 'node');
         }
@@ -1035,17 +1044,17 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
       }
       break;
-      
+
     case 'load':
       $loaded_data = location_load_locations('node', $node);
       return $loaded_data;
-      
+
     case 'view':
       if (variable_get('location_display_location', 1)) {
         if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
           $posted_locations = array();
-          
-          foreach ($node->locations as $index => $location) {   
+
+          foreach ($node->locations as $index => $location) {
             if (count($node->locations[$index])) {
               $posted_locations[$index] = location_form2api($node->locations[$index]);
               if (!isset($posted_locations[$index]['city']) || strlen(trim($posted_locations[$index]['city'])) == 0) {
@@ -1056,20 +1065,20 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
                 $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_locations[$index]);
                 $posted_locations[$index]['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
               }
-  
+
             }
           }
-          
+
           if ($output = theme('locations', $posted_locations, variable_get('location_suppress_country', 0) ? array('country') : array())) {
             $node->content['locations']['#value'] .= $output;
-          }          
+          }
         }
         else {
           if ($themed_locations = theme('locations', $node->locations, variable_get('location_suppress_country', 0) ? array('country') : array())) {
             $node->content['locations']['#value'] .= $themed_locations;
           }
-          
-          
+
+
           //if (!$teaser) {
             //drupal_set_html_head(location_geocode_meta_tags($node->location));
           //}
@@ -1087,10 +1096,10 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         foreach ($node->locations as $index => $location) {
           if (!is_null($node->locations[$index]['lat']) && !is_null($node->locations[$index]['lon'])) {
             //$items[] = array('key' => 'geo:Point', 'value' => "<geo:lat>\n  ". $node->locations[$index]['lat'] ."</geo:lat>\n  <geo:long>". $node->locations[$index]['lon'] ."</geo:long>\n", 'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'));
-            
+
             $items[] = array('key' => 'geo:Point',
                              'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
-                             'value' => array(array('key' => 'geo:lat', 'value' => $node->locations[$index]['lat']), 
+                             'value' => array(array('key' => 'geo:lat', 'value' => $node->locations[$index]['lat']),
                                               array('key' => 'geo:lon', 'value' => $node->locations[$index]['lon'])
                                         )
                        );
@@ -1116,9 +1125,9 @@ function location_extra_form(&$node) {
       }
     }
   }
-  
+
   $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-  
+
   $form['location'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add another location'),
@@ -1127,24 +1136,24 @@ function location_extra_form(&$node) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
-  
+
   $form['location'] = array_merge($form['location'], location_form($location_fields, array('country' => variable_get('location_default_country', 'us')), array(), $suppressed_values));
-  
+
   if (user_access('submit latitude/longitude')) {
     $form['location'][] = array(
       '#type' => 'markup',
       '#value' => "<br/>\n"
     );
-    
-    $form['location'] = array_merge($form['location'], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), array()));          
+
+    $form['location'] = array_merge($form['location'], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), array()));
   }
-  
+
   $form['location']['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
   );
   //================================================
-  
+
   $form['location']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Add location')
@@ -1164,13 +1173,13 @@ function location_extra_form_validate($form_id, &$form_values) {
     $province_list_function = 'location_province_list_'. $form_values['location']['country'];
     if (function_exists($province_list_function)) {
       $translated_location = location_form2api($form_values['location']);
-      
+
       if (!in_array($translated_location['province'], array_keys($province_list_function()))) {
         form_set_error('location][province', t('Please make sure to select a state/province from the country you have selected.'));
       }
     }
   }
-  
+
   // Check if submitted lat/lon are valid
   if (user_access('submit latitude/longitude')) {
     if ((!strlen(trim($form_values['location']['latitude'])) && strlen(trim($form_values['location']['longitude']))) ||
@@ -1182,12 +1191,12 @@ function location_extra_form_validate($form_id, &$form_values) {
       if (!is_numeric($form_values['location']['latitude']) || $form_values['location']['latitude'] > 90.0 || $form_values['location']['latitude'] < -90.0) {
         form_set_error('location][latitude', t('Your latitude must be a numeric value between -90.0 and 90.0.'));
       }
-      
+
       if (!is_numeric($form_values['location']['longitude']) || $form_values['location']['longitude'] > 180.0 || $form_values['location']['longitude'] < -180.0) {
         form_set_error('location][longitude', t('Your longitude must be a numeric value between -180.0 and 180.0.'));
       }
     }
-  }  
+  }
 }
 
 function location_extra_form_submit($form_id, &$form_values) {
@@ -1202,33 +1211,33 @@ function location_extra_form_submit($form_id, &$form_values) {
         $required_fields[] = $field_name;
       }
     }
-  }    
-    
+  }
+
   $form_values['location'] = location_form2api($form_values['location']);
-     
+
   if (user_access('submit latitude/longitude')) {
     $form_values['location']['latitude'] = trim($form_values['location']['latitude']);
     $form_values['location']['longitude'] = trim($form_values['location']['longitude']);
-    // At this point, we know that the user has permission to submit lat/lons and that the 
+    // At this point, we know that the user has permission to submit lat/lons and that the
     // submitted lat/lons are either blank or valid numbers.  Now, we need to find out determine
     // the source of these lat/lons since they can either be prefilled from postalcode data
     // or manually entered by the user.
     if (!empty($form_values['location']['latitude']) && !empty($form_values['location']['longitude'])) {
-      
+
       if (($data = location_latlon_exact($form_values['location'])) &&
           _location_floats_are_equal(floatval($form_values['location']['latitude']), floatval($data['lat'])) &&
           _location_floats_are_equal(floatval($form_values['location']['longitude']), floatval($data['lon']))) {
         $form_values['location']['lat'] = $form_values['location']['latitude'];
         $form_values['location']['lon'] = $form_values['location']['longitude'];
         $form_values['location']['source'] = LOCATION_LATLON_GEOCODED_EXACT;
-      }         
+      }
       elseif (($data = location_get_postalcode_data($form_values['location'])) &&
           _location_floats_are_equal(floatval($form_values['location']['latitude']), floatval($data['lat'])) &&
           _location_floats_are_equal(floatval($form_values['location']['longitude']), floatval($data['lon']))) {
         $form_values['location']['lat'] = $form_values['location']['latitude'];
         $form_values['location']['lon'] = $form_values['location']['longitude'];
         $form_values['location']['source'] = LOCATION_LATLON_GEOCODED_APPROX;
-      }        
+      }
       else {
         $form_values['location']['lat'] = $form_values['location']['latitude'];
         $form_values['location']['lon'] = $form_values['location']['longitude'];
@@ -1242,7 +1251,7 @@ function location_extra_form_submit($form_id, &$form_values) {
         $form_values['location']['lat'] = $data['lat'];
         $form_values['location']['lon'] = $data['lon'];
         $form_values['location']['source'] = LOCATION_LATLON_GEOCODED_EXACT;
-      }          
+      }
       elseif ($data = location_get_postalcode_data($form_values['location'])) {
         $form_values['location']['latitude'] = $data['lat'];
         $form_values['location']['longitude'] = $data['lon'];
@@ -1259,14 +1268,14 @@ function location_extra_form_submit($form_id, &$form_values) {
       }
     }
   }
-  
+
   // If no city and/or province were supplied in the address (whether the user left it blank or whether the user did not have the option
   // of entering them) then we want to use the data we have based strictly on the postal code.
   if ($data = location_get_postalcode_data($form_values['location'])) {
     $form_values['location']['city'] = (!isset($form_values['location']['city']) || strlen($form_values['location']['city']) == 0) ? $data['city'] : $form_values['location']['city'];
     $form_values['location']['province'] = (!isset($form_values['location']['province']) || strlen($form_values['location']['province']) == 0) ? $data['province'] : $form_values['location']['province'];
   }
-  
+
   $node = node_load($form_values['location']['nid']);
   _location_save($form_values['location'] ? $form_values['location'] : array(), $node, 'node');
 //======================================================================
@@ -1290,13 +1299,13 @@ function location_load_locations($type, $node_or_user) {
       $locations[$index]['lat'] = $locations[$index]['latitude'];
       $locations[$index]['lon'] = $locations[$index]['longitude'];
     }
-    
+
     if ($extra = location_invoke_locationapi($locations[$index], 'load')) {
       $locations[$index] = array_merge($locations[$index], $extra);
     }
     $index++;
   }
-  
+
   $location = count($locations) ? $locations[0] : array();
 
   return array('locations' => $locations, 'location' => $location);
@@ -1330,13 +1339,13 @@ function location_admin_settings() {
   $supported_countries = _location_supported_countries();
 
   $default_country = variable_get('location_default_country', 'us');
-  
+
   $configured_countries = location_get_configured_countries();
-  
+
   $iso_list_sorted = _location_get_iso3166_list();
   array_multisort($iso_list_sorted);
   $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
-  
+
   if ($default_country && in_array($default_country, array_keys($supported_countries)) && !in_array($default_country, $configured_countries)) {
     $configured_countries = variable_get('location_configured_countries', array('us' => 1));
     $configured_countries[$default_country] = 1;
@@ -1376,7 +1385,7 @@ function location_admin_settings() {
       '#options' => array(0 => t('Disable the display of locations.'), 1 => t('Enable the display of locations.')),
       '#description' => t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take that function.')
       );
-      
+
   $form['location_user'] = array(
       '#type' => 'radios',
       '#title' => 'User locations',
@@ -1384,7 +1393,7 @@ function location_admin_settings() {
       '#options' => array('Disable', 'Enable'),
       '#description' => t('Collect user addresses (partial or full) if users wish to submit them for their user accounts.')
       );
-  
+
   $form['location_usegmap'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use a Google Map to set latitude and longitude '),
@@ -1392,7 +1401,7 @@ function location_admin_settings() {
       '#default_value' => variable_get('location_usegmap', 1),
       '#description' => t('If the gmap.module is installed and <a href="@enabled">enabled</a>, and this is setting is turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a <a href="@google_maps_api_key">Google Maps API key</a> into your <a href="@gmap_module_settings">gmap module settings</a>.', array('@enabled' => 'admin/build/modules', '@google_maps_api_key' => 'http://www.google.com/apis/maps', '@gmap_module_settings' => 'admin/settings/gmap'))
       );
-  
+
   $form['location_configured_countries'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Enable all <em>available</em> features for locations from the following countries'),
@@ -1411,11 +1420,11 @@ function _location_effective_user_setting() {
 
 function location_user($op, &$edit, &$user, $category = NULL) {
   $user_setting = _location_effective_user_setting();
-  
+
   if ($user_setting == LOCATION_USER_DONT_COLLECT) {
     return;
   }
-  
+
   if ($op == 'form' && $category == 'account' && $user_setting == LOCATION_USER_COLLECT) {
     $form = array(1 => array());
     $form[0]['location'] = location_form(array('street', 'city', 'province', 'postal_code', 'country'), (isset($user->location) && !_location_is_empty($user->location)) ? location_api2form($user->location) : array('country' => variable_get('location_default_country', 'us')), array(), variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array());
@@ -1424,17 +1433,17 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     $form[0]['location']['#tree'] = TRUE;
     $form[0]['location']['#collapsible'] = TRUE;
     $form[0]['location']['#description'] = t('Enter as much of your address as you are comfortable with. Your address will only be viewable by those who have the appropriate permissions. The site will be able to automatically link you to driving directions and other features if it already knows your address.');
-    
+
     if ($user->location['lid']) {
       $form[0]['location']['lid'] = array(
         '#type' => 'hidden',
         '#value' => $user->location['lid']
       );
     }
-    
+
     return $form;
   }
-  
+
   if ($op == 'load' && $user_setting != LOCATION_USER_DONT_COLLECT) {
     $res = db_query("SELECT * FROM {location} WHERE type = 'user' AND eid = %d", $user->uid);
     if ($location = db_fetch_object($res)) {
@@ -1447,12 +1456,12 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 
   if (($op == 'update' || $op == 'insert') && $category == 'account') {
       $edit['location'] = location_form2api($edit['location']);
-    
+
     if ($data = location_latlon_exact($edit['location'])) {
       $edit['location']['source'] = LOCATION_LATLON_GEOCODED_EXACT;
       $edit['location']['lat'] = $data['lat'];
       $edit['location']['lon'] = $data['lon'];
-    }    
+    }
     elseif ($data = location_get_postalcode_data($edit['location'])) {
       $edit['location']['source'] = LOCATION_LATLON_GEOCODED_APPROX;
       $edit['location']['lat'] = $data['lat'];
@@ -1466,14 +1475,14 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     _location_save($edit['location'] ? $edit['location'] : array(), $user, 'user');
     unset($edit['location']);
   }
-  
+
   if ($user_setting == LOCATION_USER_COLLECT && $op == 'view' && (user_access('administer users') || $GLOBALS['user']->uid == $user->uid) && variable_get('location_display_location', 1) && !_location_is_empty($user->location)) {
 
     $items[] = array(
       'value' => theme('location', $user->location),
       'class' => 'location',
     );
-    
+
     if (user_access('submit latitude/longitude')) {
       if ($user->location['latitude'] != NULL && $user->location['longitude'] != NULL) {
         $items[] = array('title' => t('Coordinates'),
@@ -1485,30 +1494,30 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 
     return array(t('Location') => $items);
   }
-  
+
 }
 
 /**
  * Saves a location.  Needs a $user or $node object.
- * 
+ *
  * @param $posted_location
- * The array 
+ * The array
  */
 function _location_save($posted_location, &$user_or_node, $type = 'node') {
   $field = ($type == 'node' ? 'vid': 'uid');
   if (isset($posted_location) && count($posted_location)) {
-  
+
     $lid = $posted_location['lid'] ? $posted_location['lid'] : db_next_id('{location}_lid');
     $posted_location['lid'] = $lid;
-    
+
     location_invoke_locationapi($posted_location, 'save');
-  
+
     if (isset($posted_location['lat']) && isset($posted_location['lon'])) {
        db_query("DELETE FROM {location} WHERE lid = %d", $lid);
        db_query("INSERT INTO {location} (lid, type, eid, name, street, additional, city, province, postal_code, country, latitude, longitude, source) VALUES (%d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
               $lid,
-              $type, 
-              $user_or_node->$field, 
+              $type,
+              $user_or_node->$field,
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
               (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
               (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
@@ -1519,14 +1528,14 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
               $posted_location['lat'],
               $posted_location['lon'],
               $posted_location['source']
-            );     
+            );
     }
     else {
       db_query("DELETE FROM {location} WHERE lid = %d", $lid);
       db_query("INSERT INTO {location} (lid, type, eid, name, street, additional, city, province, postal_code, country, source) VALUES (%d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)",
               $lid,
               $type,
-              $user_or_node->$field, 
+              $user_or_node->$field,
               (!isset($posted_location['name']) || is_null($posted_location['name'])) ? '' : $posted_location['name'],
               (!isset($posted_location['street']) || is_null($posted_location['street'])) ? '' : $posted_location['street'],
               (!isset($posted_location['additional']) || is_null($posted_location['additional'])) ? '' : $posted_location['additional'],
@@ -1538,15 +1547,15 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );
     }
   }
-  
-  
+
+
 }
 
 /**
  * Helper function for seeing if two floats are equal.  We could use other functions, but all
  * of them belong to libraries that do not come standard with PHP out of the box.
  */
-function _location_floats_are_equal($x, $y) { 
+function _location_floats_are_equal($x, $y) {
   $x = floatval($x);
   $y = floatval($y);
   return (abs(max($x, $y) - min($x, $y)) < pow(10, -6));
