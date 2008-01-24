@@ -29,6 +29,13 @@ foreach (variable_get('location_general_geocoders_in_use', array()) as $geocoder
 }
 
 /**
+ * Implementation of hook_perm().
+ */
+function location_perm() {
+  return array('search content by location', 'submit latitude/longitude');
+}
+
+/**
  * Load the full address from a given Location ID or User ID
  *
  * @param $lid
@@ -769,8 +776,7 @@ function location_map_link_options_form() {
  * Implementation of hook_menu().
  */
 function location_menu($may_cache) {
-  // @@@ Most of these are cacheable. --Bdragon
-  if (!$may_cache) {
+  if ($may_cache) {
     $items[] = array(
       'path'                => 'search/location',
       'title'               => t('By location'),
@@ -815,21 +821,21 @@ function location_menu($may_cache) {
       'type'                => MENU_LOCAL_TASK,
       'weight'              => 2
     );
-
-    $sql = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
-    while ($user = db_fetch_object($sql)) {
-      $uid = $user->uid;
+  }
+  else {
+    // Add tab for address book.
+    if (arg(0) == 'user' && is_numeric(arg(1))) {
       $items[] = array(
-        'path'                => "user/$uid/location-address",
+        'path'                => 'user/'. arg(1) .'/location-address',
         'title'               => t('Address Book'),
         'callback'            => '_location_user_address',
         'type'                => MENU_LOCAL_TASK,
         'weight'              => 1,
       );
     }
-
-    return $items;
   }
+
+  return $items;
 }
 
 /**
@@ -1185,12 +1191,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   }
 }
 
-/**
- * Implementation of hook_perm().
- */
-function location_perm() {
-  return array('search content by location', 'submit latitude/longitude');
-}
 
 /**
  * Saves a location and link it to its main object.

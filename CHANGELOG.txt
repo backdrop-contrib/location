@@ -5,5 +5,5 @@
   * location.module: General cleanup.
 
   * location.module (location_map_link_options_page): Removed, rolled into menu hook.
-
-  * location.module (location_menu): Made cacheable items cacheable.
+  (location_menu): Made cacheable items cacheable.
+  (hook_perm): Moved to the top section.
