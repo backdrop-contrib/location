@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Add fax number fields to Location address.
+ */
+
+/**
+ * Implementation of hook_form_alter().
+ */
 function location_fax_form_alter($form_id, &$form) {
 
   if ($form_id == 'node_type_form') {
@@ -10,7 +18,11 @@ function location_fax_form_alter($form_id, &$form) {
       '#type' => 'radios',
       '#title' => 'Fax numbers',
       '#default_value' => variable_get('location_fax_'. $type, 0),
-      '#options' => array(t('Do not collect fax numbers for content of this type.'), t('Allow fax numbers to be submitted for content of this type.'), t('Require fax numbers to be submitted for content of this type.')),
+      '#options' => array(
+        t('Do not collect fax numbers for content of this type.'),
+        t('Allow fax numbers to be submitted for content of this type.'),
+        t('Require fax numbers to be submitted for content of this type.'),
+      ),
       '#prefix' => '<div style="margin-left: 40px">',
       '#suffix' => '</div>',
       '#weight' => 9
@@ -61,11 +73,16 @@ function location_fax_form_alter($form_id, &$form) {
   }
 }
 
+/**
+ * Implementation of hook_locationapi().
+ */
 function location_fax_locationapi(&$location, $op) {
   switch ($op) {
     case 'save':
       db_query('DELETE FROM {location_fax} WHERE lid = %d', $location['lid']);
-      db_query("INSERT INTO {location_fax} (lid, fax) VALUES (%d, '%s')", $location['lid'], $location['fax']);
+      if (!empty($location['fax'])) {
+        db_query("INSERT INTO {location_fax} (lid, fax) VALUES (%d, '%s')", $location['lid'], $location['fax']);
+      }
       break;
     case 'load':
       if ($row = db_fetch_object(db_query('SELECT fax FROM {location_fax} WHERE lid = %d', $location['lid']))) {
@@ -79,12 +96,13 @@ function location_fax_locationapi(&$location, $op) {
   }
 }
 
+/**
+ * Implementation of hook_help().
+ */
 function location_fax_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      return t('Adds ability to include a fax-number field for locations.  NOTE: Requires location.');
+      return t('Adds ability to include a fax-number field for locations.');
       break;
   }
 }
-
-?>
