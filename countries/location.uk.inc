@@ -237,3 +237,194 @@ function location_province_list_uk() {
     'VGL' => "Vale of Glamorgan",
     'WRX' => "Wrexham");
 }
+
+/**
+ * @return
+ *   An array where
+ *     -> the key is the word that helps identify the name of function that builds the link.  For example, a key of 'yahoo' means the name of
+the
+ *        the function that builds a link to a map on Yahoo! Maps would be 'location_map_link_us_yahoo'
+ *     -> the value is itself an array with 3 key/value pairs:
+ *          'name' => points to the name of the mapping service.  For 'yahoo', this would be 'Yahoo! Maps'
+ *          'url' => the url of the main page of the mapping service.  For 'yahoo', this would be 'http://maps.yahoo.com'
+ *          'tos' => the url of the page that explains the map providers Terms of Service, or Terms of Use. For 'yahoo', this would be
+ *                   'http://help.yahoo.com/help/us/maps/maps-24.html'
+ */
+function location_map_link_uk_providers() {
+  return array('google' => array('name' => 'Google Maps', 'url' => 'http://maps.google.co.uk', 'tos' =>
+'http://www.google.co.uk/intl/en_uk/help/terms_local.html'), 'Multimap' => array('name' => 'Multimap', 'url' => 'http://www.multimap.com',
+'tos' =>
+'http://www.multimap.com/static/about6.htm')
+              );
+}
+
+/**
+ * @return
+ *   An array of values that work as keys to the array returned by location_map_link_us_providers.  The idea is that if the
+ *   administrator of the site has not yet had a chance to visit the "Map Links" subtab on the location module's settings page,
+ *   that we can provide deep-linking to a relatively safe default.  By 'relatively safe', we mean that the Terms Of Service of
+ *   the provider of the maps are flexible enough for most parties.
+ *
+ *   For the case of the U.S., 'google' has relatively flexible Terms Of Service, whereas Yahoo! Maps and MapQuest have more
+ *   restrictive Terms Of Service.
+ *
+ */
+function location_map_link_uk_default_providers() {
+  return array('google');
+}
+
+function location_map_link_uk_google($location = array()) {
+  $query_params = array();
+
+  // Order of priority is co-ordinates, postcode and then street/city
+  if ($location['lat'] && $location['lon']) {
+    $ll = $location['lat']. ",". $location['lon'];
+  }
+  if ($location['postal_code']) {
+    $query_params[] = $location['postal_code'];
+  }
+  else {
+    foreach (array('street', 'city') as $field) {
+      if ($location[$field]) {
+        $query_params[] = $location[$field];
+      }
+    }
+  }
+
+  $base = 'http://maps.google.co.uk/?';
+  if (isset($ll)) {
+    $url = $base. 'll='. $ll;
+    return $url;
+  }
+  elseif (count($query_params)) {
+    $url = $base. 'q='. urlencode(implode(" ", $query_params));
+    return $url;
+  }
+  else {
+    return NULL;
+  }
+}
+
+function location_map_link_uk_multimap($location = array()) {
+  $query_params = '';
+
+  // Order of priority is co-ordinates, postcode and then street/city
+  if ($location['lat'] && $location['lon']) {
+    $query_params .= 'lat='. $location['lat'];
+    $query_params .= '&lon='. $location['lon'];
+  }
+  elseif ($location['postal_code']) {
+    $query_params = 'pc='. urlencode($location['postal_code']);
+  }
+  else {
+    if ($location['street'] && $location['city']) {
+      $query_params = 'quicksearch='. urlencode($location['street']. ', '. $location['city']);
+    }
+    elseif ($location['city']) {
+      $query_params = 'quicksearch='. urlencode($location['city']);
+    }
+  }
+
+  $base = 'http://www.multimap.com/map/places.cgi?';
+  if ($query_params) {
+    $url = $base. $query_params;
+    return $url;
+  }
+  else {
+    return NULL;
+  }
+
+}
+
+/**
+ * Parameters:
+ *   -> $locationA is an associative array that represents a full location where
+ *        'street'       => the street portions of the location
+ *        'supplemental' => additional street portion of the location
+ *        'province'     => the province, state, or territory
+ *        'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *   -> $locationB is associative array that represents a full location in the same way that
+ *       parameter $locationB does.
+ *
+ * Returns: a link to driving directions
+ *
+ * For now, assume site-admin wants UK driving directions linked to Google Driving Directions.
+ * Maybe later, we can add some kind of country-specific settings page that allows the site-admin to
+ * decide which site to link to for driving directions.
+ */
+function location_driving_directions_link_uk($locationA, $locationB) {
+  return _location_driving_directions_link_uk_google($locationA, $locationB);
+}
+
+/**
+ * Parameters:
+ *    Function that is called by location_driving_directions_link_uk() under assumption that it
+ *    is the chosen function
+ *
+ * Returns:
+ *    a URL with HTTP GET variables
+ *    Depending on how full the locationes are, the URL will either point to the driving directions
+ *    on Yahoo! or, if only partial locationes are provided, a URL that points to the *form* for
+ *    Yahoo! driving directions where the form is filled with whatever fields have been provided
+ *    for the partial location(es).
+ */
+function _location_driving_directions_link_uk_google($locationA, $locationB) {
+
+  if ($locationA['lat'] && $locationA['lon']) {
+    $from = 'from '. $locationA['lat']. ','. $locationA['lon'];
+  }
+  elseif ($locationA['postal_code']) {
+    $from = 'from '. $locationA['postal_code'];
+  }
+
+  if ($locationB['lat'] && $locationB['lon']) {
+    $to = 'to '. $locationB['lat']. ','. $locationB['lon'];
+  }
+  elseif ($locationB['postal_code']) {
+    $to = 'to '. $locationB['postal_code'];
+  }
+
+  if ($from && $to) {
+    $get_query = urlencode($from. ' '. $to);
+    return ('http://maps.google.co.uk/?'. $get_query);
+  }
+  else {
+    return NULL;
+  }
+}
+
+function theme_location_uk($location = array()) {
+  $output = '';
+  if (count($location)) {
+    $output .= "\n";
+    $output .= '<dl class="location">'."\n";
+
+    if (isset($location['street'])) {
+      $output .= '<dd>'. $location['street'] .'</dd>';
+    }
+
+    if (isset($location['additional'])) {
+      $output .= '<dd>' . $location['additional'] . '</dd>';
+    }
+
+    $postal_isset = (isset($location['postal_code']) && strlen($location['postal_code']));
+    $city_isset = (isset($location['city']) && strlen($location['city']));
+    if ($postal_isset || $city_isset) {
+      $output .= '<dd>';
+      if ($city_isset) {
+        $output .= $location['city'];
+      }
+      if ($postal_isset && $city_isset) {
+        $output .= ' ';
+      }
+      if ($postal_isset) {
+        $output .= $location['postal_code'];
+      }
+      $output .= "</dd>\n";
+    }
+
+    $output .= '<dd>'. t('United Kingdom') ."</dd>\n";
+    $output .= "</dl>\n";
+  }
+  return $output;
+}
