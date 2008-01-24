@@ -1,4 +1,4 @@
-
+$Id$
 - 67031 and 93645 Add in usernode integration to allow display of user locations.
 - 92788 add 'unknown' option to find empty location fields.
 - 92662 add sorts for location fields
