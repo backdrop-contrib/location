@@ -1462,36 +1462,11 @@ function location_user($op, &$edit, &$user, $category = NULL) {
   if (variable_get('location_user', LOCATION_USER_DONT_COLLECT) == LOCATION_USER_DONT_COLLECT) {
     return;
   }
-
   elseif ($op == 'load' ) {
     // Get user location data
     /// @todo It will search for the Firt result found, and not the default
     $user->location = _location_address_get(NULL, $user->uid);
   }
-
-  elseif ($op == 'view'
-      and variable_get('location_display_location', 1)
-      and !_location_is_empty($user->location) and
-      (user_access('administer users') or $GLOBALS['user']->uid == $user->uid)) {
-
-    $items[] = array(
-      'value' => theme('location', $user->location),
-      'class' => 'location',
-    );
-
-    if (user_access('submit latitude/longitude')) {
-      if ($user->location['latitude'] != NULL and $user->location['longitude'] != NULL) {
-        $items[] = array('title' => t('Coordinates'),
-          'value' => t('lat: %latitude', array('%latitude' => $user->location['latitude'])) .
-            '<br/>'. t('lon: %longitude', array('%longitude' => $user->location['longitude'])),
-          'class' => 'location',
-        );
-      }
-    }
-
-    return array(t('Location') => $items);
-  }
-
 }
 
 /**
