@@ -1,16 +1,27 @@
 <?php
 // $Id$
 
-function location_phone_form_alter($form_id, &$form) {
+/**
+ * @file
+ * Add phone number fields to Location address.
+ */
 
+/**
+ * Implementation of hook_form_alter().
+ */
+function location_phone_form_alter($form_id, &$form) {
   if ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
-  
+
     $form['location']['location_phone'] = array(
       '#type' => 'radios',
       '#title' => 'Phone numbers',
       '#default_value' => variable_get('location_phone_'. $type, 0),
-      '#options' => array(t('Do not collect phone numbers for content of this type.'), t('Allow phone numbers to be submitted for content of this type.'), t('Require phone numbers to be submitted for content of this type.')),
+      '#options' => array(
+        t('Do not collect phone numbers for content of this type.'),
+        t('Allow phone numbers to be submitted for content of this type.'),
+        t('Require phone numbers to be submitted for content of this type.'),
+      ),
       '#prefix' => '<div style="margin-left: 40px">',
       '#suffix' => '</div>',
       '#weight' => 9
@@ -19,9 +30,9 @@ function location_phone_form_alter($form_id, &$form) {
   elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0) && variable_get('location_phone_'. $form['type']['#value'], 0)) {
     $type = $form['type']['#value'];
     $node = $form['#node'];
-    
+
     $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
-    
+
     for ($index = 0; $index < $location_form_count; $index++) {
       $form['locations'][$index]['phone'] = array_merge(
         is_array($form['locations'][$index]['phone']) ? $form['locations'][$index]['phone'] : array(),
@@ -42,7 +53,8 @@ function location_phone_form_alter($form_id, &$form) {
     $arg1 = arg(1);
     $arg2 = arg(2);
     if ($arg0 == 'node' && is_numeric($arg1) && empty($arg2)) {
-      // We clearly are viewing a node, and since it's already loaded into a static array, node_load()ing it costs nothing
+      // We clearly are viewing a node, and since it's already
+      // loaded into a static array, node_load()ing it costs nothing
       $node = node_load($arg1);
       if (variable_get('location_phone_'. $node->type, 0)) {
         $form['location']['phone'] = array_merge(
@@ -61,17 +73,22 @@ function location_phone_form_alter($form_id, &$form) {
   }
 }
 
+/**
+ * Implementation of hook_locationapi().
+ */
 function location_phone_locationapi(&$location, $op) {
   switch ($op) {
     case 'save':
       db_query('DELETE FROM {location_phone} WHERE lid = %d', $location['lid']);
-      db_query("INSERT INTO {location_phone} (lid, phone) VALUES (%d, '%s')", $location['lid'], $location['phone']);
+      if (!empty($location['phone'])) {
+        db_query("INSERT INTO {location_phone} (lid, phone) VALUES (%d, '%s')", $location['lid'], $location['phone']);
+      }
       break;
     case 'load':
       if ($row = db_fetch_object(db_query('SELECT phone FROM {location_phone} WHERE lid = %d', $location['lid']))) {
         return (array) $row;
       }
-      
+
       break;
     case 'delete':
       db_query('DELETE FROM {location_phone} WHERE lid = %d', $location['lid']);
@@ -79,12 +96,13 @@ function location_phone_locationapi(&$location, $op) {
   }
 }
 
+/**
+ * Implementation of hook_help().
+ */
 function location_phone_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      return t('Adds ability to include a phone-number field for locations.  NOTE: Requires location.');
+      return t('Adds ability to include a phone-number field for locations.');
       break;
   }
 }
-
-?>

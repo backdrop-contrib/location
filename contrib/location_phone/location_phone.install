@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Installation routines.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
 function location_phone_install() {
   switch ($GLOBALS['db_type']) {
     case 'mysql':
@@ -30,5 +38,3 @@ function location_phone_install() {
 
 //TODO: drop 'postal_code' column in pgsql version of table
 //That's what you get for a lousy copy-paste-modify job
-
-?>
