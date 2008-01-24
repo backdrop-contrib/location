@@ -1,5 +1,14 @@
 <?php
- 
+// $Id$
+
+/**
+ * @file
+ * Installation / uninstallation routines.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
 function location_install() {
   drupal_set_message('Installing location');
   switch ($GLOBALS['db_type']) {
@@ -94,18 +103,46 @@ function location_install() {
   }
 }
 
+
+/**
+ * Implentation of hook_uninstall().
+ */
+function location_uninstall() {
+  // delete tables
+  if (db_table_exists('location')) {
+    db_query('DROP TABLE {location}');
+  }
+  if (db_table_exists('zipcodes')) {
+    db_query('DROP TABLE {zipcodes}');
+  }
+}
+
+/**
+ * Legacy update 1.
+ * Convert tables to utf8.
+ */
 function location_update_1() {
   return _system_update_utf8(array('location', 'zipcodes'));
 }
 
+/**
+ * Legacy update 2.
+ * Fix a bug with the "us" entry in the "location_configured_countries" var.
+ */
 function location_update_2() {
   $configured_countries = variable_get('location_configured_countries', array());
   if ($configured_countries['us']) {
     $configured_countries['us'] = 'us';
     variable_set('location_configured_countries', $configured_countries);
   }
+  return array();
 }
 
+/**
+ * Legacy update 3.
+ * Allow for postgresql support by renaming the oid column, which is a reserved
+ * name on postgresql.
+ */
 function location_update_3() {
   $ret = array();
 
@@ -118,8 +155,10 @@ function location_update_3() {
   
   drupal_set_message("The schema for location module has been updated.  The update is such that you may want to re-resave any views you have that may include locations.");
   
-  views_invalidate_cache();
-  
+  if (module_exists('views')) {
+    views_invalidate_cache();
+  }
+
   return $ret;
 }
 
@@ -127,6 +166,10 @@ function location_update_3() {
   PostgreSQL must be supported in all updates after this comment
  ***************************************************************/
 
+/**
+ * Legacy update 4.
+ * Add "lid" as the new location key.
+ */
 function location_update_4() {
   $ret = array();
   
@@ -165,9 +208,10 @@ function location_update_4() {
   return $ret;
 }
 
-
-// Poor PostgreSQL
-// I forgot all about you in the previous update
+/**
+ * Legacy update 5.
+ * Postgresql support that was missing from previous update.
+ */
 function location_update_5() {
   $ret = array();
   
@@ -193,9 +237,9 @@ function location_update_5() {
         PRIMARY KEY (lid)
       )");
       $ret[] = update_sql("INSERT INTO {location}
-      	(eid, type, name, street, additional, city, province, postal_code, country, latitude, 
-      	longitude, source) SELECT eid, type, name, street, additional, city, province,
-      	postal_code, country, latitude, longitude, source FROM {location}_old");
+        (eid, type, name, street, additional, city, province, postal_code, country, latitude,
+        longitude, source) SELECT eid, type, name, street, additional, city, province,
+        postal_code, country, latitude, longitude, source FROM {location}_old");
       $ret[] = update_sql("DROP TABLE {location}_old");
       
       $ret[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
@@ -206,7 +250,10 @@ function location_update_5() {
   return $ret;
 }
 
-
+/**
+ * Legacy update 6.
+ * Use correct country code for Sweeden.
+ */
 function location_update_6() {
   $ret = array();
   
@@ -225,6 +272,10 @@ function location_update_6() {
   return $ret;
 }
 
+/**
+ * Update 7 (Location 2.x)
+ * Generalize google geocoding so you don't have to enter the api key over and over.
+ */
 function location_update_7() {
   $ret = array();
   
@@ -286,3 +337,23 @@ function location_update_7() {
   return $ret;
   
 }
+
+/**
+ * Location 3.x update 1.
+ * Add index on eid column.
+ *
+ * @note Following the new code standards for D6, all update
+ * functions will be composed by: XYZZ pattern, where:
+ * X  is the main Drupal version
+ * Y  is the main Location module version
+ * ZZ is the 2-digit unique update ID
+ */
+/*
+function location_update_5301() {
+  $ret = array();
+  // @todo before 3.0 release:
+  // Verify that this works across databases.
+  $ret[] = update_sql("CREATE INDEX {location}_eid ON {location} (eid)");
+  return $ret;
+}
+*/
