@@ -1455,6 +1455,9 @@ function _location_search_view() {
   return $output;
 }
 
+/**
+ * Implementation of hook_perm().
+ */
 function location_user($op, &$edit, &$user, $category = NULL) {
   if (variable_get('location_user', LOCATION_USER_DONT_COLLECT) == LOCATION_USER_DONT_COLLECT) {
     return;
@@ -1491,6 +1494,18 @@ function location_user($op, &$edit, &$user, $category = NULL) {
 
 }
 
+/**
+ * Manage the user Addresses: list them, create and delete operaions
+ *
+ * @param $action
+ *   String (optional). The action that should be executed:
+ *      NULL (default) => list all user addresses
+ *     'add'           => Address form to add a new address
+ *     'edit'          => Address form to modify an existing address
+ *     'delete'        => It will promptly delete the address
+ * @param lid
+ *   Number (optional). The Location ID
+ */
 function _location_user_address($action = NULL, $lid = NULL) {
   global $user;
   $uid = $user->uid;
