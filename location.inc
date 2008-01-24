@@ -1,11 +1,12 @@
 <?php
+// $Id$
+
 /**
- * $Id$
- * @author Location Dev Team
- * @file location.inc
- * An implementation of a universal API for location manipulation.  Provides functions for
- * postal_code proximity searching, deep-linking into online mapping services.  Currently,
- * some options are configured through an interface provided by location.module.
+ * @file
+ * An implementation of a universal API for location manipulation.
+ * Provides functions for postal_code proximity searching, deep-linking into online
+ * mapping services.  Currently, some options are configured through an interface
+ * provided by location.module.
  */
 
 /**

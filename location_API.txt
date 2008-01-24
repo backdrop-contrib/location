@@ -1,4 +1,12 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * API documentation.
+ * @todo Roll this inline instead.
+ */
+
 /**
 This file describes the public API for the CivicSpace location system as defined by
 in the library implemented by "location.inc" and its supporting files.

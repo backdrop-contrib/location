@@ -1,10 +1,13 @@
 <?php
 // $Id$
 
-// Trigonometry for calculating geographical distances.
-// All function arguments and return values measure distances in metres
-// and angles in degrees.  The ellipsoid model is from the WGS-84 datum.
-// Ka-Ping Yee, 2003-08-11
+/**
+ * @file
+ * Trigonometry for calculating geographical distances.
+ * All function arguments and return values measure distances in metres
+ * and angles in degrees.  The ellipsoid model is from the WGS-84 datum.
+ * Ka-Ping Yee, 2003-08-11
+ */
 
 //$earth_radius_semimajor = 6378137.0;
 //$earth_flattening = 1/298.257223563;

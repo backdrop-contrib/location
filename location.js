@@ -1,8 +1,12 @@
+/* $Id$ */
 
 /**
+ * @file
+ * Autocompletion for Province field.
  * This jQuery function will force the Province field
- * to autcomplete the pronvice for a given country
+ * to autcomplete the pronvice for a given country.
  */
+
 $(function() {
   // Use this ID to 'simplify' the callings
   var id = '#edit-locations-';
@@ -18,7 +22,7 @@ $(function() {
       break;
     }
 
-    // Set the country code at the begging
+    // Set the country code at the beginning
     if ($(id + n +'-country').val()) {
       $(id + n +'-autocomplete').val(url + $(id + n +'-country').val());
     }

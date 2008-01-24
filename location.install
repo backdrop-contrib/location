@@ -1,13 +1,13 @@
 <?php
+// $Id$
+
 /**
- * $Id$
- * @file location.install
- * Install and uninstall all required databases.
- * Also do incremental database updates.
+ * @file
+ * Installation / uninstallation routines.
  */
 
 /**
- * Implentation of hook_install().
+ * Implementation of hook_install().
  */
 function location_install() {
   $table_config = '';
@@ -69,14 +69,16 @@ function location_uninstall() {
 }
 
 /**
- * Implentation of hook_upgrade().
+ * Legacy update 1.
+ * Convert tables to utf8.
  */
 function location_update_1() {
   return _system_update_utf8(array('location', 'zipcodes'));
 }
 
 /**
- * Implentation of hook_upgrade().
+ * Legacy update 2.
+ * Fix a bug with the "us" entry in the "location_configured_countries" var.
  */
 function location_update_2() {
   $configured_countries = variable_get('location_configured_countries', array());
@@ -88,7 +90,9 @@ function location_update_2() {
 }
 
 /**
- * Implentation of hook_upgrade().
+ * Legacy update 3.
+ * Allow for postgresql support by renaming the oid column, which is a reserved
+ * name on postgresql.
  */
 function location_update_3() {
   $update = array();
@@ -115,7 +119,8 @@ function location_update_3() {
  ***************************************************************/
 
 /**
- * Implentation of hook_upgrade().
+ * Legacy update 4.
+ * Add "lid" as the new location key.
  */
 function location_update_4() {
   $update = array();
@@ -156,10 +161,8 @@ function location_update_4() {
 }
 
 /**
- * Implentation of hook_upgrade().
- *
- * Poor PostgreSQL
- * I forgot all about you in the previous update
+ * Legacy update 5.
+ * Postgresql support that was missing from previous update.
  */
 function location_update_5() {
   $update = array();
@@ -186,9 +189,9 @@ function location_update_5() {
         PRIMARY KEY (lid)
       )");
       $update[] = update_sql("INSERT INTO {location}
-      	(eid, type, name, street, additional, city, province, postal_code, country, latitude,
-      	longitude, source) SELECT eid, type, name, street, additional, city, province,
-      	postal_code, country, latitude, longitude, source FROM {location}_old");
+        (eid, type, name, street, additional, city, province, postal_code, country, latitude,
+        longitude, source) SELECT eid, type, name, street, additional, city, province,
+        postal_code, country, latitude, longitude, source FROM {location}_old");
       $update[] = update_sql("DROP TABLE {location}_old");
 
       $update[] = update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
@@ -200,7 +203,8 @@ function location_update_5() {
 }
 
 /**
- * Implentation of hook_upgrade().
+ * Legacy update 6.
+ * Use correct country code for Sweeden.
  */
 function location_update_6() {
   $update = array();
@@ -221,7 +225,8 @@ function location_update_6() {
 }
 
 /**
- * Implentation of hook_upgrade().
+ * Update 7 (Location 2.x)
+ * Generalize google geocoding so you don't have to enter the api key over and over.
  */
 function location_update_7() {
   $update = array();
@@ -286,10 +291,8 @@ function location_update_7() {
 }
 
 /**
- * Implentation of hook_upgrade().
- *
- * It adds a new index to the location table: the eid.
- * It might speed many operations up.
+ * Location 3.x update 1.
+ * Add index on eid column.
  *
  * @note Following the new code standards for D6, all update
  * functions will be composed by: XYZZ pattern, where:
@@ -298,6 +301,8 @@ function location_update_7() {
  * ZZ is the 2-digit unique update ID
  */
 function location_update_5301() {
-  $update[] = update_sql("CREATE INDEX {location}_eid      ON {location} (eid)");
+  // @todo before 3.0 release:
+  // Verify that this works across databases.
+  $update[] = update_sql("CREATE INDEX {location}_eid ON {location} (eid)");
   return $update;
 }

@@ -1,11 +1,12 @@
 <?php
+// $Id$
+
 /**
- * $Id$
- * @author Location Dev Team
- * @file location.theme.inc
- * Coordinates the theming
- * @todo Consider merge this file
+ * @file
+ * Theme functions for Location.
+ * @todo Consider merging this file
  */
+
 function theme_location_search_form(&$form) {
   $row = array();
 
