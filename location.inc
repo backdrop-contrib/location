@@ -1,14 +1,14 @@
 <?php
 // $Id$
 
-define('LOCATION_PATH', drupal_get_path('module', 'location'));
-
 /**
  * @file
  * An implementation of a universal API for location manipulation.  Provides functions for
  * postal_code proximity searching, deep-linking into online mapping services.  Currently,
  * some options are configured through an interface provided by location.module.
  */
+
+define('LOCATION_PATH', drupal_get_path('module', 'location'));
 
 include_once LOCATION_PATH.'/earth.inc';
 _location_include_configured();
@@ -56,7 +56,6 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
     return NULL;
   }
 }
-
 
 function location_get_postalcode_data($location = array()) {
   $location['country'] = isset($location['country']) ? trim($location['country']) : NULL;
@@ -130,7 +129,6 @@ function location_distance_between($latlonA = array(), $latlonB = array(), $dist
   $meters = earth_distance($latlonA['lon'], $latlonA['lat'], $latlonB['lon'], $latlonB['lat']);
   return array('scalar' => round($meters/(($distance_unit == 'km') ? 1000.0 : 1609.347), 1), 'distance_unit' => $distance_unit);
 }
-
 
 /**
  * Generates a Drupal HTML form for collecting locationes.
@@ -318,7 +316,6 @@ function location_form($fields = array(), $prefilled_values = array(), $required
   return $form;
 }
 
-
 function location_latlon_form($description = '', $prefilled_values = array()) {
   $form = array();
 
@@ -348,7 +345,6 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
     $map_macro = variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]');
     $form['map']['gmap']['#value'] = gmap_set_location($map_macro, $form, array('latitude'=>'latitude','longitude'=>'longitude'));
   }
-
   return $form;
 }
 
@@ -480,7 +476,6 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
   return $form;
 }
 
-
 /**
  * A helper function that tells you whether all the fields of an location are full (excluding the 'additional' field.
  *
@@ -515,7 +510,6 @@ function _location_is_full($location = array()) {
 
   return TRUE;
 }
-
 
 /**
  * Takes two locationes and tries to return a deep-link to driving directions.
@@ -711,7 +705,6 @@ function _location_time_difference($end_time, $start_time) {
   return $time . ' milliseconds';
 }
 
-
 /**
  * @param $distance
  *   A number in either miles or km.
@@ -750,7 +743,6 @@ function _location_convert_distance_to_meters($distance, $distance_unit = 'km') 
   return $retval;
 }
 
-
 /**
  * Takes an location and returns a "rough" latitude/longitude pair based on the postal code
  * data available for the given country.
@@ -782,8 +774,6 @@ function location_latlon_rough($location = array()) {
     return NULL;
   }
 }
-
-
 
 /**
  * This is the main logic-level function for performing proximity postal-code searches.
@@ -1159,9 +1149,8 @@ function _location_supported_countries() {
     array_multisort($supported_countries);;
     // Data is now in an array where key = <ISO code for country> and values = <English name for country>
     // Cache our processed array before returning
-		cache_set('location:supported-countries', 'cache', serialize($supported_countries));
+    cache_set('location:supported-countries', 'cache', serialize($supported_countries));
   }
-
   return $supported_countries;
 }
 
