@@ -1,0 +1,256 @@
+<?php
+
+function theme_location_search_form(&$form) {
+  //drupal_set_message("called theme_location_search_form()");
+  $row = array();
+  
+  $row[] = array(
+    'data'=> drupal_render($form['proximity'])
+  );
+  
+  $row[] = array(
+    'data' => drupal_render($form['location'])
+  );
+  
+  $output = theme('table', NULL, array($row), array('class' => 'location-search-form-table'));
+  $output .= drupal_render($form);
+  
+  return $output;
+}
+
+
+
+function theme_location_map_link_options(&$form) {
+
+  $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
+
+  $rows = array();
+  
+  foreach (element_children($form['countries']) as $country_iso) {
+    $row = array();
+    
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['label_'. $country_iso])
+    );
+    
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_map_link_'. $country_iso])
+    );
+    
+    $rows[] = $row;
+  }
+  
+  $output = theme('table', $header, $rows);
+  
+  foreach (element_children($form) as $key) {
+    $output .= drupal_render($form[$key]);
+  }
+  $output .= drupal_render($form);
+  
+  return $output;
+}
+
+
+function theme_location_geocoding_options(&$form) {
+
+  $header = array(
+    array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), 
+    array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'),
+    array('align' => 'center', 'data' => '<center>'. t('Configure') .'</center>')
+  );
+
+  $rows = array();
+  
+  foreach (element_children($form['countries']) as $country_iso) {
+    $row = array();
+    
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['label_'. $country_iso])
+    );
+    
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_'. $country_iso])
+    );
+    
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso])
+    );
+    
+    $rows[] = $row;
+  }
+  
+  $output = theme('table', $header, $rows);
+  
+  foreach (element_children($form) as $key) {
+    $output .= drupal_render($form[$key]);
+  }
+  $output .= drupal_render($form);
+  
+  return $output;
+}
+
+function theme_locations($locations = array(), $hide = array()) {
+  $output = '';  
+
+  if (count($locations)) {
+    $output .= '<h3>'. t('Location(s)') .'</h3>';
+    foreach ($locations as $location) {
+      $output .= theme('location', $location, $hide);
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Generates HTML for the passed location.
+ *
+ * @param $location
+ *   An associative array where
+ *      'street'       => A string representing the street location
+ *      'additional'   => A string for any additional portion of the street location
+ *      'city'         => A string for the city name
+ *      'province'     => The standard postal abbreviation for the province
+ *      'country'      => The two-letter ISO code for the country of the location (REQUIRED)
+ *      'postal_code'  => The international postal code for the location
+ *
+ * @param $hide
+ *   An linear array where the values are the location fields to suppress in the themed display.
+ *
+ * @return
+ *   An HTML string with special tags for locations.
+ */
+function theme_location($location = array(), $hide = array()) {
+  if (_location_nothing_to_show($location, $hide)) {
+    return '';
+  }
+
+  $output = '';
+  if (isset($location['country']) && ($f = theme_get_function('location_'. $location['country']))) {
+    $output .= call_user_func($f, $location, $hide);
+  }
+  elseif (count($location)) {
+    $output .= "\n";
+    $output .= '<div class="location vcard"><div class="adr">'."\n";
+    if (!empty($location['name']) && !in_array('name', $hide)) {
+       $output .= '<div class="fn">'. $location['name'] .'</div>';
+    }
+
+    if (!empty($location['street']) && !in_array('street', $hide)) {
+      $output .= '<div class="street-address">'. $location['street'];
+      if (!empty($location['additional']) && !in_array('street', $hide)) {
+        $output .= ' ' . $location['additional'];
+      }
+      $output .='</div>';
+    }
+
+    if (!empty($location['city']) && !in_array('city', $hide)) {
+      $city_province_postal[] = $location['city'];
+    }
+
+    if ((!empty($location['city']) && !in_array('city', $hide)) ||
+        (!empty($location['province']) && !in_array('province', $hide)) ||
+        (!empty($location['postal_codet']) && !in_array('postal_code', $hide))) {
+
+      $city_province_postal = array();
+
+      if (!empty($location['city']) && !in_array('city', $hide)) {
+        $city_province_postal[] = '<span class="locality">'. $location['city'] .'</span>';
+      }
+
+      if (!empty($location['province']) && !in_array('province', $hide)) {
+        $city_province_postal[] = '<span class="region">'. $location['province'] .'</span>';
+      }
+
+      if (!empty($location['postal_code']) && !in_array('postal_code', $hide)) {
+        $city_province_postal[] = '<span class="postal-code">'. $location['postal_code'] .'</span>';
+      }
+
+      $output .= implode(', ', $city_province_postal);
+    }
+
+    if (!empty($location['country']) && !in_array('country', $hide)) {
+      $countries = _location_get_iso3166_list();
+      $output .= '<div class="country-name">'. t($countries[$location['country']]) .'</div>';
+    }
+
+    if (isset($location['latitude']) && isset($location['longitude'])) {
+      $output .=  '<div class="geo"><abbr class="latitude" title="'. $location['latitude'] .'" /><abbr class="longitude" title="'. $location['latitude'] .'" /></div>';
+    }
+
+    $output .= '</div></div>';
+  }
+
+  $output .= location_map_link($location);
+
+  return $output;
+}
+
+function theme_location_form(&$form) {
+  foreach (element_children($form) as $field_name) {
+    $row = array();
+    if ($form[$field_name]['#type'] == 'markup') {
+      $row[] = array('data' => $form[$field_name]['#value'], 'colspan' => 2);
+    }
+    elseif ($form[$field_name]['#type'] != 'hidden') {
+      $required = !empty($form[$field_name]['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
+      $row[] = array('align' => 'right', 'data' => '<div class="form-item"><label'. ($form[$field_name]['#id'] ? ' for="'. $form[$field_name]['#id'] .'" ' : '') .'>'. filter_xss_admin($form[$field_name]['#title']) .": $required</label></div>");
+      unset($form[$field_name]['#title']);
+      $description = $form[$field_name]['#description'];
+      $row[] = array('align' => 'left', 'data' => drupal_render($form[$field_name]));
+      $rows[] = array(
+        'data' => $row,
+        'class' => 'odd'
+      );
+    }
+  }
+  
+  $output = theme('table', NULL, $rows);
+  $output .= drupal_render($form);
+  
+  return $output;
+}
+
+function theme_location_proximity_form(&$form) {
+  //drupal_set_message("called theme_location_proximity_form()");
+  $row = array();
+  
+  $row[] = array(
+    'data' => t('Search within ')
+  );
+  
+  $row[] = array(
+    'data' => drupal_render($form['distance']),
+    'cellspacing' => 0,
+    'cellpadding' => 0
+  );
+  
+  if ($form['unit']['#type'] == 'select') {
+    $row[] = array(
+      'data' => drupal_render($form['unit']),
+      'cellspacing' => 0,
+      'cellpadding' => 0
+    );
+    
+    $row[] = array(
+      'data' => t(' of:'),
+      'cellspacing' => 0,
+      'cellpadding' => 0
+    );
+  }
+  else {
+    $row[] = array(
+      'data' => ($form['unit']['#value'] == 'km' ? t('km') : t('miles')) .' '. t('of:') . drupal_render($form['unit']),
+      'cellspacing' => 0,
+      'cellpadding' => 0
+    );
+  }
+  
+  $output = theme('table', NULL, array($row));
+  $output .= drupal_render($form);
+  
+  return $output;
+}
+
+
+?>

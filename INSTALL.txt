@@ -1,10 +1,8 @@
-$Id$
-
 Step 1
 ------
 To support proximity searches and most useful features, you will need a
 postal codes database for each country for which you plan to use a file from
-the "countries/" directory. The database structure can be loaded from the
+the "supported/" directory. The database structure can be loaded from the
 database/zipcodes.mysql file, and the data can be loaded from
 database/zipcodes.CC.mysql (where CC is the two-letter country code).
 
@@ -34,7 +32,7 @@ different machine.
 Step 2
 ------
 In the "modules/" directory, create a subdirectory called "location/" which
-itself contains a subdirectory called "countries/".
+itself contains a subdirectory called "supported/".
 
 Download "location.inc" to "modules/location/"
 
@@ -42,7 +40,7 @@ Download "location.module" to "modules/location/"
 
 Download "earth.inc" to "modules/location/"
 
-Download "countries/location.us.inc" to "modules/location/countries/" (for
+Download "supported/location.us.inc" to "modules/location/supported/" (for
 support of US locations)
 
 Step 3
@@ -56,3 +54,5 @@ Finally, go to the default workflow settings for each node type and enable
 (or require) location collection on a field-by-field basis. It is encouraged
 that you enable postal codes and country fields for node types for which you
 want to enable proximity searches.
+
+
