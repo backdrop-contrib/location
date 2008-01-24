@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Installation routines.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
 function location_fax_install() {
   switch ($GLOBALS['db_type']) {
     case 'mysql':
@@ -28,4 +36,9 @@ function location_fax_install() {
 }
 
 
-?>
+/**
+ * Implementation of hook_uninstall().
+ */
+function location_fax_uninstall() {
+  db_query('DROP TABLE {location_fax}');
+}
