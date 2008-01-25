@@ -94,7 +94,6 @@ function location_menu($may_cache) {
   return $items;
 }
 
-
 /**
  * Implementation of hook_perm().
  */
@@ -127,7 +126,7 @@ function location_help($section) {
  * Implementation of hook_simpletest().
  */
 function location_simpletest() {
-  $dir = drupal_get_path('module', 'location'). '/tests';
+  $dir = drupal_get_path('module', 'location') .'/tests';
   $tests = file_scan_directory($dir, '\.test$');
   return array_keys($tests);
 }
@@ -151,7 +150,6 @@ function location_search_view() {
   if ($_GET['postal_code'] && $_GET['country'] && $_GET['distance'] && $_GET['country']) {
     $output .= location_search_results($location_params, $proximity_params);
   }
-
   return $output;
 }
 
@@ -178,10 +176,6 @@ function location_search_form($location_params = array(), $proximity_params = ar
     '#value' => t('Search')
   );
 
-  //$form_exp = var_export($form, TRUE);
-  //drupal_set_message("location_search_form() returning <pre>$form_exp</pre>");
-
-
   $form['#submit'] = array_merge(
     $form['#submit'] ? $form['#submit'] : array(),
     array('location_search_form_submit' => array())
@@ -192,9 +186,6 @@ function location_search_form($location_params = array(), $proximity_params = ar
 }
 
 function location_search_form_validate($form_id, &$form_values) {
-  //$form_values_exp = var_export($form_values, TRUE);
-  //drupal_set_message("IN location_search_form_validate(): \$form_id == $form_id, \$form_values == <pre>$form_values_exp</pre>");
-
   // TODO: Need to offer ability to configure which fields are included in the search form
   // TODO: And need to adjust how fields are validated
   // For now, just require postal code
@@ -208,9 +199,6 @@ function location_search_form_validate($form_id, &$form_values) {
 }
 
 function location_search_form_submit($form_id, &$form_values) {
-  //$form_values_exp = var_export($form_values, TRUE);
-  //drupal_set_message("IN location_search_form_submit(): \$form_id == $form_id and \$form_values == <pre>$form_values_exp</pre>");
-
   /*
   $location_fields = array('street', 'additional', 'province', 'postal_code', 'country');
   foreach ($locations_fields as $field_name) {
@@ -230,10 +218,6 @@ function location_search_form_submit($form_id, &$form_values) {
 }
 
 function location_search_results($location_params, $proximity_params) {
-
-  // DEBUG: commented code for testing/debugging purposes
-  $start_time = microtime();
-
   // First things first: find lat/lon for submitted postal_code
   // TODO: will need to replace be able to get lat/lon of search point for more than just postal_code
   $latlon = location_latlon_rough($location_params);
@@ -339,13 +323,10 @@ function location_search_results($location_params, $proximity_params) {
       );
 
     }
-
     $output .= theme('pager');
   }
-
   return $output;
 }
-
 
 function location_map_link_options_form() {
   $form = array();
@@ -398,7 +379,6 @@ function location_map_link_options_form() {
   return system_settings_form($form);
 }
 
-
 function location_field_names() {
   return array('name' => t('Location name'), 'street' => t('Street location'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 }
@@ -407,12 +387,11 @@ function location_geocoding_parameters_page($country_iso, $service) {
   drupal_set_title(t('Configure parameters for %service geocoding', array('%service' => $service)));
 
   $breadcrumbs = drupal_get_breadcrumb();
-  $breadcrumbs[] = l('location', 'admin/settings/locaiton');
+  $breadcrumbs[] = l('location', 'admin/settings/location');
   $breadcrumbs[] = l('geocoding', 'admin/settings/location/geocoding');
   $countries = location_get_iso3166_list();
   $breadcrumbs[] = l($countries[$country_iso], 'admin/settings/location/geocoding', array(), NULL, $country_iso);
   drupal_set_breadcrumb($breadcrumbs);
-
   return drupal_get_form('location_geocoding_parameters_form', $country_iso, $service);
 }
 
@@ -442,7 +421,6 @@ function location_geocoding_options_page() {
 
   return drupal_get_form('location_geocoding_options_form');
 }
-
 
 function location_geocoding_options_form() {
   $form = array();
@@ -545,12 +523,9 @@ function location_geocoding_options_form() {
       }
     }
   }
-
   $form['#theme'] = 'location_geocoding_options';
-
   return system_settings_form($form);
 }
-
 
 function location_geocoding_options_form_submit($form_id, $form_values) {
   $general_geocoders = location_get_general_geocoder_list();
@@ -595,8 +570,9 @@ function location_form_alter($form_id, &$form) {
       )
     );
 
+    ///////////////////////////
     // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
-
+    //
     $form['location']['multiple_locations'] = array_merge(
       is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
       array(
@@ -607,8 +583,7 @@ function location_form_alter($form_id, &$form) {
         '#weight'       => 0
 // @@@ Line added in megapatch. "Why?"
 //        '#tree'         => FALSE,
-      )
-    );
+      ));
 
     $form['location']['multiple_locations']['location_maxnum'] = array(
       '#type'           => 'select',
@@ -625,8 +600,9 @@ function location_form_alter($form_id, &$form) {
       '#options'        => drupal_map_assoc(range(0, 10)),
       '#description'    => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
     );
-
+    //
     // End of variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
+    ///////////////////////////
 
     $form['location']['location_weight'] = array(
       '#prefix'         => '<div style="margin-left: 40px">',
@@ -885,7 +861,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
               }
             }
           }
-
           $node->locations[$index][$field_name] = trim($node->locations[$index][$field_name]);
         }
 
@@ -1127,7 +1102,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       if (variable_get('location_display_location', 1)) {
         if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
           $posted_locations = array();
-
           foreach ($node->locations as $index => $location) {
             if (count($node->locations[$index])) {
               $posted_locations[$index] = location_form2api($node->locations[$index]);
@@ -1139,7 +1113,6 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
                 $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_locations[$index]);
                 $posted_locations[$index]['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
               }
-
             }
           }
         }
@@ -1199,7 +1172,6 @@ function location_extra_form(&$node) {
       }
     }
   }
-
   $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
 
   $form['location'] = array(
@@ -1232,7 +1204,6 @@ function location_extra_form(&$node) {
     '#type' => 'submit',
     '#value' => t('Add location')
   );
-
   return $form;
 }
 
@@ -1356,7 +1327,6 @@ function location_extra_form_submit($form_id, &$form_values) {
 //======================================================================
 
   drupal_set_message(t('Your new location has been added. (See below)'));
-
   return 'node/'. $form_values['location']['nid'];
 }
 
@@ -1506,19 +1476,13 @@ function location_admin_settings() {
   return system_settings_form($form);
 }
 
-//@@@ This should not be here.
-function _location_effective_user_setting() {
-  return variable_get('location_user', LOCATION_USER_DONT_COLLECT);
-}
-
 // @@@ There are significant changes in the megapatch.
 /**
  * Implementation of hook_user().
  */
 function location_user($op, &$edit, &$user, $category = NULL) {
-  $user_setting = _location_effective_user_setting();
-
-  if ($user_setting == LOCATION_USER_DONT_COLLECT) {
+  // @@@ I don't agree with this.
+  if (variable_get('location_user', LOCATION_USER_DONT_COLLECT) == LOCATION_USER_DONT_COLLECT) {
     return;
   }
 
@@ -1583,15 +1547,13 @@ function location_user($op, &$edit, &$user, $category = NULL) {
     if (user_access('submit latitude/longitude')) {
       if ($user->location['latitude'] != NULL && $user->location['longitude'] != NULL) {
         $items[] = array('title' => t('Coordinates'),
-          'value' => t('lat: %latitude',array('%latitude' => $user->location['latitude'])) .'<br/>'. t('lon: %longitude', array('%longitude' => $user->location['longitude'])),
+          'value' => t('lat: %latitude', array('%latitude' => $user->location['latitude'])) .'<br/>'. t('lon: %longitude', array('%longitude' => $user->location['longitude'])),
           'class' => 'location',
         );
       }
     }
-
     return array(t('Location') => $items);
   }
-
 }
 
 /**
@@ -1646,7 +1608,6 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
   }
 }
 
-
 // @@@ From the megapatch.
 /**
  * Create a list of states from a given country.
@@ -1690,6 +1651,14 @@ function _location_floats_are_equal($x, $y) {
   return (abs(max($x, $y) - min($x, $y)) < pow(10, -6));
 }
 
+/**
+ * Invoke a hook_locationapi() operation on all modules.
+ *
+ * @param &$location A location object.
+ * @param $op A string containing the name of the locationapi operation.
+ * @param $a3, $a4 Arguments to pass on to the hook.
+ * @return The returned value of the invoked hooks.
+ */
 function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
   $return = array();
   foreach (module_implements('locationapi') as $name) {

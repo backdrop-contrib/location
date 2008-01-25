@@ -4,6 +4,9 @@
 
   * Reintegrate changes from previous revisions of files.
 
+  * location.module (_location_effective_user_setting): Removed.
+  General cleanup.
+
 
 2008-01-23  Bdragon  (53081)
 
