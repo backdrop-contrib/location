@@ -1,3 +1,10 @@
+2008-01-24  Bdragon  (53081)
+
+  * revert to DRUPAL-5 again to clean up the mess.
+
+  * Reintegrate changes from previous revisions of files.
+
+
 2008-01-23  Bdragon  (53081)
 
   * location.mysql, location_upgrade.php: Removed.
