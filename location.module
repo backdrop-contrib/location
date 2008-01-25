@@ -90,8 +90,31 @@ function location_menu($may_cache) {
 //        'weight'              => 1,
 //      );
 //    }
+
+    $items[] = array( // @@@ WIP
+      'path' => 'ltest',
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('location_temptest'),
+      'type' => MENU_CALLBACK,
+      'access' => TRUE,
+    );
   }
   return $items;
+}
+
+// @@@ WIP
+function location_temptest() {
+  $form = array();
+  $form['blinth'] = array(
+    '#value' => 'FOO',
+  );
+  $form['location'] = array(
+    '#type' => 'location_element',
+    '#default_value' => array(
+      'city' => 'UNKNOWNTOWN',
+    ),
+  );
+  return $form;
 }
 
 /**
@@ -123,6 +146,22 @@ function location_help($section) {
 }
 
 /**
+ * Implementation of hook_elements().
+ */
+function location_elements() {
+  return array(
+    'location_element' => array(
+      '#input' => FALSE,
+      '#process' => array('_location_expand_location' => array()),
+      '#tree' => TRUE,
+      '#location_fields' => array('name', 'street', 'additional', 'city', 'province', 'postal_code', 'country'),
+      '#location_required' => array(),
+      //'#theme' => 'location_element',
+    ),
+  );
+}
+
+/**
  * Implementation of hook_simpletest().
  */
 function location_simpletest() {
@@ -130,6 +169,54 @@ function location_simpletest() {
   $tests = file_scan_directory($dir, '\.test$');
   return array_keys($tests);
 }
+
+/**
+ * Process a location element.
+ */
+function _location_expand_location($element) {
+  $value = is_array($element['#value']) ? $element['#value'] : array();
+  $element['#tree'] = TRUE;
+  $element['#type'] = 'fieldset';
+  //$element['#type'] = 'location_element';
+  if (!isset($element['#title'])) {
+    $element['#title'] = t('Location');
+  }
+  if (empty($element['#location_required'])) {
+    $element['#location_required'] = array();
+    //@@@ Get required fields...
+  }
+  if (!isset($element['#default_value']) || $element['#default_value'] == 0) {
+    $element['#default_value'] = array();
+  }
+  foreach ($element['#location_fields'] as $key) {
+    if (!isset($element[$key])) {
+      switch ($key) {
+        case 'name':
+        case 'street':
+        case 'additional':
+        case 'city':
+        case 'postal_code':
+          $element[$key] = array(
+            '#type' => 'textfield',
+            '#title' => $key,// t('FIXME'), // @@@
+            '#default_value' => isset($element['#default_value'][$key]) ? $element['#default_value'][$key] : '',
+            '#size' => 64,
+            '#maxlength' => 64,
+            '#description' => NULL, // @@@
+            '#attributes' => NULL, // @@@
+            '#required' => in_array($key, $element['#location_required']),
+          );
+          break;
+      }
+    }
+  }
+  return $element;
+}
+
+function theme_location_element($element) {
+  return theme('form_element', $element, $element['#children']);
+}
+
 
 function location_search_view() {
   $location_params = array(
