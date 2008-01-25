@@ -1644,6 +1644,7 @@ function _location_save($posted_location, &$user_or_node, $type = 'node') {
             );
     }
   }
+}
 
 
 // @@@ From the megapatch.
@@ -1717,7 +1718,8 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
  * @param lid
  *   Number (optional). The Location ID
  */
- /*
+
+/*
 function _location_user_address($action = NULL, $lid = NULL) {
   global $user;
   $uid = $user->uid;

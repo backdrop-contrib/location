@@ -19,13 +19,8 @@ CREATE TABLE zipcodes (
   timezone tinyint(2) NOT NULL default '0',
   dst tinyint(1) NOT NULL default '0',
   country char(2) default '',
-  PRIMARY KEY (zip),
-  KEY pc (country, zip),
+  PRIMARY KEY (country, zip),
   KEY zip (zip),
   KEY latitude (latitude),
-  KEY longitude (longitude),
-  KEY country (country)
+  KEY longitude (longitude)
 ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;
-
-ALTER TABLE zipcodes DROP PRIMARY KEY;
-ALTER TABLE zipcodes ADD PRIMARY KEY (country, zip);
