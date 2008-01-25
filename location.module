@@ -629,280 +629,293 @@ function location_geocoding_options_form_submit($form_id, $form_values) {
   variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
 };
 
+
+function _location_node_type_form_alter($form_id, &$form) {
+  $type = $form['#node_type']->type;
+
+  $form['#validate'] = array_merge(
+    is_array($form['#validate']) ? $form['#validate'] : array(),
+    array('location_node_settings_validate' => array())
+  );
+
+  $form['location'] = array_merge(
+    is_array($form['location']) ? $form['location'] : array(),
+    array(
+      '#type'         => 'fieldset',
+      '#title'        => t('Locative information'),
+      '#collapsible'  => TRUE,
+      '#collapsed'    => TRUE,
+      '#weight'       => 0,
+    )
+  );
+
+  ///////////////////////////
+  // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
+  //
+  $form['location']['multiple_locations'] = array_merge(
+    is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
+    array(
+      '#type'         => 'fieldset',
+      '#title'        => t('Number of locations'),
+      '#collapsible'  => FALSE,
+      '#collapsed'    => FALSE,
+      '#weight'       => 0
+  // @@@ Line added in megapatch. "Why?"
+  //        '#tree'         => FALSE,
+    ));
+
+  $form['location']['multiple_locations']['location_maxnum'] = array(
+    '#type'           => 'select',
+    '#title'          => t('Maximum number of locations allowed for this type.'),
+    '#default_value'  => variable_get('location_maxnum_'. $type, 0),
+    '#options'        => drupal_map_assoc(range(0, 100)),
+    '#description'    => t('This setting determines the maximum number of locations that can be assigned to a node of this type. This number must be greater than or equal to the default number of location forms selected below. By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
+  );
+
+  $form['location']['multiple_locations']['location_defaultnum'] = array(
+    '#type'           => 'select',
+    '#title'          => t('Default number of location forms'),
+    '#default_value'  => variable_get('location_defaultnum_'. $type, 0),
+    '#options'        => drupal_map_assoc(range(0, 10)),
+    '#description'    => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
+  );
+  //
+  // End of variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
+  ///////////////////////////
+
+  $form['location']['location_weight'] = array(
+    '#prefix'         => '<div style="margin-left: 40px">',
+    '#type'           => 'weight',
+    '#title'          => t('Location weight'),
+    '#default_value'  => variable_get('location_weight_'. $type, 9),
+    '#description'    => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.'),
+  );
+
+  $form['location']['location_collapsible'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Collapsible'),
+    '#default_value'  => variable_get('location_collapsible_'. $type, 1),
+    '#description'    => t('Make the location box collapsible.')
+  );
+
+  $form['location']['location_collapsed'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Collapsed'),
+    '#default_value'  => variable_get('location_collapsed_'. $type, 1),
+    '#description'    => t('Display the location box collapsed.')
+  );
+
+  $form['location']['location_addanother'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Add another location from node view page'),
+    '#default_value'  => variable_get('location_addanother_'. $type, 0),
+    '#description'    => t('Display the "Add another location" option on the node view page.')
+  );
+
+  $form['location']['required_field_notice'] = array(
+    '#type'           => 'markup',
+    '#value'          => '<p><strong>'. t('NOTE:') .'</strong> '. t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
+  );
+
+  $options = array(
+    t('Do not collect'),
+    t('Use'),
+    t('Require'),
+  );
+
+  $form['location']['location_name'] = array(
+    '#type'           => 'radios',
+    '#title'          => t('Location names'),
+    '#default_value'  => variable_get('location_name_'. $type, TRUE),
+    '#options'        => $options,
+  // @@@ Original options.
+  //      '#options' => array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.'))
+  );
+
+  $form['location']['location_street'] = array(
+    '#type'           => 'radios',
+    '#title'          => t('Street locations'),
+    '#default_value'  => variable_get('location_street_'. $type, TRUE),
+    '#options'        => $options,
+  // @@@ Original options.
+  //      '#options' => array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.'))
+  );
+
+  $form['location']['location_city'] = array(
+    '#type'           => 'radios',
+    '#title'          => t('City names'),
+    '#default_value'  => variable_get('location_city_'. $type, 0),
+    '#options'        => $options,
+  // @@@ Original options.
+  //      '#options' => array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.'))
+  );
+
+  $form['location']['location_province'] = array(
+    '#type'           => 'radios',
+    '#title'          => 'State/Province names',
+    '#default_value'  => variable_get('location_province_'. $type, 0),
+    '#options'        => $options,
+  // @@@ Original options.
+  //      '#options' => array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.'))
+  );
+
+  $form['location']['location_postal_code'] = array(
+    '#type'           => 'radios',
+    '#title'          => 'Postal codes',
+    '#default_value'  => variable_get('location_postal_code_'. $type, 0),
+    '#options'        => $options,
+  // @@@ Original options.
+  //      '#options' => array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.'))
+  );
+
+  $form['location']['location_country'] = array(
+    '#type'           => 'radios',
+    '#title'          => 'Country names',
+    '#default_value'  => variable_get('location_country_'. $type, 1),
+    '#options'        => array(
+      1 => t('Use'),
+      2 => t('Require')
+    ),
+  // Original options.
+  //      '#options' => array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')),
+    '#description'    => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
+    '#suffix'         => '</div>'
+  );
+
+  // @@@ THIS IS NOT GOOD. --Bdragon
+  // clear the views cache in case anything was changed
+  if (function_exists('views_invalidate_cache')) {
+    views_invalidate_cache();
+  }
+}
+
+function _location_node_form_alter($form_id, &$form) {
+  $node = $form['#node'];
+
+  $location_fields = array();
+  $required_fields = array();
+  foreach (array_keys(location_field_names()) as $field_name) {
+    $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
+    if ($workflow_setting) {
+      $location_fields[] = $field_name;
+      if ($workflow_setting == 2) {
+        $required_fields[] = $field_name;
+      }
+    }
+  }
+
+  $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
+
+  $form['locations'] = array_merge(
+    is_array($form['locations']) ? $form['locations'] : array(),
+    array(
+      '#type' => 'fieldset',
+      '#title' => format_plural($location_form_count, 'Location', 'Locations'),
+      '#tree' => TRUE,
+      '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
+      '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
+      '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
+      '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE
+    )
+  );
+
+  // @@@ Was added in megapatch in a bad manner, but it is an idea.
+  //  if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
+  for ($index = 0; $index < $location_form_count; $index++) {
+    $form['locations'][$index] = array_merge(
+      is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
+      array(
+        '#type' => 'fieldset',
+        '#title' => t('Location #%number', array('%number' => $index + 1)),
+        '#tree' => TRUE,
+        '#attributes' => array('class' => 'location')
+      )
+    );
+  }
+
+  if ($location_form_count == 1) {
+    $form['locations'][0]['#title'] = t('Location');
+  }
+
+  for ($index = 0; $index < $location_form_count; $index++) {
+    if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
+      $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
+    }
+  }
+
+  $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
+
+  // @@@ Clean this mess up. --Bdragon
+  if (isset($_POST['op']) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit')) && form_get_errors())) {
+    for ($index = 0; $index < $location_form_count; $index++) {
+      $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
+    }
+  }
+  else {
+    for ($index = 0; $index < $location_form_count; $index++) {
+      if (!isset($form['locations'][$index])) {
+        $form['locations'][$index] = array();
+      }
+      $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
+    }
+  }
+
+  if (user_access('submit latitude/longitude')) {
+    for ($index = 0; $index < $location_form_count; $index++) {
+      $form['locations'][$index][] = array(
+        '#type' => 'markup',
+        '#value' => "<br/>\n"
+      );
+
+      if ($node->nid || isset($node->locations[$index]['previous_source'])) {
+        $form['locations'][$index]['previous_source'] = array(
+          '#type' => 'hidden',
+          '#value' => $node->locations[$index]['source']
+        );
+        $form['locations'][$index]['previous_latitude'] = array(
+          '#type' => 'hidden',
+          '#value' => $node->locations[$index]['latitude']
+        );
+        $form['locations'][$index]['previous_longitude'] = array(
+          '#type' => 'hidden',
+          '#value' => $node->locations[$index]['longitude']
+        );
+      }
+
+      $form['locations'][$index] = array_merge($form['locations'][$index], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->locations[$index] ? location_api2form($node->locations[$index]) : array()));
+    }
+  }
+
+  // foreach of the locations, make sure we have an lid field
+  for ($index = 0; $index < $location_form_count; $index++) {
+    $form['locations'][$index]['lid'] = array(
+      '#type' => 'hidden',
+      '#value' => $node->locations[$index]['lid']
+    );
+  }
+}
+
+
 /**
  * Implementation of hook_form_alter().
  */
 function location_form_alter($form_id, &$form) {
   if ($form_id == 'location_geocoding_options_form') {
-    $form['#submit'] = array_merge(array('location_geocoding_options_form_submit' => array(), 'system_settings_form_submit' => array()), $form['#submit'] ? $form['#submit'] : array());
+    if(!is_array($form['#submit']))
+      $form['#submit'] = array();
+    
+    $form['#submit']['location_geocoding_options_form_submit'] = array();
+    $form['#submit']['system_settings_form_submit'] = array();
   }
 
   // Add the options to the Node Type form
   elseif ($form_id == 'node_type_form') {
-    $type = $form['#node_type']->type;
-
-    $form['#validate'] = array_merge(
-      is_array($form['#validate']) ? $form['#validate'] : array(),
-      array('location_node_settings_validate' => array())
-    );
-
-    $form['location'] = array_merge(
-      is_array($form['location']) ? $form['location'] : array(),
-      array(
-        '#type'         => 'fieldset',
-        '#title'        => t('Locative information'),
-        '#collapsible'  => TRUE,
-        '#collapsed'    => TRUE,
-        '#weight'       => 0,
-      )
-    );
-
-    ///////////////////////////
-    // Variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
-    //
-    $form['location']['multiple_locations'] = array_merge(
-      is_array($form['location']['multiple_locations']) ? $form['location']['multiple_locations'] : array(),
-      array(
-        '#type'         => 'fieldset',
-        '#title'        => t('Number of locations'),
-        '#collapsible'  => FALSE,
-        '#collapsed'    => FALSE,
-        '#weight'       => 0
-// @@@ Line added in megapatch. "Why?"
-//        '#tree'         => FALSE,
-      ));
-
-    $form['location']['multiple_locations']['location_maxnum'] = array(
-      '#type'           => 'select',
-      '#title'          => t('Maximum number of locations allowed for this type.'),
-      '#default_value'  => variable_get('location_maxnum_'. $type, 0),
-      '#options'        => drupal_map_assoc(range(0, 100)),
-      '#description'    => t('This setting determines the maximum number of locations that can be assigned to a node of this type. This number must be greater than or equal to the default number of location forms selected below. By selecting a number greater than zero, users will be able to add a full or partial address(es) to each node of this type (depending on which fields you enable or require below).')
-    );
-
-    $form['location']['multiple_locations']['location_defaultnum'] = array(
-      '#type'           => 'select',
-      '#title'          => t('Default number of location forms'),
-      '#default_value'  => variable_get('location_defaultnum_'. $type, 0),
-      '#options'        => drupal_map_assoc(range(0, 10)),
-      '#description'    => t('This setting only applies when you have enabled locations for this node type.  It determines how many blank location forms will show up on the original edit-screen for a node of this type.  It also only applies when you have enabled a maximum of 1 or more locations to be submitted for this node type.')
-    );
-    //
-    // End of variables for how many default location forms should show on edit forms and how many maximum locations can be submitted for this node type
-    ///////////////////////////
-
-    $form['location']['location_weight'] = array(
-      '#prefix'         => '<div style="margin-left: 40px">',
-      '#type'           => 'weight',
-      '#title'          => t('Location weight'),
-      '#default_value'  => variable_get('location_weight_'. $type, 9),
-      '#description'    => t('Weight of the location box in the input form. Lowest values will be displayed higher in the form.'),
-    );
-
-    $form['location']['location_collapsible'] = array(
-      '#type'           => 'checkbox',
-      '#title'          => t('Collapsible'),
-      '#default_value'  => variable_get('location_collapsible_'. $type, 1),
-      '#description'    => t('Make the location box collapsible.')
-    );
-
-    $form['location']['location_collapsed'] = array(
-      '#type'           => 'checkbox',
-      '#title'          => t('Collapsed'),
-      '#default_value'  => variable_get('location_collapsed_'. $type, 1),
-      '#description'    => t('Display the location box collapsed.')
-    );
-
-    $form['location']['location_addanother'] = array(
-      '#type'           => 'checkbox',
-      '#title'          => t('Add another location from node view page'),
-      '#default_value'  => variable_get('location_addanother_'. $type, 0),
-      '#description'    => t('Display the "Add another location" option on the node view page.')
-    );
-
-    $form['location']['required_field_notice'] = array(
-      '#type'           => 'markup',
-      '#value'          => '<p><strong>'. t('NOTE:') .'</strong> '. t('Locations fields you choose to require will only be required for the first location if you have allowed more than one location to be submitted for this node type.') .'</p>'
-    );
-
-    $options = array(
-      t('Do not collect'),
-      t('Use'),
-      t('Require'),
-    );
-
-    $form['location']['location_name'] = array(
-      '#type'           => 'radios',
-      '#title'          => t('Location names'),
-      '#default_value'  => variable_get('location_name_'. $type, TRUE),
-      '#options'        => $options,
-// @@@ Original options.
-//      '#options' => array(t('Do not collect location names (e.g. place of business) for this node type.'), t('Allow location names for content of this type.'), t('Require location names for content of this type.'))
-    );
-
-    $form['location']['location_street'] = array(
-      '#type'           => 'radios',
-      '#title'          => t('Street locations'),
-      '#default_value'  => variable_get('location_street_'. $type, TRUE),
-      '#options'        => $options,
-// @@@ Original options.
-//      '#options' => array(t('Do not collect a street location for content of this type.'), t('Allow street locations to be submitted for content of this type.'), t('Require street locations to be submitted for content of this type.'))
-    );
-
-    $form['location']['location_city'] = array(
-      '#type'           => 'radios',
-      '#title'          => t('City names'),
-      '#default_value'  => variable_get('location_city_'. $type, 0),
-      '#options'        => $options,
-// @@@ Original options.
-//      '#options' => array(t('Do not collect city names for content of this type.'), t('Allow city names to be submitted for content of this type.'), t('Require city names to be submitted for content of this type.'))
-    );
-
-    $form['location']['location_province'] = array(
-      '#type'           => 'radios',
-      '#title'          => 'State/Province names',
-      '#default_value'  => variable_get('location_province_'. $type, 0),
-      '#options'        => $options,
-// @@@ Original options.
-//      '#options' => array(t('Do not collect state/province names for content of this type.'), t('Allow state/province names to be submitted for content of this type.'), t('Require state/province names to be submitted for content of this type.'))
-    );
-
-    $form['location']['location_postal_code'] = array(
-      '#type'           => 'radios',
-      '#title'          => 'Postal codes',
-      '#default_value'  => variable_get('location_postal_code_'. $type, 0),
-      '#options'        => $options,
-// @@@ Original options.
-//      '#options' => array(t('Do not collect postal codes for content of this type.'), t('Allow postal codes to be submitted for content of this type.'), t('Require postal codes to be submitted for content of this type.'))
-    );
-
-    $form['location']['location_country'] = array(
-      '#type'           => 'radios',
-      '#title'          => 'Country names',
-      '#default_value'  => variable_get('location_country_'. $type, 1),
-      '#options'        => array(
-        1 => t('Use'),
-        2 => t('Require')
-      ),
-// Original options.
-//      '#options' => array(1 => t('Allow country names to be submitted for content of this type.'), 2 => t('Require country names to be submitted for content of this type.')),
-      '#description'    => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
-      '#suffix'         => '</div>'
-    );
-
-    // @@@ THIS IS NOT GOOD. --Bdragon
-    // clear the views cache in case anything was changed
-    if (function_exists('views_invalidate_cache')) {
-      views_invalidate_cache();
-    }
+    _location_node_type_form_alter($form_id, &$form);
   }
 
   // Add the Location fields on the Node form
   elseif (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
-    $node = $form['#node'];
-
-    $location_fields = array();
-    $required_fields = array();
-    foreach (array_keys(location_field_names()) as $field_name) {
-      $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
-      if ($workflow_setting) {
-        $location_fields[] = $field_name;
-        if ($workflow_setting == 2) {
-          $required_fields[] = $field_name;
-        }
-      }
-    }
-
-    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
-
-    $form['locations'] = array_merge(
-      is_array($form['locations']) ? $form['locations'] : array(),
-      array(
-        '#type' => 'fieldset',
-        '#title' => format_plural($location_form_count, 'Location', 'Locations'),
-        '#tree' => TRUE,
-        '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
-        '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
-        '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
-        '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE
-      )
-    );
-
-// @@@ Was added in megapatch in a bad manner, but it is an idea.
-//  if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
-    for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index] = array_merge(
-        is_array($form['locations'][$index]) ? $form['locations'][$index] : array(),
-        array(
-          '#type' => 'fieldset',
-          '#title' => t('Location #%number', array('%number' => $index + 1)),
-          '#tree' => TRUE,
-          '#attributes' => array('class' => 'location')
-        )
-      );
-    }
-
-    if ($location_form_count == 1) {
-      $form['locations'][0]['#title'] = t('Location');
-    }
-
-    for ($index = 0; $index < $location_form_count; $index++) {
-      if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
-        $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
-      }
-    }
-
-    $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-
-    // @@@ Clean this mess up. --Bdragon
-    if (isset($_POST['op']) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit')) && form_get_errors())) {
-      for ($index = 0; $index < $location_form_count; $index++) {
-        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
-      }
-    }
-    else {
-      for ($index = 0; $index < $location_form_count; $index++) {
-        if (!isset($form['locations'][$index])) {
-          $form['locations'][$index] = array();
-        }
-
-        $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
-      }
-    }
-
-    if (user_access('submit latitude/longitude')) {
-      for ($index = 0; $index < $location_form_count; $index++) {
-        $form['locations'][$index][] = array(
-          '#type' => 'markup',
-          '#value' => "<br/>\n"
-        );
-
-        if ($node->nid || isset($node->locations[$index]['previous_source'])) {
-          $form['locations'][$index]['previous_source'] = array(
-            '#type' => 'hidden',
-            '#value' => $node->locations[$index]['source']
-          );
-          $form['locations'][$index]['previous_latitude'] = array(
-            '#type' => 'hidden',
-            '#value' => $node->locations[$index]['latitude']
-          );
-          $form['locations'][$index]['previous_longitude'] = array(
-            '#type' => 'hidden',
-            '#value' => $node->locations[$index]['longitude']
-          );
-        }
-
-        $form['locations'][$index] = array_merge($form['locations'][$index], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->locations[$index] ? location_api2form($node->locations[$index]) : array()));
-      }
-    }
-
-    // foreach of the locations, make sure we have an lid field
-    for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index]['lid'] = array(
-        '#type' => 'hidden',
-        '#value' => $node->locations[$index]['lid']
-      );
-    }
+    _location_node_form_alter($form_id, &$form);
   }
 }
 
