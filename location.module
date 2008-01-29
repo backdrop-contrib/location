@@ -217,7 +217,6 @@ function theme_location_element($element) {
   return theme('form_element', $element, $element['#children']);
 }
 
-
 function location_search_view() {
   $location_params = array(
     //'street' => $_GET['street'],
@@ -903,19 +902,19 @@ function location_form_alter($form_id, &$form) {
   if ($form_id == 'location_geocoding_options_form') {
     if(!is_array($form['#submit']))
       $form['#submit'] = array();
-    
+
     $form['#submit']['location_geocoding_options_form_submit'] = array();
     $form['#submit']['system_settings_form_submit'] = array();
   }
 
   // Add the options to the Node Type form
   elseif ($form_id == 'node_type_form') {
-    _location_node_type_form_alter($form_id, &$form);
+    _location_node_type_form_alter($form_id, $form);
   }
 
   // Add the Location fields on the Node form
   elseif (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
-    _location_node_form_alter($form_id, &$form);
+    _location_node_form_alter($form_id, $form);
   }
 }
 
