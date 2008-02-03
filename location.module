@@ -1072,8 +1072,8 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           // whether this location was previously assigned a lat/lon manually or whether it was determined via geocoding.
           // If the lat/lon was determined from geocoding, then we will want to update the lat/lon using postal codes.
           // If the lat/lon was user-submitted, then we don't want to allow the current editor to change the lat/lon
-          if ($node->nid) {
-            $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND eid = %d", $node->nid);
+          if ($node->vid) {
+            $result = db_query("SELECT * FROM {location} WHERE type = 'node' AND eid = %d", $node->vid);
             if ($location = db_fetch_object($result)) {
               if ($location->source != LOCATION_LATLON_USER_SUBMITTED) {
                 if ($data = location_latlon_exact($node->locations[$index])) {
