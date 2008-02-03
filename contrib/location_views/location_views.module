@@ -7,8 +7,6 @@
  *
  */
 
-define('LOCATION_VIEWS_UNKNOWN', t('unknown'));
-
 /**
  * Implementation of hook_help().
  */
@@ -706,10 +704,10 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       $len = intval($arg);
       $query->ensure_table($table, true);
       if ($len <= 0) {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". LOCATION_VIEWS_UNKNOWN ."', $table.city)";
+        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". t('unknown') ."', $table.city)";
       }
       else {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". LOCATION_VIEWS_UNKNOWN ."', LEFT($table.city, $len))";
+        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". t('unknown') ."', LEFT($table.city, $len))";
       }
       $fieldinfo['fieldname'] = 'city';
       return $fieldinfo;
@@ -724,19 +722,19 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       // adjust the search based on whether you are looking for the full city name or the first $len letters
       $len = intval($argtype['options']);
       if ($len <= 0) {
-        $query->add_where("$table.city = '%s'", strcasecmp($arg, LOCATION_VIEWS_UNKNOWN) ? $arg : '');
+        $query->add_where("$table.city = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       }
       else {
-        $query->add_where("LEFT($table.city, $len) = '%s'", strcasecmp($arg, LOCATION_VIEWS_UNKNOWN) ? $arg : '');
+        $query->add_where("LEFT($table.city, $len) = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       }
       break;
     case 'link':
       // if using first letter directory, use strtoupper on the link
       if ($len) {
-        return l($query->city == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : strtoupper($query->city), "$arg/$query->city");
+        return l($query->city == t('unknown') ? t('unknown') : strtoupper($query->city), "$arg/$query->city");
       }
       else {
-        return l($query->city == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : $query->city, "$arg/$query->city");
+        return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
       }
     case 'title':
       return $query;
@@ -755,7 +753,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
   switch ($op) {
     case 'summary':
       $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'". LOCATION_VIEWS_UNKNOWN ."',$table.province)";
+      $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'". t('unknown') ."',$table.province)";
       $fieldinfo['fieldname'] = 'province';
 
       // Make sure the country gets added so we can do a lookup on the province name.
@@ -769,12 +767,12 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
     case 'filter':
       $query->ensure_table($table);
       $query->add_field('province', $table);
-      $query->add_where("$table.province = '%s'", strcasecmp($arg, LOCATION_VIEWS_UNKNOWN) ? $arg : '');
+      $query->add_where("$table.province = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       break;
     case 'link':
-      return l($query->province == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : $provinces[$query->country .'-'. $query->province], "$arg/$query->province");
+      return l($query->province == t('unknown') ? t('unknown') : $provinces[$query->country .'-'. $query->province], "$arg/$query->province");
     case 'title':
-      return empty($query) ? LOCATION_VIEWS_UNKNOWN : $provinces[$country .'-'. $query];
+      return empty($query) ? t('unknown') : $provinces[$country .'-'. $query];
   }
 }
 
@@ -793,7 +791,7 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
   switch ($op) {
     case 'summary':
       $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'". LOCATION_VIEWS_UNKNOWN ."',$table.country)";
+      $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'". t('unknown') ."',$table.country)";
       $fieldinfo['fieldname'] = 'country';
       return $fieldinfo;
       break;
@@ -807,9 +805,9 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
       $query->add_where("$table.country = '%s'", $arg);
       break;
     case 'link':
-      return l($query->country == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : $country_name, "$arg/$query->country");
+      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
     case 'title':
-      return $query == LOCATION_VIEWS_UNKNOWN ? LOCATION_VIEWS_UNKNOWN : $country_name;
+      return $query == t('unknown') ? t('unknown') : $country_name;
   }
 }
 
