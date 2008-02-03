@@ -6,6 +6,8 @@
   * contrib/location_fax/location_fax.install, contrib/location_phone/location_phone.install:
   Postgresql fixes.
 
+  * supported/location.de.inc: As noted in #186891, t-info has changed their mapping service. Adapt the code accordingly.
+
 2008-01-28  Bdragon  (53081)
 
   * location.module: Fix call_time_pass_by_reference errors in wundo's patch.

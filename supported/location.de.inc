@@ -15,37 +15,44 @@
  */
 function location_map_link_de($location = array(), $hide = array()) {
   $map_links = array();
-  // For now, just call the tinfo function.  May want to make this configurable on some level
+  // For now, just call the suchen (tinfo) function.  May want to make this configurable on some level
   // in order to maintain freedom of choice so users and site-admins don't have to be slaves
   // to tinfo!.... not that I have anything personal against tinfo!.
-  if ($link = _location_map_link_de_tinfo($location)) {
-    $map_links['T-info'] = $link;
-}
-
+  if ($link = _location_map_link_de_suchen($location)) {
+    $map_links['suchen'] = $link;
+  }
   return $map_links;
 }
 
-function _location_map_link_de_tinfo($location = array()) {
+function _location_map_link_de_suchen($location = array()) {
   $get_query = '?';
-  $get_query .= 'map_input.country=2';
+  $get_query .= 'where=';
+  $query_parts = array();
   if (isset($location['street'])) {
-    $get_query .= '&amp;map_input.street='. urlencode($location['street']);
+    $query_parts[] = $location['street'];
   }
   if ($location['postal_code'] != '') {
-    $get_query .= '&amp;map_input.zip='. urlencode($location['postal_code']);
+    $query_parts[] = $location['postal_code'];
   }
   if ($location['city'] != '') {
-    $get_query .= '&amp;map_input.city_manual='. urlencode($location['city']);
+    $query_parts[] = $location['city'];
   }
 //  if ($location['number'] != '') {
-//    $get_query .= '&amp;map_input.number='. urlencode($location['number']);
+//    $query_parts[] = $location['number'];
 //  }
-  return ('http://www.t-info.de/map/jumppage/map.jsp'. $get_query);
+  $get_query .= urlencode(implode(', ', $query_parts));
+  return ('http://www.suchen.de/lokalmap'. $get_query);
 }
 
 
 function location_map_link_de_providers() {
-  return array('tinfo' => array('name' => 'T-Info', 'url' => 'http://www.t-info.de/map/index.jsp', 'tos' => 'http://www.t-info.de/map/application?origin=note.jsp&event=bea.portal.framework.internal.refresh&pageid=TermsOfUse&portal.content_id=30600'));
+  return array(
+    'suchen' => array(
+      'name' => 'suchen.de (T-Info)',
+      'url' => 'http://www.suchen.de/',
+      'tos' => 'http://www.suchen.de/agb',
+    ),
+  );
 }
 
 function location_map_link_de_default_providers() {
@@ -69,9 +76,8 @@ function location_map_link_de_default_providers() {
  * decide which site to link to for driving directions.
  */
 function location_driving_directions_link_de($location_a, $location_b) {
-  return _location_driving_directions_link_de_tinfo($location_a, $location_b);
+  return _location_driving_directions_link_de_suchen($location_a, $location_b);
 }
-
 
 /**
  * Parameters:
@@ -85,7 +91,7 @@ function location_driving_directions_link_de($location_a, $location_b) {
  *    tinfo! driving directions where the form is filled with whatever fields have been provided
  *    for the partial location(es).
  */
-function _location_driving_directions_link_de_tinfo($location_a, $location_b) {
+function _location_driving_directions_link_de_suchen($location_a, $location_b) {
 
   foreach ($location_a as $field => $value) {
     $location_a[$field] = trim($value);
@@ -96,29 +102,35 @@ function _location_driving_directions_link_de_tinfo($location_a, $location_b) {
   }
 
   if ($location_a['country'] == 'de' and $location_b['country'] == 'de') {
-
     $get_query = '?';
-    $get_query .= 'route_input.start_country=2';
-    if (isset($location['street'])) {
-      $get_query .= '&amp;route_input.start_street='. urlencode($location['street']);
+
+    // VON
+    $query_parts = array();
+    if (isset($location_a['street'])) {
+      $query_parts[] = $location_a['street'];
     }
-    if ($location['postal_code'] != '') {
-      $get_query .= '&amp;route_input.start_zip='. urlencode($location['postal_code']);
+    if ($location_a['postal_code'] != '') {
+      $query_parts[] = $location_a['postal_code'];
     }
-    if ($location['city'] != '') {
-      $get_query .= '&amp;route_input.start_city_manual='. urlencode($location['city']);
+    if ($location_a['city'] != '') {
+      $query_parts[] = $location_a['city'];
     }
-    $get_query .= 'route_input.target_country=2';
-    if (isset($location['street'])) {
-      $get_query .= '&amp;route_input.target_street='. urlencode($location['street']);
+    $get_query .= 'route_from='. urlencode(implode(', ', $query_parts));
+
+    // NACH
+    $query_parts = array();
+    if (isset($location_b['street'])) {
+      $query_parts[] = $location_b['street'];
     }
-    if ($location['postal_code'] != '') {
-      $get_query .= '&amp;route_input.target_zip='. urlencode($location['postal_code']);
+    if ($location_b['postal_code'] != '') {
+      $query_parts[] = $location_b['postal_code'];
     }
-    if ($location['city'] != '') {
-      $get_query .= '&amp;route_input.target_city_manual='. urlencode($location['city']);
+    if ($location_b['city'] != '') {
+      $query_parts[] = $location_b['city'];
     }
-    return ('http://www.t-info.de/map/jumppage/route_stations.jsp'. $get_query);
+    $get_query .= '&amp;route_to='. urlencode(implode(', ', $query_parts));
+
+    return ('http://www.suchen.de/route'. $get_query);
   }
 }
 
