@@ -781,6 +781,25 @@ function _location_node_type_form_alter($form_id, &$form) {
     '#suffix'         => '</div>'
   );
 
+  $form['location']['rss'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('RSS Settings'),
+    '#description' => t('Here, you can change how locative data affects RSS feeds on nodes.')
+  );
+  $form['location']['rss']['location_rss'] = array(
+    '#type' => 'select',
+    '#title' => t('RSS mode'),
+    '#description' => t('Select how to use locations in RSS feeds for this content type.'),
+    '#options' => array(
+      'none' => t('None (Do not put locational data in RSS feeds)'),
+      'w3c' => t('W3C Geo (deprecated)'),
+      'w3c_bugcompat' => t('Location 1.x-2.x compatible (buggy W3C)'),
+      'simple' => t('GeoRSS-Simple'),
+      'gml' => t('GeoRSS GML'),
+    ),
+    '#default_value' => variable_get('location_rss_'. $type, 'w3c'), // @@@ Historical default.
+  );
+
   // @@@ THIS IS NOT GOOD. --Bdragon
   // clear the views cache in case anything was changed
   if (function_exists('views_invalidate_cache')) {
@@ -1236,21 +1255,61 @@ function location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
     case 'rss item':
       $items = array();
+      $mode = variable_get('location_rss_'. $node->type, 'w3c'); // @@@ Historical default.
+      if ($mode == 'none') {
+        return;
+      }
       if (is_array($node->locations)) {
-        foreach ($node->locations as $index => $location) {
-          if (!is_null($node->locations[$index]['lat']) && !is_null($node->locations[$index]['lon'])) {
-            //$items[] = array('key' => 'geo:Point', 'value' => "<geo:lat>\n  ". $node->locations[$index]['lat'] ."</geo:lat>\n  <geo:long>". $node->locations[$index]['lon'] ."</geo:long>\n", 'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'));
-
-            $items[] = array(
-              'key'       => 'geo:Point',
-              'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
-              'value'     => array(
-                array('key' => 'geo:lat', 'value' => $node->locations[$index]['lat']),
-                array('key' => 'geo:lon', 'value' => $node->locations[$index]['lon'])
-              )
-            );
-            //$items[] = array('key' => 'geourl:latitude', 'value' => $node->locations[$index]['lat'], 'namespace' => array('geourl' => 'xmlns:geourl="http://geourl.org/rss/module/"'));
-            //$items[] = array('key' => 'geourl:longitude', 'value' => $node->locations[$index]['lon']);
+        foreach ($node->locations as $location) {
+          if (!is_null($location['lat']) && !is_null($location['lon'])) {
+            switch ($mode) {
+              // W3C Basic Geo Vocabulary
+              case 'w3c':
+                $items[] = array(
+                  'key'       => 'geo:Point',
+                  'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
+                  'value'     => array(
+                    array('key' => 'geo:lat', 'value' => $location['lat']),
+                    array('key' => 'geo:long', 'value' => $location['lon']),
+                  ),
+                );
+                break;
+              // Location 1.x-2.x bug compatible.
+              // W3C Basic Geo Vocabulary with a misspelled longitude tag.
+              case 'w3c_bugcompat':
+                $items[] = array(
+                  'key'       => 'geo:Point',
+                  'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
+                  'value'     => array(
+                    array('key' => 'geo:lat', 'value' => $location['lat']),
+                    array('key' => 'geo:lon', 'value' => $location['lon']),
+                  ),
+                );
+                break;
+              // GeoRSS-Simple
+              case 'simple':
+                $items[] = array(
+                  'key'       => 'georss:point',
+                  'namespace' => array('georss' => 'xmlns:georss="http://www.georss.org/georss"'),
+                  'value'     => "$location[lat] $location[lon]",
+                );
+                break;
+              //
+              case 'gml':
+                $items[] = array(
+                  'key' => 'georss:where',
+                  'namespace' => array(
+                    'georss' => 'xmlns:georss="http://www.georss.org/georss"',
+                    'gml' => 'xmlns:gml="http://www.opengis.net/gml"',
+                  ),
+                  'value' => array(
+                    'gml:Point' => array(
+                      'gml:pos' => "$location[lat] $location[lon]",
+                    ),
+                  ),
+                );
+                break;
+            }
           }
         }
       }

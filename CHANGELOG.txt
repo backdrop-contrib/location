@@ -1,3 +1,20 @@
+2008-02-03  Bdragon  (53081)
+
+  * location.module (location_nodeapi): #216291 by Dave Cohen: Fix accidental use of nid instead of vid.
+  Rewrite RSS generation.
+
+  * contrib/location_fax/location_fax.install, contrib/location_phone/location_phone.install:
+  Postgresql fixes.
+
+2008-01-28  Bdragon  (53081)
+
+  * location.module: Fix call_time_pass_by_reference errors in wundo's patch.
+
+2008-01-24  wundo  (25523)
+
+  * location.module (location_form_alter): #214007: Split location_form_alter into small functions.
+  Fix code style issues.
+
 2008-01-24  Bdragon  (53081)
 
   * revert to DRUPAL-5 again to clean up the mess.
