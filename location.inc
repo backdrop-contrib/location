@@ -637,9 +637,6 @@ function location_driving_directions_link($location_a = array(), $location_b = a
  *          'distance_unit' => The unit of distance specified by 'scalar'
  */
 function location_nearby_postalcodes_bylocation($location, $distance, $distance_unit = 'km') {
-  // DEBUG: commented code is for testing/debugging purposes
-  //$start_time = microtime();
-
   $latlon = location_latlon_rough($location);
 
   // If we could not get lat/lon coordinates for the given location, return an empty search result set.
@@ -653,19 +650,7 @@ function location_nearby_postalcodes_bylocation($location, $distance, $distance_
   }
 
   $search_results = _location_nearby_postalcodes($latlon['lon'], $latlon['lat'], $distance_float);
-
-  //DEBUG: commented code is for testing/debugging
-  //$format_start_time = microtime();
-
   _location_format_search_result_distances($search_results, $distance_unit);
-
-  //$format_end_time = microtime();
-  //print 'Time for FORMATTING to complete: '. _location_time_difference($format_end_time, $format_start_time) ."<br/>\n";
-
-  // DEBUG: commented code is for testing/debugging purposes
-  //$end_time = microtime();
-  //print 'Time for this search to complete: '. _location_time_difference($end_time, $start_time) ."<br/>\n";
-
   return $search_results;
 }
 
@@ -700,9 +685,6 @@ function location_nearby_postalcodes_bylocation($location, $distance, $distance_
  *          'distance_unit' => The unit of distance specified by 'distance'
  */
 function location_nearby_postalcodes_bylatlon($lon, $lat, $distance, $distance_unit = 'km') {
-  // DEBUG: commented code is for testing/debugging purposes
-  //$start_time = microtime();
-
   // If the given $lon/$lat don't make sense, return an empty search result set.
   if (!is_numeric($lon) || !is_numeric($lat)) {
     return array();
@@ -717,20 +699,7 @@ function location_nearby_postalcodes_bylatlon($lon, $lat, $distance, $distance_u
   $search_results = _location_nearby_postalcodes($lon, $lat, $distance_float);
   _location_format_search_result_distances($search_results, $distance_unit);
 
-  // DEBUG: commented code is for testing/debugging purposes
-  //$end_time = microtime();
-  //print 'Time for this search to complete: '. _location_time_difference($end_time, $start_time)."<br/>\n";
-
   return $search_results;
-}
-
-// @@@ NUKE
-// Helper function for testing purposes
-function _location_time_difference($end_time, $start_time) {
-  $end_times = explode(" ", $end_time);
-  $start_times = explode(" ", $start_time);
-  $time = (($end_times[1] - $start_times[1]) + ($end_times[0] - $start_times[0])) * 1000;
-  return $time .' milliseconds';
 }
 
 /**
@@ -858,26 +827,14 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
   $latrange = earth_latitude_range($lon, $lat, $distance);
   $lonrange = earth_longitude_range($lon, $lat, $distance);
 
-  //$query_start_time = microtime();
-
   $result = db_query('SELECT zip, city, state, country, '. earth_distance_sql($lon, $lat) .' as distance  FROM {zipcodes} WHERE latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f AND '. earth_distance_sql($lon, $lat) .' < %f ORDER by distance', $latrange[0], $latrange[1], $lonrange[0], $lonrange[1], $distance);
 
   while ($result_row = db_fetch_object($result)) {
     $search_results[$result_row->country . $result_row->zip] = array('city' => $result_row->city, 'province' => $result_row->state, 'distance' => $result_row->distance);
   }
 
-  //DEBUG: commented code for testing/debugging purposes
-  //$query_end_time = microtime();
-
-  //print 'TOTAL TIME FOR _location_nearby_postalcodes() '. _location_time_difference($query_end_time, $query_start_time) ."<br/>\n";
-  //--------------------------------------------------------------------------------------------
-  // This is the spot where search results are cached
-
   cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, 'cache', serialize($search_results));
 
-  // DEBUG: commented code is for testing/debugging purposes
-  //print 'POSTAL CODE SEARCH CACHING: Wrote new search results to cache'."<br/>\n";
-  //--------------------------------------------------------------------------------------------
   return $search_results;
 }
 
@@ -927,8 +884,6 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
       // otherwise, go through the distance-sorted search results and pick them out until the distances
       // of each search result start being something greater than the current search-radius
       if ($distance == $previous_search_radius) {
-        // DEBUG: commented code is for testing/debugging purposes
-        //print 'POSTAL CODE SEARCH CACHING: Returning EXACT SAME of search results from before'."<br/>\n";
         return $cached_search_results;
       }
       else {
@@ -941,8 +896,6 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
             break;
           }
         }
-        // DEBUG: commented code is for testing/debugging purposes
-        //print 'POSTAL CODE SEARCH CACHING: Returning SUBSET of a previous search\'s results'."<br/>\n";
         return $current_search_results;
       }
     }
@@ -952,8 +905,6 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
       // the current, more comprehensive search being done on the same point, but on a larger radius.
       // Return an empty array to let the calling function know that it will have to do a new search.
 
-      // DEBUG: commented code is for testing/debugging purposes
-      //print 'POSTAL CODE SEARCH CACHING: Throwing out old search on a point because new search uses larger search-radius'."<br/>\n";
       cache_clear_all($result_row->cid, 'cache');
       return array();
     }
