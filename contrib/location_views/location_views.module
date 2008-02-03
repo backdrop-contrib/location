@@ -951,15 +951,15 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
   $unit     = 'miles';
   $distance = $filter['operator'];
 
-  if ($filterinfo['value']['coordinates']) {
-    $lat = $_GET['edit']['gmap_latitude'];
-    $lon = $_GET['edit']['gmap_longitude'];
+  if ($filterinfo['value']['latitude']) {
+    $lat = $_GET['latitude'];
+    $lon = $_GET['longitude'];
 
   }
   else {
 
     $zip      = $filter['value'];
-    $result   = db_query("SELECT * FROM {zipcodes} WHERE zip='$zip'");
+    $result   = db_query("SELECT * FROM {zipcodes} WHERE zip = '%s'", $zip);
     while ($arr = db_fetch_array($result)) {
       $lat = $arr['latitude'];
       $lon = $arr['longitude'];
@@ -979,59 +979,24 @@ function location_views_filter_handler_proximity($op, $filter, $filterinfo, &$qu
 }
 
 /**
- *  Function to create a gmap map form
+ * Input map.
  */
 function location_views_map_input_form() {
+  if (!module_exists('gmap')) {
+    return;
+  }
+  global $user;
 
-  $form = array();
-
-  if (!module_exists('gmap')) return $form;
-
-  $user = $GLOBALS['user'];
+  $account = $user;
   $res = db_query("SELECT * FROM {location} WHERE eid = %d AND type = 'user'", $user->uid);
   if ($gmap_user = db_fetch_array($res)) {
-    $user->latitude  = $gmap_user['latitude'];
-    $user->longitude = $gmap_user['longitude'];
+    $account->latitude  = $gmap_user['latitude'];
+    $account->longitude = $gmap_user['longitude'];
   }
 
-  $form['map'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Google Map'),
-    '#description' => t('Click on the map to mark the center point for your search, then submit the values.')
-    );
-  $form['map']['gmap_user'] = array(
-    '#type' => 'markup',
-    '#value' => ''
-    );
-  $form['coordinates'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Coordinates'),
-    '#description' => t('The latitude and longitude will automatically be entered here (or you can do it manually).'),
-    );
-  $form['coordinates']['gmap_latitude'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-latitude',
-    '#title' => t('Latitude'),
-    '#default_value' => $_GET['edit']['gmap_latitude'] ? $_GET['edit']['gmap_latitude'] : $user->latitude,
-    '#size' => 30,
-    '#maxlength' => 120,
-    '#attributes' => array('onchange' => 'gmap_textchange();')
-    );
-  $form['coordinates']['gmap_longitude'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Longitude'),
-    '#default_value' => $_GET['edit']['gmap_longitude'] ? $_GET['edit']['gmap_longitude'] : $user->longitude,
-    '#size' => 30,
-    '#maxlength' => 120,
-    '#attributes' => array('onchange' => 'gmap_textchange();')
-    );
-
-  $form['map']['gmap_user']['#value'] = gmap_set_location(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|control=Large|zoom=16|width=100%|height=400px]'),
-    $form['coordinates']['gmap_longitude'],
-    $form['coordinates']['gmap_latitude']
-  );
-  return  $form;
-
+  $prefilled_values['latitude'] = $_GET['latitude'] ? $_GET['latitude'] : $account->latitude;
+  $prefilled_values['longitude'] = $_GET['longitude'] ? $_GET['longitude'] : $account->longitude;
+  return location_latlon_form($description = 'Click on the map to mark the center point for your search, then submit the values.', $prefilled_values);
 }
 
 /**
@@ -1044,7 +1009,9 @@ function location_views_views_pre_view($view, $items) {
   // and recalling the form
   foreach ($view->filter as $key => $filter) {
     if ($filter['field'] == 'location.proximity_map' || $filter['field'] == 'user_location.proximity_map') {
-      cache_clear_all('views_tables', true);
+      // clear the cache so we can re-use our forms
+      // this is a tradeoff because it drops the cache for every other views table just to perform this
+      cache_clear_all('views_tables', 'cache_views', true);
       $view->filter[$key]['value'] = location_views_map_input_form();
     }
   }
