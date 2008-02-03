@@ -21,20 +21,49 @@ function location_phone_install() {
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;
       ");
       break;
-    
+
     case 'pgsql':
       db_query("
         CREATE TABLE {location_phone} (
-        lid int NOT NULL default '0' CHECK (eid >= 0),
-        phone varchar(31) default NULL,
-        postal_code varchar(16) default NULL,
-        PRIMARY KEY  (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
-      ");
+          lid int NOT NULL default '0' CHECK (lid >= 0),
+          phone varchar(31) default NULL,
+          PRIMARY KEY (lid)
+        )");
       break;
   }
   drupal_set_message(t('Installed tables for module location_phone'));
 }
 
-//TODO: drop 'postal_code' column in pgsql version of table
-//That's what you get for a lousy copy-paste-modify job
+/**
+ * Location 3.0 update 1.
+ * Fix pgsql -- The table definition was broken.
+ */
+function location_phone_update_5300() {
+  $ret = array();
+  if ($GLOBALS['db_type'] == 'pgsql') {
+    // If the table wasn't created (i.e. error from previous install)
+    if (!db_table_exists('location_phone')) {
+      $ret[] = update_sql("
+        CREATE TABLE {location_phone} (
+          lid int NOT NULL default '0' CHECK (lid >= 0),
+          phone varchar(31) default NULL,
+          PRIMARY KEY (lid)
+        )");
+    }
+    else {
+      // If the table WAS created (i.e. user manually fixed bug and reinstalled), g/c the postal_code column.
+      // @@@ @TODO Drupal 6: Change to db_column_exists().
+      if (db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM pg_class, pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{location_phone}' AND attname = 'postal_code'")) > 0) {
+        $ret[] = update_sql("ALTER TABLE {location_phone} DROP COLUMN postal_code");
+      }
+    }
+  }
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function location_phone_uninstall() {
+  db_query('DROP TABLE {location_phone}');
+}
