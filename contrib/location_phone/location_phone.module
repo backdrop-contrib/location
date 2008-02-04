@@ -13,18 +13,15 @@ function location_phone_form_alter($form_id, &$form) {
   if ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
 
-    $form['location']['location_phone'] = array(
+    $form['location']['fields']['location_phone'] = array(
       '#type' => 'radios',
-      '#title' => 'Phone numbers',
+      '#title' => t('Phone numbers'),
       '#default_value' => variable_get('location_phone_'. $type, 0),
       '#options' => array(
-        t('Do not collect phone numbers for content of this type.'),
-        t('Allow phone numbers to be submitted for content of this type.'),
-        t('Require phone numbers to be submitted for content of this type.'),
+        t('Do not collect'),
+        t('Allow'),
+        t('Require'),
       ),
-      '#prefix' => '<div style="margin-left: 40px">',
-      '#suffix' => '</div>',
-      '#weight' => 9
     );
   }
   elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0) && variable_get('location_phone_'. $form['type']['#value'], 0)) {
@@ -106,3 +103,4 @@ function location_phone_help($section) {
       break;
   }
 }
+

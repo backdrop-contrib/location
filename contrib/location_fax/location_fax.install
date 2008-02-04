@@ -31,7 +31,18 @@ function location_fax_install() {
         )");
       break;
   }
+
+  // Change weight.
+  db_query("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_fax', 'module');
+
   drupal_set_message(t('Installed tables for module location_fax'));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function location_fax_uninstall() {
+  db_query('DROP TABLE {location_fax}');
 }
 
 /**
@@ -55,8 +66,12 @@ function location_fax_update_5300() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Location 3.0 update 2.
+ * Change weight of module.
  */
-function location_fax_uninstall() {
-  db_query('DROP TABLE {location_fax}');
+function location_fax_update_5301() {
+  $ret = array();
+  // Change weight.
+  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_fax', 'module');
+  return $ret;
 }
