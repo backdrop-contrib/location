@@ -52,6 +52,17 @@ function location_install() {
         KEY country (country)
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;
       ");
+
+      db_query("CREATE TABLE {cache_location} (
+        cid varchar(255) NOT NULL default '',
+        data longblob,
+        expire int NOT NULL default '0',
+        created int NOT NULL default '0',
+        headers text,
+        PRIMARY KEY (cid),
+        INDEX expire (expire)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
       $success = TRUE;
       break;
     case 'pgsql':
@@ -89,6 +100,18 @@ function location_install() {
       db_query("CREATE INDEX {zipcodes}_latitude_idx ON {zipcodes} (latitude)");
       db_query("CREATE INDEX {zipcodes}_longitude_idx ON {zipcodes} (longitude)");
       db_query("CREATE INDEX {zipcodes}_country_idx ON {zipcodes} (country)");
+
+      db_query("CREATE TABLE {cache_location} (
+        cid varchar(255) NOT NULL default '',
+        data bytea,
+        expire int NOT NULL default '0',
+        created int NOT NULL default '0',
+        headers text,
+        PRIMARY KEY (cid)
+      )");
+      db_query("CREATE INDEX {cache_location}_expire_idx ON {cache_location} (expire)");
+
+
       $success = TRUE;
       break;
     default:
@@ -319,6 +342,40 @@ function location_update_7() {
       $ret[] = update_sql('DELETE FROM {cache} WHERE cid = \'variables\'');
 
       variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
+      break;
+  }
+  return $ret;
+}
+
+/**
+ * Location 3.x update 1.
+ * Add location specific cache table.
+ */
+function location_update_5300() {
+  $ret = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("CREATE TABLE {cache_location} (
+        cid varchar(255) NOT NULL default '',
+        data longblob,
+        expire int NOT NULL default '0',
+        created int NOT NULL default '0',
+        headers text,
+        PRIMARY KEY (cid),
+        INDEX expire (expire)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+      break;
+    case 'pgsql':
+      $ret[] = update_sql("CREATE TABLE {cache_location} (
+        cid varchar(255) NOT NULL default '',
+        data bytea,
+        expire int NOT NULL default '0',
+        created int NOT NULL default '0',
+        headers text,
+        PRIMARY KEY (cid)
+      )");
+      $ret[] = update_sql("CREATE INDEX {cache_location}_expire_idx ON {cache_location} (expire)");
       break;
   }
   return $ret;

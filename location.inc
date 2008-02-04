@@ -811,7 +811,7 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
   }
   //------------------------------------------------------------------------------------------
   // Pulling from the cache takes place right here.
-  // The cache id ("cid", to be inserted into the cache table) will be a concatenation of
+  // The cache id ("cid", to be inserted into the {cache_location} table) will be a concatenation of
   //   -> "location_prox_search:".
   //   -> round($lon, 3) . ':'.
   //   -> round($lat, 3) . ":".
@@ -833,7 +833,7 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
     $search_results[$result_row->country . $result_row->zip] = array('city' => $result_row->city, 'province' => $result_row->state, 'distance' => $result_row->distance);
   }
 
-  cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, 'cache', serialize($search_results));
+  cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, 'cache_location', serialize($search_results));
 
   return $search_results;
 }
@@ -863,7 +863,7 @@ function _location_nearby_postalcodes($lon, $lat, $distance) {
 function _location_search_results_from_cache($lon, $lat, $distance) {
   $cache_id_prefix = 'location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':';
 
-  $result = db_query("SELECT cid FROM {cache} WHERE cid LIKE '%s%%'", $cache_id_prefix);
+  $result = db_query("SELECT cid FROM {cache_location} WHERE cid LIKE '%s%%'", $cache_id_prefix);
 
   if ($result_row = db_fetch_object($result)) {
     // A previous search has been done on the same search point, possibily with the an equal or different
@@ -877,7 +877,7 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
     // by their distance from the search point.
     if ($distance <= $previous_search_radius) {
 
-      $cached_search_results = cache_get($result_row->cid);
+      $cached_search_results = cache_get($result_row->cid, 'cache_location');
       $cached_search_results = unserialize($cached_search_results->data);
       // If the cached-search had the exact same search-radius, just return the entire search result's
       // array from before,
@@ -905,7 +905,7 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
       // the current, more comprehensive search being done on the same point, but on a larger radius.
       // Return an empty array to let the calling function know that it will have to do a new search.
 
-      cache_clear_all($result_row->cid, 'cache');
+      cache_clear_all($result_row->cid, 'cache_location');
       return array();
     }
 
@@ -913,7 +913,7 @@ function _location_search_results_from_cache($lon, $lat, $distance) {
   else {
     // This else-clause ties back to the first if-clause in this function.
     // It executes if no search has been done on this point.
-    // If the {cache} table did not contain any useful cache id's, return the empty array.
+    // If the {cache_location} table did not contain any useful cache id's, return the empty array.
     // This will let the calling function know that it has to do an original search.
     return array();
   }
