@@ -8,28 +8,18 @@
  */
 
 /**
- * Implementation of hook_help().
- */
-function location_views_help($section) {
-  switch ($section) {
-    case 'admin/help#location_views':
-      return t('The Location Views module makes all the location fields available to the Views module, and creates a default location view using all the location fields. If the usernode module is installed user location information is Views-enabled, too.');
-  }
-}
-
-/**
- * For operation with the views.module.
+ * Implementation of hook_views_tables().
  */
 function location_views_tables() {
   $tables['location'] = array(
     'name' => 'location',
     'join' => array(
       'left' => array(
-        'table' => 'node',
-        'field' => 'vid'
+        'table' => 'location_instance_node',
+        'field' => 'lid'
       ),
       'right' => array(
-        'field' => 'eid'
+        'field' => 'lid'
       ),
     ),
     'fields' => array(
@@ -86,8 +76,37 @@ function location_views_tables() {
         'operator' => 'views_handler_operator_like',
         'handler' => 'views_handler_filter_like',
       ),
-    )
+    ),
   );
+
+  // location <-> location_instance <-> node
+  $tables['location_instance_node'] = array(
+    'name' => 'location_instance',
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'vid',
+      ),
+      'right' => array(
+        'field' => 'vid',
+      ),
+    ),
+  );
+
+  if (module_exists('usernode')) {
+    $tables['location_instance_user'] = array(
+      'name' => 'location_instance',
+      'join' => array(
+        'left' => array(
+          'table' => 'usernode',
+          'field' => 'uid',
+        ),
+        'right' => array(
+          'field' => 'uid',
+        ),
+      ),
+    );
+  }
 
   $tables['location']['filters']['province_select'] = array(
     'field' => 'province_select',
@@ -118,14 +137,14 @@ function location_views_tables() {
     'list' => location_views_countries(),
     'list-type' => 'select',
   );
-  $tables['location']['filters']['type'] = array(
+/*  $tables['location']['filters']['type'] = array(
     'field' => 'type',
     'name' => t('Location: Type'),
     'operator' => 'location_handler_operator_eq',
     'handler' => 'location_handler_filter_eq',
     'list' => drupal_map_assoc(array('node', 'user')),
     'list-type' => 'select',
-  );
+  );*/
   $tables['location']['filters']['latitude'] = array(
     'field' => 'latitude',
     'name' => t('Location: Latitude'),
@@ -182,11 +201,11 @@ function location_views_tables() {
       'name' => 'location',
       'join' => array(
         'left' => array(
-          'table' => 'usernode',
-          'field' => 'uid'
+          'table' => 'location_instance_user',
+          'field' => 'lid'
         ),
         'right' => array(
-          'field' => 'eid'
+          'field' => 'lid'
         ),
       ),
       'fields' => array(
@@ -275,6 +294,7 @@ function location_views_tables() {
       'list' => location_views_countries(),
       'list-type' => 'select',
     );
+/*
     $tables['user_location']['filters']['type'] = array(
       'field' => 'type',
       'name' => t('User Location: Type'),
@@ -283,6 +303,7 @@ function location_views_tables() {
       'list' => drupal_map_assoc(array('node', 'user')),
       'list-type' => 'select',
     );
+*/
     $tables['user_location']['filters']['latitude'] = array(
       'field' => 'latitude',
       'name' => t('User Location: Latitude'),
@@ -430,17 +451,17 @@ function location_views_default_views() {
       'options' => '',
       'value' => $location_node_types,
     ),
-    array(
+/*    array(
     'tablename' => 'location',
     'field' => 'type',
     'operator' => '=',
     'options' => '',
     'value' => 'node',
-    ),
+    ),*/
   );
 
   $view->exposed_filter = array();
-  $view->requires = array('node', 'location');
+  $view->requires = array('node', 'location_instance', 'location');
   $views[$view->name] = $view;
 
   $view = new stdClass();
@@ -541,16 +562,16 @@ function location_views_default_views() {
       'options' => '',
       'value' => $location_node_types,
     ),
-    array(
+/*    array(
       'tablename' => 'location',
       'field' => 'type',
       'operator' => '=',
       'options' => '',
       'value' => 'node',
-    ),
+    ), */
   );
   $view->exposed_filter = array();
-  $view->requires = array('node', 'location');
+  $view->requires = array('node', 'location_instance', 'location');
   $views[$view->name] = $view;
 
   if (module_exists('usernode')) {
@@ -634,16 +655,16 @@ function location_views_default_views() {
         'options' => '',
         'value' => array(0 => 'usernode'),
       ),
-      array(
+/*      array(
         'tablename' => 'user_location',
         'field' => 'type',
         'operator' => '=',
         'options' => '',
         'value' => 'user',
-      ),
+      ),*/
     );
     $view->exposed_filter = array();
-    $view->requires = array(node, location);
+    $view->requires = array('node', 'user_location', 'location');
     $views[$view->name] = $view;
   }
   return $views;
@@ -785,7 +806,7 @@ function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = 
 
 function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $table = 'location') {
 
-  $all_countries=_location_get_iso3166_list();
+  $all_countries = location_get_iso3166_list();
   $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
 
   switch ($op) {
@@ -822,19 +843,27 @@ function location_handler_operator_eq() {
  * Custom filter for = queries.
  */
 function location_handler_filter_eq($op, $filter, $filterinfo, &$query) {
+  if ($op == 'handler') {
+    // If there isn't a value available, give up.
+    if (empty($filter['value'])) {
+      return;
+    }
 
-  switch ($filter[value]) {
-    case '':
+    // If there isn't an operator, give up.
+    if (empty($filter['operator'])) {
       return;
-      break;
+    }
   }
-  switch ($filter['operator']) {
-    case '':
-      return;
-      break;
-  }
+
+dpm('HUH?');
+dpm($op);
+dpm($filter);
+dpm($filterinfo);
+dpm($query);
+
   switch ($filterinfo['field']) {
     case 'province':
+dpm($filter['value']);
       $filter['value'] = location_form2api(array('province' => $filter['value']));
       $filter['value'] = $filter['value']['province'];
       break;
@@ -901,7 +930,7 @@ function location_views_countries() {
   $countries = array();
   $provinces = array();
   $configured = location_get_configured_countries();
-  $country_list = _location_get_iso3166_list();
+  $country_list = location_get_iso3166_list();
 
   foreach ($configured as $country) {
     $countries[$country] = $country_list[$country];
@@ -986,8 +1015,8 @@ function location_views_map_input_form() {
   global $user;
 
   $account = $user;
-  $res = db_query("SELECT * FROM {location} WHERE eid = %d AND type = 'user'", $user->uid);
-  if ($gmap_user = db_fetch_array($res)) {
+  $result = db_query('SELECT l.latitude, l.longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d', $user->uid);
+  if ($gmap_user = db_fetch_array($result)) {
     $account->latitude  = $gmap_user['latitude'];
     $account->longitude = $gmap_user['longitude'];
   }
@@ -1001,7 +1030,6 @@ function location_views_map_input_form() {
  *  Implementation of views_pre_view
  */
 function location_views_views_pre_view($view, $items) {
-
   // the map form gets cached in the views table cache
   // get location_views_map_input_form() to regenerate itself by clearing the cache
   // and recalling the form
@@ -1013,5 +1041,4 @@ function location_views_views_pre_view($view, $items) {
       $view->filter[$key]['value'] = location_views_map_input_form();
     }
   }
-
 }

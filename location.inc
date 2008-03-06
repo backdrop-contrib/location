@@ -11,7 +11,6 @@
 define('LOCATION_PATH', drupal_get_path('module', 'location'));
 
 include_once LOCATION_PATH.'/earth.inc';
-_location_include_configured();
 
 /**
  * Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
@@ -987,11 +986,13 @@ function _location_format_search_result_distances(&$results_array, $distance_uni
  *      'lat' => A floating point number for the latitude coordinate of the parameter location
  */
 function location_latlon_exact($location = array()) {
-  $country = trim($location['country']);
+  $country = $location['country'];
+  location_standardize_country_code($country);
   $service = variable_get('location_geocode_'. $country, 'none');
   if (!empty($country) && $service != 'none') {
     // figure out what the exact function should be
     if (strpos($service, '|')) {
+      location_load_country($country);
       $exact_latlon_function = 'location_geocode_'. $country .'_'. $service;
     }
     else {
@@ -1059,10 +1060,9 @@ function location_geocode_meta_tags($location = array()) {
  * configured the site to actually use that country's include file.
  */
 function location_configured_countries() {
-  static $configured_countries_associative;
-  // @@@ This if statement has no effect!
-  if (!count($configured_countries)) {
-      $configured_countries = variable_get('location_configured_countries', array('us' => 'us')); // <integer index> => <ISO code>
+  static $countries = array();
+  if (empty($countries)) {
+    $configured_countries = variable_get('location_configured_countries', array('us' => 'us')); // <integer index> => <ISO code>
 
     $configured_countries = is_array($configured_countries) ? $configured_countries : array();
     $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
@@ -1076,7 +1076,7 @@ function location_configured_countries() {
 
     asort($configured_countries_associative);
   }
-  return $configured_countries_associative;
+  return $countries;
 }
 
 /**
@@ -1100,36 +1100,19 @@ function _location_supported_countries() {
   }
 
   // Try first to load from cache, it's much faster than the scan below.
-  $cache = cache_get('location:supported-countries');
-  if (!empty($cache)) {
+  if ($cache = cache_get('location:supported-countries', 'cache_location')) {
     $supported_countries = unserialize($cache->data);
   }
   else {
     // '<ISO two-letter code>' => '<English name for country>'
-    $iso_list = _location_get_iso3166_list();
-    $iso_keys = array_keys($iso_list);
-    if (is_dir(LOCATION_PATH .'/supported') && $handle = opendir(LOCATION_PATH .'/supported')) {
-      $matches = array();
-      while ($file = readdir($handle)) {
-        if (ereg('location.([a-z]{2}).inc', $file, $matches) && is_file(LOCATION_PATH .'/supported/'. $file)) {
-          if (in_array($matches[1], $iso_keys)) {
-            $supported_countries[] = $matches[1];
-            $matches = array();
-          }
-        }
+    $iso_list = location_get_iso3166_list();
+    $path = drupal_get_path('module', 'location') .'/supported/location.';
+    foreach ($iso_list as $cc => $name) {
+      if (file_exists($path . $cc .'.inc')) {
+        $supported_countries[$cc] = $name;
       }
     }
-    $supported_countries = array_flip($supported_countries);
-    // In the foreach, here, $index is just an integer that we want to
-    // replace with the name of the country, where the key pointing to it
-    // is the two-letter ISO code for the country
-    foreach ($supported_countries as $code => $index) {
-      $supported_countries[$code] = $iso_list[$code];
-    }
-    array_multisort($supported_countries);
-    // Data is now in an array where key = <ISO code for country> and values = <English name for country>
-    // Cache our processed array before returning
-    cache_set('location:supported-countries', 'cache', serialize($supported_countries));
+    cache_set('location:supported-countries', 'cache_location', serialize($supported_countries));
   }
   return $supported_countries;
 }
@@ -1165,7 +1148,7 @@ function _location_country_select_options($value = '', $required = FALSE, $funct
     $countrycodes = array_merge(array('' => ''), $countrycodes);
   }
   else {
-    $countrycodes = array_merge(array('' => '', 'xx' => 'NOT LISTED'), _location_get_iso3166_list());
+    $countrycodes = array_merge(array('' => '', 'xx' => 'NOT LISTED'), location_get_iso3166_list());
   }
   return array(
     '#type'           => 'select',
@@ -1173,10 +1156,59 @@ function _location_country_select_options($value = '', $required = FALSE, $funct
     '#default_value'  => $value,
     '#options'        => $countrycodes,
     '#description'    => NULL,
-    '#extra'          => 0,
     '#multiple'       => FALSE,
     '#required'       => $required
   );
+}
+
+// @@@ New in 3.x, document.
+/**
+ * Fetch the provinces for a country.
+ */
+function location_get_provinces($country = 'us') {
+  static $provinces = array();
+  location_standardize_country_code($country);
+  if (isset($provinces[$country])) {
+    return $provinces[$country];
+  }
+  if ($cache = cache_get("provinces:$country", 'cache_location')) {
+    $provinces[$country] = unserialize($cache->data);
+    return $provinces[$country];
+  }
+  location_load_country($country);
+  $func = 'location_province_list_'. $country;
+  if (function_exists($func)) {
+    $provinces[$country] = $func();
+    cache_set("provinces:$country", 'cache_location', serialize($provinces[$country]));
+    return $provinces[$country];
+  }
+  return array();
+}
+
+// @@@ New in 3.x, document.
+/**
+ * Canonicalize a country code.
+ */
+function location_standardize_country_code(&$country) {
+  $country = trim($country);
+  // @@@ Double check the validity of this validity check. ;)
+  if (!ctype_alpha($country) || strlen($country) != 2) {
+    $country = 'xx';
+    return FALSE;
+  }
+  else {
+    $country = strtolower($country);
+    return TRUE;
+  }
+}
+
+// @@@ New in 3.x, document.
+/**
+ * Load the support file for a country.
+ */
+function location_load_country($country) {
+  location_standardize_country_code($country);
+  include_once(drupal_get_path('module', 'location') .'/supported/location.'. $country .'.inc');
 }
 
 /**
@@ -1204,78 +1236,31 @@ function _location_country_select_options($value = '', $required = FALSE, $funct
  *     -> the values are the full name of the province
  *
  */
-function _location_province_select_options($value = '', $required = FALSE, $country = NULL) {
-  $options_list = array();
-  $options_list[''] = '';
-  $options_list['xx'] = t('NOT LISTED');
-  if (count($countrycodes) == 1 || $country) {
-    if (!$country) {
-      $countrycodes = location_configured_countries();
-      $countrycodes = array_keys($countrycodes);
-      $country = $countrycodes[0];
-    }
-    $province_listing_function = 'location_province_list_'. $country;
-    // Trying to return options in case of only 1 country is configured into system or if $country != null
-    if (function_exists($province_listing_function)) {
-      $province_list = $province_listing_function();
-      if (count($province_list)) {
-        $options_list[$country .'000'] = '[ ----- '. t('MAKE A SELECTION') .' ----- ]';
-        foreach ($province_list as $province_code => $province_name) {
-          $options_list[$country . '-' . $province_code] = $province_name;
-        }
-      }
-    }
+function location_province_select_options($country = NULL) {
+  $options = array();
+  $options['xx'] = t('NOT LISTED');
+
+  if (isset($country)) {
+    $countries = array($country => TRUE);
   }
   else {
-    $countrycodes = location_configured_countries();
-    $countrycodes = array_flip($countrycodes);
-    foreach ($countrycodes as $country_name => $country_code) {
-      // Load country specifice code .inc file if it exists.
-      // For example, if country_code for U.S. == 'us', load location.us.inc
-      $include_file = LOCATION_PATH.'/supported/location.'. $country_code .'.inc';
-      $province_listing_function = 'location_province_list_'. $country_code;
-      if (function_exists($province_listing_function)) {
-        $province_list = $province_listing_function();
-        if (count($province_list)) {
-          $options_list[$country_code .'-000'] = '[ ----- '. strtoupper($country_name) .' ----- ]';
-          foreach ($province_list as $province_code => $province_name) {
-            $options_list[$country_code .'-'. $province_code] = $province_name;
-          }
-        }
-      }
+    $countries = location_configured_countries();
+  }
+  foreach ($countries as $cc => $name) {
+    $provinces = location_get_provinces($cc);
+    // If we're listing multiple countries, do a divider.
+    if (!$name === TRUE) {
+      $obj = new stdClass();
+      $obj->option = array('' => '[ ----- '. strtoupper($country_name) .' ----- ]');
+      $options[] = $obj;
+    }
+    foreach ($provinces as $province_code => $province_name) {
+      $obj = new stdClass();
+      $obj->option = array("$cc-$province-code" => $province_name);
+      $options[] = $obj;
     }
   }
-  return array(
-      '#type' => 'select',
-      '#title' => t('State/Province'),
-      '#default_value' => $value,
-      '#options' => $options_list,
-      '#extra' => 0,
-      '#multiple' => FALSE,
-      '#required' => $required
-      );
-}
-
-/**
- * This function is a public wrapper for the above function
- *
- */
-function location_province_select_options($value = '', $required = FALSE, $country = NULL) {
-  return _location_province_select_options($value, $required, $country);
-}
-
-/**
- * This function simply loads the include file for each country whose
- * locationes are configured to be recognized by the location system.
- */
-function _location_include_configured() {
-  $configured_country_codes = array_keys(location_configured_countries());
-  foreach ($configured_country_codes as $country_code) {
-    $filename = LOCATION_PATH .'/supported/location.'. $country_code .'.inc';
-    if (file_exists($filename)) {
-      include_once $filename;
-    }
-  }
+  return $options;
 }
 
 /**
@@ -1340,16 +1325,12 @@ function location_get_general_geocoder_list() {
   return $list;
 }
 
-function location_get_iso3166_list() {
-  return _location_get_iso3166_list();
-}
-
 /**
  * The following is an array of all
  * countrycode => country-name pairs as layed out in
  * ISO 3166-1 alpha-2
  */
-function _location_get_iso3166_list($upper = FALSE) {
+function location_get_iso3166_list($upper = FALSE) {
   $countries = array(
     'ad' => t('Andorra'),
     'ae' => t('United Arab Emirates'),

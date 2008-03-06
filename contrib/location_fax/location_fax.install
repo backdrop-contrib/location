@@ -32,7 +32,7 @@ function location_fax_install() {
       break;
   }
 
-  // Change weight.
+  // Change weight so we execute after location.
   db_query("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_fax', 'module');
 
   drupal_set_message(t('Installed tables for module location_fax'));

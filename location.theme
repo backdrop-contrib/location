@@ -190,7 +190,7 @@ function theme_location($location = array(), $hide = array()) {
     }
 
     if (!empty($location['country']) && !in_array('country', $hide)) {
-      $countries = _location_get_iso3166_list();
+      $countries = location_get_iso3166_list();
       $output .= '<div class="country-name">'. t($countries[$location['country']]) .'</div>';
     }
 
@@ -265,10 +265,10 @@ function theme_location_form(&$form) {
       );
     }
   }
-  
+
   $output = theme('table', NULL, $rows);
   $output .= drupal_render($form);
-  
+
   return $output;
 }
 

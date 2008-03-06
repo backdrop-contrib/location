@@ -7,74 +7,16 @@
  */
 
 /**
- * Implementation of hook_form_alter().
- */
-function location_phone_form_alter($form_id, &$form) {
-  if ($form_id == 'node_type_form') {
-    $type = $form['#node_type']->type;
-
-    $form['location']['fields']['location_phone'] = array(
-      '#type' => 'radios',
-      '#title' => t('Phone numbers'),
-      '#default_value' => variable_get('location_phone_'. $type, 0),
-      '#options' => array(
-        t('Do not collect'),
-        t('Allow'),
-        t('Require'),
-      ),
-    );
-  }
-  elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0) && variable_get('location_phone_'. $form['type']['#value'], 0)) {
-    $type = $form['type']['#value'];
-    $node = $form['#node'];
-
-    $location_form_count = ($node->nid) ? max(count($node->locations), variable_get('location_defaultnum_'. $node->type, 1)) : variable_get('location_defaultnum_'. $node->type, 1);
-
-    for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index]['phone'] = array_merge(
-        is_array($form['locations'][$index]['phone']) ? $form['locations'][$index]['phone'] : array(),
-        array(
-          '#type' => 'textfield',
-          '#title' => t('Phone number'),
-          '#default_value' => isset($node->locations[$index]['phone']) ? $node->locations[$index]['phone'] : '',
-          '#size' => 31,
-          '#maxlength' => 31,
-          '#required' => ($index == 0 && variable_get('location_phone_'. $type, 0) == 2),
-          '#weight' => 8
-        )
-      );
-    }
-  }
-  elseif ($form_id == 'location_extra') {
-    $arg0 = arg(0);
-    $arg1 = arg(1);
-    $arg2 = arg(2);
-    if ($arg0 == 'node' && is_numeric($arg1) && empty($arg2)) {
-      // We clearly are viewing a node, and since it's already
-      // loaded into a static array, node_load()ing it costs nothing
-      $node = node_load($arg1);
-      if (variable_get('location_phone_'. $node->type, 0)) {
-        $form['location']['phone'] = array_merge(
-          is_array($form['location']['phone']) ? $form['location']['phone'] : array(),
-          array(
-            '#type' => 'textfield',
-            '#title' => t('Phone number'),
-            '#size' => 31,
-            '#maxlength' => 31,
-            '#required' => (count($node->locations) == 0 && variable_get('location_phone_'. $type, 0) == 2),
-            '#weight' => 8
-          )
-        );
-      }
-    }
-  }
-}
-
-/**
  * Implementation of hook_locationapi().
  */
 function location_phone_locationapi(&$location, $op) {
   switch ($op) {
+    case 'fields':
+      return array('phone' => t('Phone number'));
+
+    case 'collection default':
+      return array('phone' => 0);
+
     case 'save':
       db_query('DELETE FROM {location_phone} WHERE lid = %d', $location['lid']);
       if (!empty($location['phone'])) {
@@ -92,15 +34,3 @@ function location_phone_locationapi(&$location, $op) {
       break;
   }
 }
-
-/**
- * Implementation of hook_help().
- */
-function location_phone_help($section) {
-  switch ($section) {
-    case 'admin/modules#description':
-      return t('Adds ability to include a phone-number field for locations.');
-      break;
-  }
-}
-

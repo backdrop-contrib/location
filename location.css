@@ -76,3 +76,43 @@ table.location-search-form-table tbody tr td table tbody tr td table tbody tr td
   margin:0;
   padding:0;
 }
+
+/*
+.location .container-inline {
+  clear: left;
+}
+.location .container-inline label {
+  display: block;
+  float: left;
+  width: 120px;
+}
+.location .form-item .description {
+  white-space: normal;
+}
+
+.location .container-inline { clear: left; }
+.location .container-inline label { display: block; float: left; width: 120px; }
+*/
+
+.location .form-item input {
+  display: block;
+  float: left;
+  width: 342px;
+  margin-bottom: 5px;
+}
+
+.location .form-item label {
+  display: block;
+  float: left;
+  text-align: left;
+  width: 100px;
+  padding-right: 10px;
+}
+
+.location .form-item {
+  clear:both;
+}
+
+.location .description {
+  white-space: normal;
+}

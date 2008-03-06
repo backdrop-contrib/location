@@ -14,7 +14,7 @@ function _location_admin_settings() {
 
   $configured_countries = location_get_configured_countries();
 
-  $iso_list_sorted = _location_get_iso3166_list();
+  $iso_list_sorted = location_get_iso3166_list();
   array_multisort($iso_list_sorted);
   $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
 
