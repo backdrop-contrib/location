@@ -1,0 +1,4 @@
+; $Id$
+name = Location Add Another
+package = Location
+description = Allows you to quickly add locations directly from a node without having to click "edit" first.

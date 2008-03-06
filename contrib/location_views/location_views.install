@@ -1,0 +1,35 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Installation routines for location_views.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function location_views_install() {
+
+
+  // Change weight so we execute after location.
+  db_query("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_views', 'module');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function location_views_uninstall() {
+
+}
+
+/**
+ * Location 3.0 update 1.
+ * Change weight of module.
+ */
+function location_fax_update_5300() {
+  $ret = array();
+  // Change weight.
+  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_views', 'module');
+  return $ret;
+}
