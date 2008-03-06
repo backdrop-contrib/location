@@ -190,7 +190,7 @@ function location_simpletest() {
  * Callback for admin settings form.
  */
 function location_admin_settings() {
-  require_once(drupal_get_path('module', 'location').'/location.admin.inc');
+  require_once(drupal_get_path('module', 'location') .'/location.admin.inc');
   return _location_admin_settings();
 }
 
@@ -198,7 +198,7 @@ function location_admin_settings() {
  * Callback for map link page of admin settings form.
  */
 function location_map_link_options_form() {
-  require_once(drupal_get_path('module', 'location').'/location.admin.inc');
+  require_once(drupal_get_path('module', 'location') .'/location.admin.inc');
   return _location_map_link_options_form();
 }
 
@@ -344,17 +344,18 @@ function theme_location_elementzzz($element) {
 
     $element['#attributes']['class'] .= ' collapsible';
     if ($element['#collapsed']) {
-     $element['#attributes']['class'] .= ' collapsed';
+      $element['#attributes']['class'] .= ' collapsed';
     }
   }
 
-  return '<fieldset' . drupal_attributes($element['#attributes']) .'>' . ($element['#title'] ? '<legend>'. $element['#title'] .'</legend>' : '') . ($element['#description'] ? '<div class="description">'. $element['#description'] .'</div>' : '') . $element['#children'] . $element['#value'] . "</fieldset>\n";
+  return '<fieldset'. drupal_attributes($element['#attributes']) .'>'. ($element['#title'] ? '<legend>'. $element['#title'] .'</legend>' : '') . ($element['#description'] ? '<div class="description">'. $element['#description'] .'</div>' : '') . $element['#children'] . $element['#value'] ."</fieldset>\n";
 /*
   $element['#type'] = 'fieldset';
   return theme('form_element', $element, $element['#children']);
   return drupal_render($element);
   return theme_fieldset($element);
-  return theme('fieldset', $element, $element['#children']);*/
+  return theme('fieldset', $element, $element['#children']);
+ */
 
 }
 
@@ -418,7 +419,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
       return array('name' => t('Location name'), 'street' => t('Street location'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 
     case 'collection default':
-      return array('name' => 1,'street' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
+      return array('name' => 1, 'street' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
 
     case 'field_expand':
       switch ($a3) {
@@ -905,7 +906,7 @@ function _location_node_form_alter($form_id, &$form) {
       '#value' => $node->locations[$index]['lid']
     );
   }
-*/
+ */
 }
 
 function _location_user_settings_form_alter($form_id, &$form) {
@@ -957,7 +958,7 @@ function _location_user_settings_form_alter($form_id, &$form) {
       2 => t('Require')
     ),
   );
-*/
+ */
 }
 
 /**
@@ -967,7 +968,7 @@ function location_form_alter($form_id, &$form) {
   switch ($form_id) {
     case 'location_geocoding_options_form':
       // Fix the submit handler.
-      if(!is_array($form['#submit'])) {
+      if (!is_array($form['#submit'])) {
         $form['#submit'] = array('system_settings_form_submit' => array());
       }
       array_unshift($form['#submit'], array('location_geocoding_options_form_submit' => array()));
@@ -1312,7 +1313,7 @@ function _location_autocomplete($country, $string = '') {
   echo drupal_to_js($matches);
   exit();
 }
-*/
+ */
 
 /**
  * Helper function for seeing if two floats are equal.  We could use other functions, but all
@@ -1405,7 +1406,7 @@ function _location_user_address($action = NULL, $lid = NULL) {
       return theme('location_address_overview', $uid, $addresses);
   }
 }
-*/
+ */
 
 // COW -- copy on write
 /**
@@ -1698,7 +1699,7 @@ Validation crap removed from nodeapi: move into the correct place.
         }
       }
       break;
-*/
+ */
 
 // @@@ This is only needed for Drupal 5.
 /**

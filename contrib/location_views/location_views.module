@@ -303,7 +303,7 @@ function location_views_tables() {
       'list' => drupal_map_assoc(array('node', 'user')),
       'list-type' => 'select',
     );
-*/
+ */
     $tables['user_location']['filters']['latitude'] = array(
       'field' => 'latitude',
       'name' => t('User Location: Latitude'),
@@ -661,7 +661,8 @@ function location_views_default_views() {
         'operator' => '=',
         'options' => '',
         'value' => 'user',
-      ),*/
+      ),
+ */
     );
     $view->exposed_filter = array();
     $view->requires = array('node', 'user_location', 'location');

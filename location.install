@@ -139,7 +139,7 @@ function location_install() {
   } // End case
 
   if ($success) {
-    drupal_set_message(t('Location module installed tables successfully. If you would also like a database of zip codes, please manually import the appropriate zipcode.XX.YYYY file(s) in the %module directory.', array('%module' => drupal_get_path('module', 'location') . '/database')));
+    drupal_set_message(t('Location module installed tables successfully. If you would also like a database of zip codes, please manually import the appropriate zipcode.XX.YYYY file(s) in the %module directory.', array('%module' => drupal_get_path('module', 'location') .'/database')));
   }
   else {
     drupal_set_message(t('The installation of Location module was unsuccessful.'), 'error');
@@ -508,7 +508,7 @@ function location_update_5302() {
   // Italy/Pesaro e Urbino
   // PS -> PU
 }
-*/
+ */
 
 /**
  * Location 3.x update 1.
@@ -528,4 +528,4 @@ function location_update_5301() {
   $ret[] = update_sql("CREATE INDEX {location}_eid ON {location} (eid)");
   return $ret;
 }
-*/
+ */
