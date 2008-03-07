@@ -1704,3 +1704,42 @@ Validation crap removed from nodeapi: move into the correct place.
 function location_validate_location($form) {
   dpm($form);
 }
+
+/**
+ * Convert decimal degrees to degrees,minutes,seconds.
+ */
+function location_dd_to_dms($coord) {
+  $degrees = floor($coord);
+  $coord -= $degrees;
+  $coord *= 60;
+  $minutes = floor($coord);
+  $coord -= $minutes;
+  $coord *= 60;
+  $seconds = round($coord, 6);
+  return array($degrees, $minutes, $seconds);
+}
+
+/**
+ * Display a coordinate.
+ */
+function theme_location_dms($latitude, $longitude) {
+  $output = '';
+  list($degrees, $minutes, $seconds) = location_dd_to_dms($latitude);
+  $output .= "${degrees}° ${minutes}' ${seconds}\" ";
+  if ($degrees > 0) {
+    $output .= 'N';
+  }
+  else {
+    $output .= 'S';
+  }
+  $output .= "<br />\n";
+  list($degrees, $minutes, $seconds) = location_dd_to_dms($latitude);
+  $output .= "${degrees}° ${minutes}' ${seconds}\" ";
+  if ($degrees > 0) {
+    $output .= 'E';
+  }
+  else {
+    $output .= 'W';
+  }
+  return $output;
+}

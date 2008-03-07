@@ -195,7 +195,8 @@ function theme_location($location = array(), $hide = array()) {
     }
 
     if (isset($location['latitude']) && isset($location['longitude'])) {
-      $output .=  '<div class="geo"><abbr class="latitude" title="'. $location['latitude'] .'"></abbr><abbr class="longitude" title="'. $location['longitude'] .'" ></abbr></div>';
+      // "Geo" microformat, see http://microformats.org/wiki/geo
+      $output .= '<div><abbr class="geo" title="'. $location['latitude'] .';'. $location['longitude'] .'">'. theme('location_dms', $location['latitude'], $location['longitude']) .'</abbr></div>';
     }
 
     $output .= '</div></div>';
