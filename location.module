@@ -1045,29 +1045,8 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
     case 'view':
       if (variable_get('location_display_location', 1)) {
-        // Node preview.
-        // @@@ Make this less hacky. -- Split out changed / empty checks from location_save
-        // so we can use it here as well? Hmm...
-        if (isset($_POST) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit') && form_get_errors()))) {
-          $posted_locations = array();
-          foreach ($node->locations as $index => $location) {
-            if (count($node->locations[$index])) {
-              $posted_locations[$index] = location_form2api($node->locations[$index]);
-              if (!isset($posted_locations[$index]['city']) || strlen(trim($posted_locations[$index]['city'])) == 0) {
-                $postal_data = location_get_postalcode_data($posted_locations[$index]);
-                $posted_locations[$index]['city'] = isset($postal_data['city']) ? $postal_data['city'] : '';
-              }
-              if (!isset($posted_locations[$index]['province']) || strlen(trim($posted_locations[$index]['province'])) == 0) {
-                $postal_data = isset($postal_data) ? $postal_data : location_get_postalcode_data($posted_locations[$index]);
-                $posted_locations[$index]['province'] = isset($postal_data['province']) ? $postal_data['province'] : '';
-              }
-            }
-          }
-        }
-        else {
-          // Show ALL location that this node has
-          $posted_locations = $node->locations;
-        }
+
+        $posted_locations = $node->locations;
 
         // Get the list of suppressed countries
         $countries = variable_get('location_suppress_country', 0) ? array('country') : array();
