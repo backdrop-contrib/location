@@ -62,7 +62,6 @@ function location_addanother_form(&$node) {
     '#value' => t('Add location'),
     '#weight' => 50,
   );
-  $form['redirect'] = 'node/'. $node->nid; // Make sure the node is reloaded so the node display contains what was just added.
   return $form;
 }
 
