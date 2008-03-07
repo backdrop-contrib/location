@@ -1,7 +1,5 @@
-/*
-This information is public domain and comes from http://www.npemap.org.uk/ see http://drupal.org/node/19482
-This script was built using data from http://www.jibble.org/ukpostcodes/ and http://www.npemap.org.uk/data/outward1list
-*/
+-- This information is public domain and comes from http://www.npemap.org.uk/ see http://drupal.org/node/19482
+-- This script was built using data from http://www.jibble.org/ukpostcodes/ and http://www.npemap.org.uk/data/outward1list
 
 INSERT INTO zipcodes VALUES ('AB10','','','57.135','-2.117',0,1,'uk');
 INSERT INTO zipcodes VALUES ('AB11','','','57.138','-2.092',0,1,'uk');
