@@ -1045,14 +1045,11 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
     case 'view':
       if (variable_get('location_display_location', 1)) {
-
-        $posted_locations = $node->locations;
-
         // Get the list of suppressed countries
         $countries = variable_get('location_suppress_country', 0) ? array('country') : array();
 
         // Show all locations
-        if ($output = theme('locations', $posted_locations, $countries)) {
+        if ($output = theme('locations', $node->locations, $countries)) {
           $node->content['locations'] = array(
             '#type' => 'markup',
             '#value' => $output,
@@ -1122,7 +1119,6 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         }
       }
       return $items;
-
   }
 }
 
@@ -1295,6 +1291,7 @@ function _location_autocomplete($country, $string = '') {
  */
 
 /**
+ * Epsilon test.
  * Helper function for seeing if two floats are equal.  We could use other functions, but all
  * of them belong to libraries that do not come standard with PHP out of the box.
  */
