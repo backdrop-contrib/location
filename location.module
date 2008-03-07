@@ -1254,7 +1254,7 @@ function location_user($op, &$edit, &$account, $category = NULL) {
     case 'view':
       if ((($user->uid == $account->uid) && user_access('view own user location')) || user_access('administer users') || user_access('view all user locations') || user_access('administer user locations')) {
         // @@@
-        if (variable_get('location_display_location', 1) && count($account->locations)) {
+        if (variable_get('location_display_location', 1) && isset($account->locations) && count($account->locations)) {
           $items[] = array(
             'value' => theme('location', $account->location),
             'class' => 'location',
