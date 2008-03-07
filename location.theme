@@ -202,7 +202,9 @@ function theme_location($location = array(), $hide = array()) {
     $output .= '</div></div>';
   }
 
-  $output .= location_map_link($location);
+  if (!in_array('map_link', $hide)) {
+    $output .= location_map_link($location);
+  }
 
   return $output;
 }
