@@ -103,15 +103,6 @@ function _location_is_empty($location = array()) {
   return TRUE;
 }
 
-function _location_nothing_to_show($location = array(), $hide = array()) {
-  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
-    if (isset($location[$field]) && strlen(trim($location[$field])) && !in_array($field, $hide)) {
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
 /**
  * Given two points in lat/lon form, returns the distance between them.
  *
