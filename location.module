@@ -1722,7 +1722,7 @@ function location_dd_to_dms($coord) {
 /**
  * Display a coordinate.
  */
-function theme_location_dms($latitude, $longitude) {
+function theme_location_latitude_dms($latitude) {
   $output = '';
   list($degrees, $minutes, $seconds) = location_dd_to_dms($latitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
@@ -1732,8 +1732,12 @@ function theme_location_dms($latitude, $longitude) {
   else {
     $output .= 'S';
   }
-  $output .= "<br />\n";
-  list($degrees, $minutes, $seconds) = location_dd_to_dms($latitude);
+  return $output;
+}
+
+function theme_location_longitude_dms($longitude) {
+  $output = '';
+  list($degrees, $minutes, $seconds) = location_dd_to_dms($longitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
   if ($degrees > 0) {
     $output .= 'E';
