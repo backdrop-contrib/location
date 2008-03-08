@@ -1005,6 +1005,11 @@ function location_form_alter($form_id, &$form) {
 
   // Add the Location fields on the Node edit form
   if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
+    // @@@ This is a workaround for some bad interactions with usernode.
+    // @@@ Remove it as soon as we can figure out what's going on.
+    if ($form_id == 'usernode_node_form') {
+      return;
+    }
     _location_node_form_alter($form_id, $form);
   }
 }
