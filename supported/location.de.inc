@@ -1,6 +1,27 @@
 <?php
 // $Id$
 
+function location_province_list_de() {
+  return array(
+    'BB' => 'Brandenburg',
+    'BE' => 'Berlin',
+    'BW' => 'Baden-Württemberg',
+    'BY' => 'Bayern',
+    'HB' => 'Bremen',
+    'HE' => 'Hessen',
+    'HH' => 'Hamburg',
+    'MV' => 'Mecklenburg-Vorpommern',
+    'NI' => 'Niedersachsen',
+    'NW' => 'Nordrhein-Westfalen',
+    'RP' => 'Rheinland-Pfalz',
+    'SH' => 'Schleswig-Holstein',
+    'SL' => 'Saarland',
+    'SN' => 'Sachsen',
+    'ST' => 'Sachsen-Anhalt',
+    'TH' => 'Thüringen'
+  );
+}
+
 /**
  * Parameters:
  *   -> $location_a is an associative array that represents a full location where
@@ -43,7 +64,6 @@ function _location_map_link_de_suchen($location = array()) {
   $get_query .= urlencode(implode(', ', $query_parts));
   return ('http://www.suchen.de/lokalmap'. $get_query);
 }
-
 
 function location_map_link_de_providers() {
   return array(
@@ -213,25 +233,4 @@ function location_get_postalcode_data_de($location = array()) {
   else {
     return NULL;
   }
-}
-
-function location_province_list_de() {
-  return array(
-    'BB' => 'Brandenburg',
-    'BE' => 'Berlin',
-    'BW' => 'Baden-Württemberg',
-    'BY' => 'Bayern',
-    'HB' => 'Bremen',
-    'HE' => 'Hessen',
-    'HH' => 'Hamburg',
-    'MV' => 'Mecklenburg-Vorpommern',
-    'NI' => 'Niedersachsen',
-    'NW' => 'Nordrhein-Westfalen',
-    'RP' => 'Rheinland-Pfalz',
-    'SH' => 'Schleswig-Holstein',
-    'SL' => 'Saarland',
-    'SN' => 'Sachsen',
-    'ST' => 'Sachsen-Anhalt',
-    'TH' => 'Thüringen'
-  );
 }
