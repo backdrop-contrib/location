@@ -76,6 +76,13 @@ function location_views_tables() {
         'operator' => 'views_handler_operator_like',
         'handler' => 'views_handler_filter_like',
       ),
+      // Note: Only checks latitude for now.
+      'has_coordinates' => array(
+        'field' => 'latitude',
+        'name' => t('Location: Has coordinates'),
+        'operator' => array('IS NOT' => t('Has coordinates'), 'IS' => t('No coordinates')),
+        'handler' => 'views_handler_filter_null',
+      ),
     ),
   );
 
