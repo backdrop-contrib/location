@@ -1061,14 +1061,13 @@ function location_configured_countries() {
     $configured_countries = is_array($configured_countries) ? $configured_countries : array();
     $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
 
-    $configured_countries_associative = array();
     foreach ($configured_countries as $country_code) {
       if (array_key_exists($country_code, $supported_countries)) {
-        $configured_countries_associative[$country_code] = $supported_countries[$country_code];
+        $countries[$country_code] = $supported_countries[$country_code];
       }
     }
 
-    asort($configured_countries_associative);
+    asort($countries);
   }
   return $countries;
 }
@@ -1239,6 +1238,7 @@ function location_province_select_options($country = NULL) {
   }
   else {
     $countries = location_configured_countries();
+dpm($countries);
   }
   foreach ($countries as $cc => $name) {
     $provinces = location_get_provinces($cc);
