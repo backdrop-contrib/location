@@ -1,6 +1,44 @@
 <?php
 // $Id$
 
+function location_province_list_ca() {
+  return array(
+    'AB' => 'Alberta',
+    'BC' => 'British Columbia',
+    'MB' => 'Manitoba',
+    'NB' => 'New Brunswick',
+    'NL' => 'Newfoundland and Labrador',
+    'NS' => 'Nova Scotia',
+    'ON' => 'Ontario',
+    'PE' => 'Prince Edward Island',
+    'QC' => 'Quebec',
+    'SK' => 'Saskatchewan',
+    'NT' => 'Northwest Territories',
+    'NU' => 'Nunavut',
+    'YT' => 'Yukon Territory',
+  );
+}
+
+function location_province_list_numeric_ca() {
+  return array(
+    '001' => 'Alberta',
+    '002' => 'British Columbia',
+    '003' => 'Manitoba',
+    '004' => 'New Brunswick',
+    '005' => 'Newfoundland and Labrador',
+    '006' => 'Nova Scotia',
+    '007' => 'Ontario',
+    '008' => 'Prince Edward Island',
+    '009' => 'Quebec',
+    '010' => 'Saskatchewan',
+    '011' => 'Northwest Territories',
+    '012' => 'Nunavut',
+    '013' => 'Yukon Territory',
+  );
+}
+
+
+
 /**
  * Returns a lat/lon pair of the approximate center of the given postal code in the given country
  *
@@ -348,36 +386,4 @@ function location_geocode_ca_geocoder($location = array()) {
       return NULL;
     }
   }
-}
-
-function location_province_list_ca() {
-  return array('AB' => 'Alberta',
-               'BC' => 'British Columbia',
-               'MB' => 'Manitoba',
-               'NB' => 'New Brunswick',
-               'NL' => 'Newfoundland and Labrador',
-               'NS' => 'Nova Scotia',
-               'ON' => 'Ontario',
-               'PE' => 'Prince Edward Island',
-               'QC' => 'Quebec',
-               'SK' => 'Saskatchewan',
-               'NT' => 'Northwest Territories',
-               'NU' => 'Nunavut',
-               'YT' => 'Yukon Territory');
-}
-
-function location_province_list_numeric_ca() {
-  return array('001' => 'Alberta',
-               '002' => 'British Columbia',
-               '003' => 'Manitoba',
-               '004' => 'New Brunswick',
-               '005' => 'Newfoundland and Labrador',
-               '006' => 'Nova Scotia',
-               '007' => 'Ontario',
-               '008' => 'Prince Edward Island',
-               '009' => 'Quebec',
-               '010' => 'Saskatchewan',
-               '011' => 'Northwest Territories',
-               '012' => 'Nunavut',
-               '013' => 'Yukon Territory');
 }
