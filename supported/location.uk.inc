@@ -237,3 +237,34 @@ function location_province_list_uk() {
     'VGL' => "Vale of Glamorgan",
     'WRX' => "Wrexham");
 }
+
+function location_map_link_uk_providers() {
+  return array(
+    'google' => array(
+      'name' => 'Google Maps',
+      'url' => 'http://maps.google.co.uk',
+      'tos' => 'http://www.google.co.uk/help/terms_maps.html',
+    ),
+  );
+}
+
+function location_map_link_uk_default_providers() {
+  return array('google');
+}
+
+function location_map_link_uk_google($location = array()) {
+  $query_params = array();
+
+  foreach (array('street', 'city', 'postal_code', 'country') as $field) {
+    if (isset($location[$field])) {
+      $query_params[] = $location[$field];
+    }
+  }
+
+  if (count($query_params)) {
+    return ('http://maps.google.co.uk?q='. urlencode(implode(', ', $query_params)));
+  }
+  else {
+    return NULL;
+  }
+}
