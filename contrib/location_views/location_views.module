@@ -120,7 +120,7 @@ function location_views_tables() {
     'name' => t('Location: Province Selector'),
     'operator' => 'location_handler_operator_eq',
     'handler' => 'location_handler_filter_eq',
-    'list' => location_views_provinces(),
+    'list' => location_province_select_options(), // @@@ Dunno how sane this is....
     'list-type' => 'select',
     );
   $tables['location']['filters']['province'] = array(
@@ -277,7 +277,7 @@ function location_views_tables() {
       'name' => t('User Location: Province Selector'),
       'operator' => 'location_handler_operator_eq',
       'handler' => 'location_handler_filter_eq',
-      'list' => location_views_provinces(),
+      'list' => location_province_select_options(), // @@@ Dunno how sane this is.
       'list-type' => 'select',
       );
     $tables['user_location']['filters']['province'] = array(
@@ -809,7 +809,6 @@ function location_views_handler_arg_user_province($op, &$query, $argtype, $arg =
 }
 
 function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
-  $provinces = location_views_provinces($country = '');
   switch ($op) {
     case 'summary':
       $query->ensure_table($table, true);
@@ -821,18 +820,41 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
 
       return $fieldinfo;
       break;
+
     case 'sort':
       $query->add_orderby($table, 'province', 'ASC');
       break;
+
     case 'filter':
       $query->ensure_table($table);
       $query->add_field('province', $table);
       $query->add_where("$table.province = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       break;
+
     case 'link':
+      global $_location_views_country;
+      if (isset($_location_views_country)) {
+        $country = $_location_views_country;
+      }
+      else {
+        // @@@ Use the default country..
+        $country = 'us';
+      }
+      $provinces = location_get_provinces($country);
       return l($query->province == t('unknown') ? t('unknown') : $provinces[$query->country .'-'. $query->province], "$arg/$query->province");
+
     case 'title':
-      return empty($query) ? t('unknown') : $provinces[$country .'-'. $query];
+      global $_location_views_country;
+      if (isset($_location_views_country)) {
+        $country = $_location_views_country;
+      }
+      else {
+        // @@@ Use the default country..
+        $country = 'us';
+      }
+      $provinces = location_get_provinces($country);
+      return empty($query) ? t('unknown') : $provinces[strtoupper($query)];
+
   }
 }
 
@@ -867,6 +889,8 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
     case 'link':
       return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
     case 'title':
+      global $_location_views_country;
+      $_location_views_country = $query;
       return $query == t('unknown') ? t('unknown') : $country_name;
   }
 }
@@ -952,14 +976,6 @@ function location_views_field_handler_address($fieldinfo, $fielddata, $value, $d
   $location['country'] = $data->location_country;
   $location['postal_code'] = $data->location_postal_code;
   return theme('location', $location);
-}
-
-/**
- *  Get an array of provinces, optionally limited by country.
- */
-function location_views_provinces($country = '') {
-  $form = location_province_select_options('', FALSE, $country);
-  return $form['#options'];
 }
 
 /**
