@@ -984,7 +984,10 @@ function location_latlon_exact($location = array()) {
     // figure out what the exact function should be
     if (strpos($service, '|')) {
       location_load_country($country);
-      $exact_latlon_function = 'location_geocode_'. $country .'_'. $service;
+      // The code change below fixes the problem of the country specific
+      // function for geocoding not being correctly called (it removes any
+      // text from the pipe (|) onwards)
+      $exact_latlon_function = 'location_geocode_'. $country .'_'. substr($service, 0, strpos($service, '|'));
     }
     else {
       $exact_latlon_function = $service .'_geocode_location';
