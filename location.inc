@@ -1250,7 +1250,7 @@ function location_province_select_options($country = NULL) {
     }
     foreach ($provinces as $province_code => $province_name) {
       $obj = new stdClass();
-      $obj->option = array("$cc-$province-code" => $province_name);
+      $obj->option = array("$cc-$province_code" => $province_name);
       $options[] = $obj;
     }
   }
