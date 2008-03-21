@@ -32,13 +32,13 @@ function location_views_tables() {
         'handler' => 'location_views_province_handler',
         'addlfields' => array('country'),
         'sortable' => true,
-        ),
+      ),
       'postal_code' => array('name' => t('Location: Postal Code'), 'sortable' => true),
       'country'     => array(
         'name' => t('Location: Country'),
         'handler' => 'location_views_country_handler',
         'sortable' => true,
-        ),
+      ),
       'latitude'    => array('name' => t('Location: Latitude'),    'sortable' => true),
       'longitude'   => array('name' => t('Location: Longitude'),   'sortable' => true),
     ),
@@ -122,13 +122,13 @@ function location_views_tables() {
     'handler' => 'location_handler_filter_eq',
     'list' => location_province_select_options(), // @@@ Dunno how sane this is....
     'list-type' => 'select',
-    );
+  );
   $tables['location']['filters']['province'] = array(
     'field' => 'province',
     'name' => t('Location: Province'),
     'operator' => 'views_handler_operator_like',
     'handler' => 'views_handler_filter_like',
-    );
+  );
 
   $tables['location']['filters']['postal_code'] = array(
     'field' => 'postal_code',
@@ -171,7 +171,7 @@ function location_views_tables() {
     'sortable'   => false,
     'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
     'help' => t('Complete formatted address in a single cell, using the location theme.'),
-    );
+  );
 
   $tables['location']['filters']['proximity'] = array(
     'field' => 'distance',
@@ -201,7 +201,7 @@ function location_views_tables() {
     'sortable'   => false,
     'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
     'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
-    );
+  );
 
   if (module_exists('usernode')) {
     $tables['user_location'] = array(
@@ -225,13 +225,13 @@ function location_views_tables() {
           'handler' => 'location_views_province_handler',
           'addlfields' => array('country'),
           'sortable' => true,
-          ),
+        ),
         'postal_code' => array('name' => t('User Location: Postal Code'), 'sortable' => true),
         'country'     => array(
           'name' => t('User Location: Country'),
           'handler' => 'location_views_country_handler',
           'sortable' => true,
-          ),
+        ),
         'latitude'    => array('name' => t('User Location: Latitude'),    'sortable' => true),
         'longitude'   => array('name' => t('User Location: Longitude'),   'sortable' => true),
       ),
@@ -269,7 +269,7 @@ function location_views_tables() {
           'operator' => 'views_handler_operator_like',
           'handler' => 'views_handler_filter_like',
         ),
-      )
+      ),
     );
 
     $tables['user_location']['filters']['province'] = array(
@@ -279,13 +279,13 @@ function location_views_tables() {
       'handler' => 'location_handler_filter_eq',
       'list' => location_province_select_options(), // @@@ Dunno how sane this is.
       'list-type' => 'select',
-      );
+    );
     $tables['user_location']['filters']['province'] = array(
       'field' => 'province',
       'name' => t('User Location: Province'),
       'operator' => 'views_handler_operator_like',
       'handler' => 'views_handler_filter_like',
-      );
+    );
 
     $tables['user_location']['filters']['postal_code'] = array(
       'field' => 'postal_code',
@@ -330,7 +330,7 @@ function location_views_tables() {
       'sortable'   => false,
       'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
       'help' => t('Complete formatted address in a single cell, using the location theme.'),
-      );
+    );
 
     $tables['user_location']['filters']['proximity'] = array(
       'field' => 'distance',
@@ -360,7 +360,7 @@ function location_views_tables() {
       'sortable'   => false,
       'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
       'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
-      );
+    );
   }
   return $tables;
 }
@@ -700,8 +700,8 @@ function location_views_arguments() {
       'name' => t('Location: Postal Code'),
       'handler' => 'location_views_handler_arg_postal_code',
       'help' => t('This argument allows users to filter a view by specifying the postal code.'),
-      ),
-    );
+    ),
+  );
   if (module_exists('usernode')) {
     $arguments['user_city'] = array(
       'name' => t('User Location: City'),
@@ -724,7 +724,7 @@ function location_views_arguments() {
 }
 
 /**
- *  City argument handler.
+ * City argument handler.
  */
 function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
   return location_views_handler_arg_city($op, $query, $argtype, $arg, 'user_location');
@@ -745,10 +745,11 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       }
       $fieldinfo['fieldname'] = 'city';
       return $fieldinfo;
-      break;
+
     case 'sort':
       $query->add_orderby($table, 'city', 'ASC');
       break;
+
     case 'filter':
       $query->ensure_table($table);
       $query->add_field('city', $table);
@@ -762,6 +763,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
         $query->add_where("LEFT($table.city, $len) = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       }
       break;
+
     case 'link':
       // if using first letter directory, use strtoupper on the link
       if ($len) {
@@ -770,6 +772,7 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
       else {
         return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
       }
+
     case 'title':
       return $query;
   }
@@ -785,17 +788,20 @@ function location_views_handler_arg_postal_code($op, &$query, $argtype, $arg = '
       $fieldinfo['field'] = "IF($table.postal_code='' OR $table.postal_code IS NULL,'". t('unknown') ."',$table.postal_code)";
       $fieldinfo['fieldname'] = 'postal_code';
       return $fieldinfo;
-      break;
+
     case 'sort':
       $query->add_orderby($table, 'postal_code', 'ASC');
       break;
+
     case 'filter':
       $query->ensure_table($table);
       $query->add_field('postal_code', $table);
       $query->add_where("$table.postal_code = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       break;
+
     case 'link':
         return l($query->postal_code == t('unknown') ? t('unknown') : $query->postal_code, "$arg/$query->postal_code");
+
     case 'title':
       return $query;
   }
@@ -819,7 +825,6 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
       $query->add_field('country', $table);
       $query->add_groupby('country', $table); // Needed for postgresql...
       return $fieldinfo;
-      break;
 
     case 'sort':
       $query->add_orderby($table, 'province', 'ASC');
@@ -869,18 +874,21 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $
       $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'". t('unknown') ."',$table.country)";
       $fieldinfo['fieldname'] = 'country';
       return $fieldinfo;
-      break;
+
     case 'sort':
       $query->add_orderby($table, 'country', 'ASC');
       break;
+
     case 'filter':
       $query->ensure_table($table);
       $query->add_field('country', $table);
 
       $query->add_where("$table.country = '%s'", $arg);
       break;
+
     case 'link':
       return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+
     case 'title':
       global $_location_views_country;
       $_location_views_country = $query;
