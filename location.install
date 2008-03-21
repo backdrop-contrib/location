@@ -151,7 +151,7 @@ function location_install() {
  * Implentation of hook_uninstall().
  */
 function location_uninstall() {
-  // delete tables
+  // Delete tables.
   if (db_table_exists('location')) {
     db_query('DROP TABLE {location}');
   }
@@ -165,6 +165,13 @@ function location_uninstall() {
     db_query('DROP TABLE {location_instance}');
   }
 
+  // Delete variables.
+  variable_del('location_configured_countries');
+  variable_del('location_default_country');
+  variable_del('location_display_location');
+  variable_del('location_search_distance_unit');
+  variable_del('location_suppress_country');
+  variable_del('location_usegmap');
 }
 
 /**
