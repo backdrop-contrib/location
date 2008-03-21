@@ -817,7 +817,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
 
       // Make sure the country gets added so we can do a lookup on the province name.
       $query->add_field('country', $table);
-
+      $query->add_groupby('country', $table); // Needed for postgresql...
       return $fieldinfo;
       break;
 
@@ -832,16 +832,9 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
       break;
 
     case 'link':
-      global $_location_views_country;
-      if (isset($_location_views_country)) {
-        $country = $_location_views_country;
-      }
-      else {
-        // @@@ Use the default country..
-        $country = 'us';
-      }
+      list($country, $province) = explode('-', $query->{$argtype}, 2);
       $provinces = location_get_provinces($country);
-      return l($query->province == t('unknown') ? t('unknown') : $provinces[$query->country .'-'. $query->province], "$arg/$query->province");
+      return l($query->province == t('unknown') ? t('unknown') : $provinces[$province], "$arg/$province");
 
     case 'title':
       global $_location_views_country;
