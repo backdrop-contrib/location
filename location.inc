@@ -93,16 +93,6 @@ function location_get_postalcode_data($location = array()) {
   }
 }
 
-function _location_is_empty($location = array()) {
-  $fields = array('street', 'additional', 'city', 'province', 'postal_code', 'country');
-  foreach ($fields as $field) {
-    if (isset($location[$field]) && strlen(trim($location[$field]))) {
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
 /**
  * Given two points in lat/lon form, returns the distance between them.
  *
@@ -491,41 +481,6 @@ function location_proximity_form($prefilled_values = array(), $suppressed_values
   $form['#theme'] = 'location_proximity_form';
 
   return $form;
-}
-
-/**
- * A helper function that tells you whether all the fields of an location are full (excluding the 'additional' field.
- *
- * @param $location
- *   An associative array where
- *     -> The keys are the different field names of an location: 'street', 'additional', 'city', 'province', 'postal_code', and 'country'
- *
- * @return
- *   TRUE if there is a non-empty (trimmed) string for the following keys' values: 'street', 'city', 'province', 'postal_code', 'country'.
- *   FALSE otherwise.
- */
-function _location_is_full($location = array()) {
-  if (!isset($location['street']) && trim($location['street']) != '') {
-    return FALSE;
-  }
-
-  if (!isset($location['city']) && trim($location['city']) != '') {
-    return FALSE;
-  }
-
-  if (!isset($location['province']) && trim($location['province']) != '') {
-    return FALSE;
-  }
-
-  if (!isset($location['postal_code']) && trim($location['postal_code']) != '') {
-    return FALSE;
-  }
-
-  if (!isset($location['country']) && trim($location['country']) != '') {
-    return FALSE;
-  }
-
-  return TRUE;
 }
 
 /**
