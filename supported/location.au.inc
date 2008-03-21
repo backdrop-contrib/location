@@ -503,14 +503,16 @@ function _location_au_geocoder_oneline($location = array()) {
  *
  */
 function location_province_list_au() {
-  return array('ACT' => "Australian Capital Territory",
-    'NSW' => "New South Wales",
-    'NT' => "Northern Territory",
-    'QLD' => "Queensland",
-    'SA' => "South Australia",
-    'TAS' => "Tasmania",
-    'VIC' => "Victoria",
-    'WA' => "Western Australia");
+  return array(
+    'ACT' => 'Australian Capital Territory',
+    'NSW' => 'New South Wales',
+    'NT'  => 'Northern Territory',
+    'QLD' => 'Queensland',
+    'SA'  => 'South Australia',
+    'TAS' => 'Tasmania',
+    'VIC' => 'Victoria',
+    'WA'  => 'Western Australia',
+  );
 }
 
 /**
@@ -535,7 +537,6 @@ function location_province_list_numeric_au() {
     '004' => "Tasmania",
     '005' => "Victoria",
     '006' => "Western Australia",
-
     '007' => "Australian Capital Territory",
     '008' => "Northern Territory",
   );
