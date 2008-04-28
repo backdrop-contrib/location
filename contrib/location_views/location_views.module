@@ -948,12 +948,8 @@ function location_views_country_handler($fieldinfo, $fielddata, $value, $data)  
  *  Format a province name
  */
 function location_views_province_handler($fieldinfo, $fielddata, $value, $data)  {
-  $array = location_province_select_options();
-  $provinces = $array['#options'];
-  $location['province'] = $data->location_province;
-  $location['country']  = $data->location_country;
-  $values = location_api2form($location);
-  return $provinces[$values['province']];
+  $provinces = location_get_provinces($data->location_country);
+  return $provinces[$data->location_province];
 }
 
 /**
