@@ -367,6 +367,7 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
  *
  *                This is changed to 'CA' in the returned array.
  */
+/*
 function location_form2api($location = array()) {
   // @@@ Differs from megapatch.
   // The user may have selected a state/province, but did not specify a country
@@ -390,6 +391,7 @@ function location_form2api($location = array()) {
   }
   return $translated;
 }
+*/
 
 /**
  * Inverse of location_form2api()
@@ -404,6 +406,7 @@ function location_form2api($location = array()) {
  *   Meant to take the standard location array format used by the public API (minus the form generating functions) and convert them
  *   into values that can be used by location_form() to fill in the prefilled values.
  */
+/*
 function location_api2form($location = array()) {
 // @@@ FAPI
   $translated = array();
@@ -419,6 +422,7 @@ function location_api2form($location = array()) {
   }
   return $translated;
 }
+*/
 
 /**
  * This function generates a form for doing proximity searches within a certain distance
