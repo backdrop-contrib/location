@@ -937,18 +937,21 @@ dpm($filter['value']);
 }
 
 /**
- *  Format a country name
+ * Format a country name.
  */
-function location_views_country_handler($fieldinfo, $fielddata, $value, $data)  {
-  $countries = location_views_countries();
+function location_views_country_handler($fieldinfo, $fielddata, $value, $data) {
+  location_standardize_country_code($value);
+  $countries = _location_supported_countries();
   return $countries[$value];
 }
 
 /**
- *  Format a province name
+ * Format a province name.
  */
-function location_views_province_handler($fieldinfo, $fielddata, $value, $data)  {
-  $provinces = location_get_provinces($data->location_country);
+function location_views_province_handler($fieldinfo, $fielddata, $value, $data) {
+  $country = $data->location_country;
+  location_standardize_country_code($country);
+  $provinces = location_get_provinces($country);
   return $provinces[$data->location_province];
 }
 
