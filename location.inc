@@ -1160,7 +1160,9 @@ function location_standardize_country_code(&$country) {
  */
 function location_load_country($country) {
   location_standardize_country_code($country);
-  include_once(drupal_get_path('module', 'location') .'/supported/location.'. $country .'.inc');
+  if ($country != 'xx') {
+    include_once(drupal_get_path('module', 'location') .'/supported/location.'. $country .'.inc');
+  }
 }
 
 /**
