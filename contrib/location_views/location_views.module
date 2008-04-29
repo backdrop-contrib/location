@@ -762,17 +762,9 @@ function location_views_handler_any($op, &$query, $argtype, $arg = '', $type = '
       }
       break;
 
-    // @@@@
-    case 'link':
-      // if using first letter directory, use strtoupper on the link
-      if ($len) {
-        return l($query->city == t('unknown') ? t('unknown') : strtoupper($query->city), "$arg/$query->city");
-      }
-      else {
-        return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
-      }
+//    case 'link':
+//      break;
 
-    // @@@@
     case 'title':
       return $query;
   }
@@ -783,39 +775,47 @@ function location_views_handler_any($op, &$query, $argtype, $arg = '', $type = '
  * City argument handler.
  */
 function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_any($op, $query, $argtype, $arg, 'user', 'city');
+  switch ($op) {
+    case 'link':
+      // if using first letter directory, use strtoupper on the link
+      if ($len) {
+        return l($query->city == t('unknown') ? t('unknown') : strtoupper($query->city), "$arg/$query->city");
+      }
+      else {
+        return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
+      }
+
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, 'user', 'city');
+  }
 }
 
 function location_views_handler_arg_city($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'city');
+  switch ($op) {
+    case 'link':
+      // if using first letter directory, use strtoupper on the link
+      if ($len) {
+        return l($query->city == t('unknown') ? t('unknown') : strtoupper($query->city), "$arg/$query->city");
+      }
+      else {
+        return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
+      }
+
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'city');
+  }
 }
 
 /**
  *  Postal code argument handler.
  */
-function location_views_handler_arg_postal_code($op, &$query, $argtype, $arg = '', $table = 'location') {
-  switch($op) {
-    case 'summary':
-      $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.postal_code='' OR $table.postal_code IS NULL,'". t('unknown') ."',$table.postal_code)";
-      $fieldinfo['fieldname'] = 'postal_code';
-      return $fieldinfo;
-
-    case 'sort':
-      $query->add_orderby($table, 'postal_code', 'ASC');
-      break;
-
-    case 'filter':
-      $query->ensure_table($table);
-      $query->add_field('postal_code', $table);
-      $query->add_where("$table.postal_code = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
-      break;
-
+function location_views_handler_arg_postal_code($op, &$query, $argtype, $arg = '') {
+  switch ($op) {
     case 'link':
-        return l($query->postal_code == t('unknown') ? t('unknown') : $query->postal_code, "$arg/$query->postal_code");
+      return l($query->postal_code == t('unknown') ? t('unknown') : $query->postal_code, "$arg/$query->postal_code");
 
-    case 'title':
-      return $query;
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'postal_code');
   }
 }
 
@@ -872,39 +872,36 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
  *  Country argument handler.
  */
 function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_country($op, $query, $argtype, $arg, 'user_location');
-}
-
-function location_views_handler_arg_country($op, &$query, $argtype, $arg = '', $table = 'location') {
-
-  $all_countries = location_get_iso3166_list();
-  $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
-
   switch ($op) {
-    case 'summary':
-      $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.country='' OR $table.country IS NULL,'". t('unknown') ."',$table.country)";
-      $fieldinfo['fieldname'] = 'country';
-      return $fieldinfo;
-
-    case 'sort':
-      $query->add_orderby($table, 'country', 'ASC');
-      break;
-
-    case 'filter':
-      $query->ensure_table($table);
-      $query->add_field('country', $table);
-
-      $query->add_where("$table.country = '%s'", $arg);
-      break;
-
     case 'link':
-      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+      $all_countries = location_get_iso3166_list();
+      $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
+      return l($query->postal_code == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
 
     case 'title':
       global $_location_views_country;
       $_location_views_country = $query;
       return $query == t('unknown') ? t('unknown') : $country_name;
+
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, 'user', 'country');
+  }
+}
+
+function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
+  switch ($op) {
+    case 'link':
+      $all_countries = location_get_iso3166_list();
+      $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
+      return l($query->postal_code == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+
+    case 'title':
+      global $_location_views_country;
+      $_location_views_country = $query;
+      return $query == t('unknown') ? t('unknown') : $country_name;
+
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'country');
   }
 }
 
