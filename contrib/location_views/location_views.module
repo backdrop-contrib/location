@@ -723,47 +723,46 @@ function location_views_arguments() {
   return $arguments;
 }
 
-/**
- * City argument handler.
- */
-function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_city($op, $query, $argtype, $arg, 'user_location');
-}
-
-function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $table = 'location') {
+function location_views_handler_any($op, &$query, $argtype, $arg = '', $type = 'node', $col) {
   switch ($op) {
     case 'summary':
+      $query->ensure_table('location');
+      if ($type == 'node') {
+        $query->add_where("location_instance_node.vid IS NOT NULL");
+      }
+      else if ($type == 'user') {
+        $query->add_where("location_instance_user.uid IS NOT NULL");
+      }
 
       // if a length option has been provided, display only the $len left letters of the name
       $len = intval($arg);
-      $query->ensure_table($table, true);
       if ($len <= 0) {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". t('unknown') ."', $table.city)";
+        $fieldinfo['field'] = "IF (location.$col = '' OR location.$col IS NULL, '". t('unknown') ."', location.$col)";
       }
       else {
-        $fieldinfo['field'] = "IF ($table.city='' OR $table.city IS NULL, '". t('unknown') ."', LEFT($table.city, $len))";
+        $fieldinfo['field'] = "IF (location.$col = '' OR location.$col IS NULL, '". t('unknown') ."', LEFT(location.$col, $len))";
       }
-      $fieldinfo['fieldname'] = 'city';
+      $fieldinfo['fieldname'] = $col;
       return $fieldinfo;
 
     case 'sort':
-      $query->add_orderby($table, 'city', 'ASC');
+      $query->add_orderby('location', $col, 'ASC');
       break;
 
     case 'filter':
-      $query->ensure_table($table);
-      $query->add_field('city', $table);
-
-      // adjust the search based on whether you are looking for the full city name or the first $len letters
+      $query->ensure_table('location');
+      $query->add_field($col, 'location');
+      // adjust the search based on whether you are looking for the full value or the first $len letters
       $len = intval($argtype['options']);
       if ($len <= 0) {
-        $query->add_where("$table.city = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
+        $query->add_where("location.$col = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       }
       else {
-        $query->add_where("LEFT($table.city, $len) = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
+        $query->add_where("LEFT(location.$col, $len) = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
       }
       break;
 
+    // @@@@
     case 'link':
       // if using first letter directory, use strtoupper on the link
       if ($len) {
@@ -773,9 +772,22 @@ function location_views_handler_arg_city($op, &$query, $argtype, $arg = '', $tab
         return l($query->city == t('unknown') ? t('unknown') : $query->city, "$arg/$query->city");
       }
 
+    // @@@@
     case 'title':
       return $query;
   }
+}
+
+
+/**
+ * City argument handler.
+ */
+function location_views_handler_arg_user_city($op, &$query, $argtype, $arg = '') {
+  return location_views_handler_any($op, $query, $argtype, $arg, 'user', 'city');
+}
+
+function location_views_handler_arg_city($op, &$query, $argtype, $arg = '') {
+  return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'city');
 }
 
 /**
