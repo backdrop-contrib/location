@@ -823,48 +823,38 @@ function location_views_handler_arg_postal_code($op, &$query, $argtype, $arg = '
  *  Province argument handler.
  */
 function location_views_handler_arg_user_province($op, &$query, $argtype, $arg = '') {
-  return location_views_handler_arg_province($op, $query, $argtype, $arg, 'user_location');
+  return location_views_handler_arg_province($op, $query, $argtype, $arg, 'user');
 }
 
-function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $table = 'location') {
+function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', $type = 'node') {
   switch ($op) {
     case 'summary':
-      $query->ensure_table($table, true);
-      $fieldinfo['field'] = "IF($table.province='' OR $table.province IS NULL,'". t('unknown') ."',$table.province)";
-      $fieldinfo['fieldname'] = 'province';
+      $query->ensure_table('location');
+      // Figure out what country to load.
+      // This works best when the country argument appears before.
 
-      // Make sure the country gets added so we can do a lookup on the province name.
-      $query->add_field('country', $table);
-      $query->add_groupby('country', $table); // Needed for postgresql...
+      $country = isset($query->_location_country_arg) ? $query->_location_country_arg : 'us';
+      // Add country as a fake field.
+      $query->add_field("'$country'", NULL, 'location_country_arg');
+
+      if ($type == 'node') {
+        $query->add_where("location_instance_node.vid IS NOT NULL");
+      }
+      else if ($type == 'user') {
+        $query->add_where("location_instance_user.uid IS NOT NULL");
+      }
+
+      $fieldinfo['field'] = "IF (location.province = '' OR location.province IS NULL, 'xx', location.province)";
+      $fieldinfo['fieldname'] = 'province';
       return $fieldinfo;
 
-    case 'sort':
-      $query->add_orderby($table, 'province', 'ASC');
-      break;
-
-    case 'filter':
-      $query->ensure_table($table);
-      $query->add_field('province', $table);
-      $query->add_where("$table.province = '%s'", strcasecmp($arg, t('unknown')) ? $arg : '');
-      break;
-
     case 'link':
-      list($country, $province) = explode('-', $query->{$argtype}, 2);
-      $provinces = location_get_provinces($country);
-      return l($query->province == t('unknown') ? t('unknown') : $provinces[$province], "$arg/$province");
+      // Figure out what country to load.
+      $provinces = location_get_provinces($query->location_country_arg);
+      return l(!isset($provinces[$query->province]) ? t('unknown') : $provinces[$query->province], "$arg/$query->province");
 
-    case 'title':
-      global $_location_views_country;
-      if (isset($_location_views_country)) {
-        $country = $_location_views_country;
-      }
-      else {
-        // @@@ Use the default country..
-        $country = 'us';
-      }
-      $provinces = location_get_provinces($country);
-      return empty($query) ? t('unknown') : $provinces[strtoupper($query)];
-
+    default:
+      return location_views_handler_any($op, $query, $argtype, $arg, $type, 'province');
   }
 }
 
@@ -899,6 +889,10 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
       global $_location_views_country;
       $_location_views_country = $query;
       return $query == t('unknown') ? t('unknown') : $country_name;
+
+    case 'filter':
+      // Stash the arg for use by the province arg.
+      $query->_location_country_arg = $arg;
 
     default:
       return location_views_handler_any($op, $query, $argtype, $arg, 'node', 'country');
