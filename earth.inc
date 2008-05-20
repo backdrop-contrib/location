@@ -2,6 +2,14 @@
 // $Id$
 
 /**
+ * License clarification:
+ *
+ * On Feb 13, 2005, in message <Pine.LNX.4.58.0502131827510.5072@server1.LFW.org>,
+ * the creator of these routines, Ka-Ping Yee, authorized these routines to be
+ * distributed under the GPL.
+ */
+
+/**
  * @file
  * Trigonometry for calculating geographical distances.
  * All function arguments and return values measure distances in metres
