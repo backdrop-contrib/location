@@ -481,7 +481,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
           return array(
             '#type'           => 'textfield',
             '#title'          => t('Postal code'),
-            '#default_value'  => $location,
+            '#default_value'  => $obj,
             '#size'           => 16,
             '#maxlength'      => 16,
             '#required'       => ($a4 == 2),
@@ -662,6 +662,7 @@ function location_geocoding_options_form_submit($form_id, $form_values) {
     if (substr($key, 0, 17) == 'location_geocode_') {
       if (in_array($value, $general_geocoders)) {
         $general_geocoders_in_use[$value] = $value;
+        variable_set($key, $value);
       }
     }
   }
