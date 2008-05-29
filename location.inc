@@ -1192,7 +1192,9 @@ function location_load_country($country) {
  */
 function location_province_select_options($country = NULL) {
   $options = array();
-  $options['xx'] = t('NOT LISTED');
+  $obj = new stdClass();
+  $obj->option = array('' => t('NOT LISTED'));
+  $options[] = $obj;
 
   if (isset($country)) {
     $countries = array($country => TRUE);
