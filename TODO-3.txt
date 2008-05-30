@@ -1,0 +1,1 @@
+- Make sure that we scan for broken location table (oid -> eid)

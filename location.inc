@@ -533,7 +533,7 @@ function location_driving_directions_link($location_a = array(), $location_b = a
   //}
   // Lines above commented out because I want to let the country-specific function of the departure point decide
   // what it will do with driving destination locationes from other countries.  As an example, Yahoo! Maps supports driving
-  // direction queries for locationes between the U.S. and Canada.
+  // direction queries for locations between the U.S. and Canada.
 
   $driving_direction_function = 'location_driving_directions_link_'. $location_a['country'];
   if (function_exists($driving_direction_function)) {
