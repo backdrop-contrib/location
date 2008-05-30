@@ -416,7 +416,7 @@ function location_field_names() {
 function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'fields':
-      return array('name' => t('Location name'), 'street' => t('Street location'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
+      return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 
     case 'collection default':
       return array('name' => 1, 'street' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
