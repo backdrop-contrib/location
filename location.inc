@@ -1258,7 +1258,14 @@ function location_address2singleline($location = array()) {
       $address .= ', ';
     }
 
-    $address .= $location['province'];
+    // @@@ Fix this!
+    if (substr($location['province'], 0, 3) == $location['country'] .'-') {
+      $address .= substr($location['province'], 3);
+      watchdog('Location', 'BUG: Country found in province attribute.');
+    }
+    else {
+      $address .= $location['province'];
+    }
   }
 
   if (!empty($location['postal_code'])) {
