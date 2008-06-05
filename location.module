@@ -22,12 +22,6 @@ define('LOCATION_USER_COLLECT',           1);
 include_once LOCATION_PATH .'/location.inc';
 include_once LOCATION_PATH .'/location.theme';
 
-// include the geocoders;
-/// @todo need a better way of doing this as opposed to hard-coding here
-foreach (variable_get('location_general_geocoders_in_use', array()) as $geocoder) {
-  include_once LOCATION_PATH .'/geocoding/'. $geocoder .'.inc';
-}
-
 /**
  * Implementation of hook_menu().
  */
@@ -571,7 +565,7 @@ function location_geocoding_options_form() {
   $general_geocoders_data = array();
   $general_geocoders_countries = array();
   foreach ($general_geocoders_list as $geocoder_name) {
-    include_once LOCATION_PATH .'/geocoding/'. $geocoder_name .'.inc';
+    location_load_geocoder($geocoder_name);
     $info_function = $geocoder_name .'_geocode_info';
     if (function_exists($info_function)) {
       $general_geocoders_data[$geocoder_name] = $info_function();

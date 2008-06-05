@@ -949,6 +949,7 @@ function location_latlon_exact($location = array()) {
       $exact_latlon_function = 'location_geocode_'. $country .'_'. substr($service, 0, strpos($service, '|'));
     }
     else {
+      location_load_geocoder($service);
       $exact_latlon_function = $service .'_geocode_location';
     }
     if (function_exists($exact_latlon_function)) {
@@ -1163,6 +1164,14 @@ function location_load_country($country) {
   if ($country != 'xx') {
     include_once(drupal_get_path('module', 'location') .'/supported/location.'. $country .'.inc');
   }
+}
+
+// @@@ New in 3.x, document.
+/**
+ * Load a general geocoding service.
+ */
+function location_load_geocoder($geocoder) {
+  include_once drupal_get_path('module', 'location') .'/geocoding/'. $geocoder .'.inc';
 }
 
 /**
