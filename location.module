@@ -1399,7 +1399,7 @@ function _location_user_address($action = NULL, $lid = NULL) {
         return drupal_access_denied();
       }
 
-      include_once LOCATION_PATH .'/location.address.inc';
+      include_once drupal_get_path('module', 'location' .'/location.address.inc';
       return drupal_get_form('_location_address_form', NULL, $edit);
 
     case 'delete':

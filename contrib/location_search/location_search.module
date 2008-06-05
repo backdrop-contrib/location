@@ -228,3 +228,20 @@ function location_search_results($location_params, $proximity_params) {
   }
   return $output;
 }
+
+function theme_location_search_form(&$form) {
+  $row = array();
+
+  $row[] = array(
+    'data' => drupal_render($form['proximity'])
+  );
+
+  $row[] = array(
+    'data' => drupal_render($form['location'])
+  );
+
+  $output = theme('table', NULL, array($row), array('class' => 'location-search-form-table'));
+  $output .= drupal_render($form);
+
+  return $output;
+}

@@ -5,22 +5,6 @@
  * @file
  * Some theme functions.
  */
-function theme_location_search_form(&$form) {
-  $row = array();
-
-  $row[] = array(
-    'data' => drupal_render($form['proximity'])
-  );
-
-  $row[] = array(
-    'data' => drupal_render($form['location'])
-  );
-
-  $output = theme('table', NULL, array($row), array('class' => 'location-search-form-table'));
-  $output .= drupal_render($form);
-
-  return $output;
-}
 
 function theme_location_map_link_options(&$form) {
 
