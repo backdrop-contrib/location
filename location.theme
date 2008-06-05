@@ -193,47 +193,6 @@ function theme_location($location = array(), $hide = array()) {
   return $output;
 }
 
-// @@@ This function was pulled in during the re-integration.
-/**
- * List all addresses from a given user
- *
- * @param $uid
- *   Number. The user ID
- * @param $addresses
- *   Array. A list of user addresses
- * @ingroup themeable
- */
-function theme_location_address_overview($uid, $addresses) {
-  $output = "<p>". l(t('Click here to add a new address'),
-    "user/$uid/location-address/add") .'.</p>';
-
-  $countries = _location_country_get();
-
-  foreach ($addresses as $address) {
-    $addr = array();
-    $addr[] = theme('placeholder', $address->name);
-    $addr[] = check_plain($address->street);
-    $addr[] = ($address->additional) ? check_plain($address->additional) : '';
-    $addr[] = check_plain($address->city) .', '. check_plain($address->province) .', '.
-      $countries[check_plain($address->country)];
-    $addr[] = check_plain($address->postal_code);
-    foreach ($addr as $k => $v) {
-      if (empty($v)) {
-        unset($addr[$k]);
-      }
-    }
-    $row[] = array(implode('<br />', $addr), l(t('edit'),
-      "user/$uid/location-address/edit/$address->lid") ." / ". l(t('delete'),
-      "user/$uid/location-address/delete/$address->lid"));
-  }
-  if (!empty($row)) {
-    $header = array(t('address'), t('options'));
-    $output .= theme('table', $header, $row);
-  }
-
-  return $output;
-}
-
 function theme_location_form(&$form) {
   foreach (element_children($form) as $field_name) {
     $row = array();

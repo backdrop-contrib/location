@@ -8,9 +8,7 @@
  * some options are configured through an interface provided by location.module.
  */
 
-define('LOCATION_PATH', drupal_get_path('module', 'location'));
-
-include_once LOCATION_PATH.'/earth.inc';
+include_once drupal_get_path('module', 'location') .'/earth.inc';
 
 /**
  * Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
@@ -1282,7 +1280,7 @@ function location_get_general_geocoder_list() {
   static $list;
 
   if (!count($list)) {
-    $files = file_scan_directory(LOCATION_PATH .'/geocoding', '\.inc$', array('.', '..', 'CVS', '.svn'));
+    $files = file_scan_directory(drupal_get_path('module', 'location') .'/geocoding', '\.inc$', array('.', '..', 'CVS', '.svn'));
     foreach ($files as $full_path_name => $fileinfo) {
       $list[] = $fileinfo->name;
     }

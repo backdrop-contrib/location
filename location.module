@@ -76,31 +76,8 @@ function location_menu($may_cache) {
 //        'weight'              => 1,
 //      );
 //    }
-
-    $items[] = array( // @@@ WIP
-      'path' => 'ltest',
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('location_temptest'),
-      'type' => MENU_CALLBACK,
-      'access' => TRUE,
-    );
   }
   return $items;
-}
-
-// @@@ WIP
-function location_temptest() {
-  $form = array();
-  $form['blinth'] = array(
-    '#value' => 'FOO',
-  );
-  $form['location'] = array(
-    '#type' => 'location_element',
-    '#default_value' => array(
-      'city' => 'UNKNOWNTOWN',
-    ),
-  );
-  return $form;
 }
 
 /**
@@ -1360,66 +1337,6 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
   }
   return $return;
 }
-
-// @@@ Megapatch function
-/**
- * Manage the user Addresses: list them, create and delete operaions
- *
- * @param $action
- *   String (optional). The action that should be executed:
- *      NULL (default) => list all user addresses
- *     'add'           => Address form to add a new address
- *     'edit'          => Address form to modify an existing address
- *     'delete'        => It will promptly delete the address
- * @param lid
- *   Number (optional). The Location ID
- */
-
-/*
-function _location_user_address($action = NULL, $lid = NULL) {
-  global $user;
-  $uid = $user->uid;
-
-  // If the user has the permission to administer
-  // other users, he can see others address pages too
-  $access = user_access('administer users');
-  if (!empty($access)) {
-    $uid = arg(1);
-  }
-
-  switch ($action) {
-    case 'add':
-    case 'edit':
-      $edit = !empty($lid) ? _location_address_get($lid) : array();
-
-      if (empty($edit)) {
-        $edit['eid'] = $uid;
-      }
-      elseif (empty($access) or $edit['eid'] != $uid) {
-        return drupal_access_denied();
-      }
-
-      include_once drupal_get_path('module', 'location' .'/location.address.inc';
-      return drupal_get_form('_location_address_form', NULL, $edit);
-
-    case 'delete':
-      db_query('DELETE FROM {location} WHERE lid = %d', $lid);
-      drupal_set_message(t('The address has been deleted.'));
-      drupal_goto("user/$uid/location-address");
-      break;
-
-    default:
-      $addresses = array();
-      $addresses_all = db_query("SELECT * FROM {location}
-        WHERE type = 'user' AND eid = %d", $uid);
-      while ($data = db_fetch_object($addresses_all)) {
-        $addresses[] = $data;
-      }
-
-      return theme('location_address_overview', $uid, $addresses);
-  }
-}
- */
 
 // COW -- copy on write
 /**
