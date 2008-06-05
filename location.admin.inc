@@ -74,6 +74,13 @@ function _location_admin_settings() {
 //    '#disabled'       => !module_exists('gmap'),
   );
 
+  $form['location_garbagecollect'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable garbage collection of unused locations'),
+    '#default_value' => variable_get('location_garbagecollect', TRUE),
+    '#description' => t('If checked, the system can automatically garbage collect locations that are no longer referenced anywhere. It is recommended that you leave this checked.'),
+  );
+
   $form['countries'] = array(
     '#collapsible'    => TRUE,
     '#collapsed'      => TRUE,

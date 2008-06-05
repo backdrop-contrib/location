@@ -183,6 +183,16 @@ function location_simpletest() {
   return array_keys($tests);
 }
 
+/**
+ * Implementation of hook_cron().
+ */
+function location_cron() {
+  if (variable_get('location_garbagecollect', TRUE)) {
+    // Perform garbage collection on locations.
+    db_query('DELETE FROM {location} WHERE lid NOT IN (SELECT lid FROM {location_instance})');
+  }
+}
+
 // @@@ Page callback functions.
 // @TODO Remove in Drupal 6 and use the menu system to load the files instead.
 

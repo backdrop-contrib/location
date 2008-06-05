@@ -1,1 +1,2 @@
 - Make sure that we scan for broken location table (oid -> eid)
+- api for manipulating genid location instances?
