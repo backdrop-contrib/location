@@ -1240,6 +1240,10 @@ function location_user($op, &$edit, &$account, $category = NULL) {
       unset($edit['locations']);
       break;
 
+    case 'delete':
+      db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
+      break;
+
     case 'form':
       if ($category == 'account') {
         if ((($user->uid == $account->uid) && user_access('set own user location')) || user_access('administer user locations')) {
