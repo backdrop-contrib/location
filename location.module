@@ -850,40 +850,42 @@ function _location_node_form_alter($form_id, &$form) {
   $numloc = isset($node->locations) ? count($node->locations) : 0;
   $location_form_count = min(count($node->locations) + variable_get('location_defaultnum_'. $node->type, 1), variable_get('location_maxnum_'. $node->type, 1));
 
-  $form['locations'] = array(
-    '#type' => 'fieldset',
-    '#title' => format_plural($location_form_count, 'Location', 'Locations'),
-    '#tree' => TRUE,
-    '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
-    '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
-    '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
-    '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
-  );
+  if ($location_form_count) {
 
-  // @@@ Was added in megapatch in a bad manner, but it is an idea.
-  //  if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
-
-  $settings = variable_get('location_fields_'. $node->type, array());
-
-  for ($i = 0; $i < $location_form_count; $i++) {
-    $form['locations'][$i] = array(
-      '#type' => 'location_element',
-      '#title' => t('Location #%number', array('%number' => $i + 1)),
-      '#default_value' => isset($node->locations[$i]) ? $node->locations[$i] : NULL,
-      '#location_settings' => $settings,
+    $form['locations'] = array(
+      '#type' => 'fieldset',
+      '#title' => format_plural($location_form_count, 'Location', 'Locations'),
+      '#tree' => TRUE,
+      '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
+      '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
+      '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
+      '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
     );
-  }
 
-  if ($location_form_count == 1) {
-    $form['locations'][0]['#title'] = t('Location');
-  }
+    // @@@ Was added in megapatch in a bad manner, but it is an idea.
+    //  if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
 
+    $settings = variable_get('location_fields_'. $node->type, array());
 
-/*  for ($index = 0; $index < $location_form_count; $index++) {
-    if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
-      $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
+    for ($i = 0; $i < $location_form_count; $i++) {
+      $form['locations'][$i] = array(
+        '#type' => 'location_element',
+        '#title' => t('Location #%number', array('%number' => $i + 1)),
+        '#default_value' => isset($node->locations[$i]) ? $node->locations[$i] : NULL,
+        '#location_settings' => $settings,
+      );
     }
-  }
+
+    if ($location_form_count == 1) {
+      $form['locations'][0]['#title'] = t('Location');
+    }
+
+
+  /*  for ($index = 0; $index < $location_form_count; $index++) {
+      if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
+        $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
+      }
+    }
 
   $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
 
@@ -936,6 +938,7 @@ function _location_node_form_alter($form_id, &$form) {
     );
   }
  */
+  }
 }
 
 function _location_user_settings_form_alter($form_id, &$form) {
