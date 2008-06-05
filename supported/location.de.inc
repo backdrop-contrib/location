@@ -72,11 +72,16 @@ function location_map_link_de_providers() {
       'url' => 'http://www.suchen.de/',
       'tos' => 'http://www.suchen.de/agb',
     ),
+    'google' => array(
+      'name' => 'Google Maps',
+      'url' => 'http://maps.google.com',
+      'tos' => 'http://www.google.com/help/terms_local.html',
+    ),
   );
 }
 
 function location_map_link_de_default_providers() {
-  return array();
+  return array('google');
 }
 
 /**
@@ -151,6 +156,23 @@ function _location_driving_directions_link_de_suchen($location_a, $location_b) {
     $get_query .= '&amp;route_to='. urlencode(implode(', ', $query_parts));
 
     return ('http://www.suchen.de/route'. $get_query);
+  }
+}
+
+function location_map_link_de_google($location = array()) {
+  $query_params = array();
+
+  foreach (array('street', 'postal_code', 'city', 'country') as $field) {
+    if (isset($location[$field])) {
+      $query_params[] = $location[$field];
+    }
+  }
+
+  if (count($query_params)) {
+    return ('http://maps.google.com?q='. urlencode(implode(', ', $query_params)));
+  }
+  else {
+    return NULL;
   }
 }
 
