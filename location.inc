@@ -1208,7 +1208,6 @@ function location_province_select_options($country = NULL) {
   }
   else {
     $countries = location_configured_countries();
-dpm($countries);
   }
   foreach ($countries as $cc => $name) {
     $provinces = location_get_provinces($cc);

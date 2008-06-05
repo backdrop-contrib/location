@@ -65,18 +65,6 @@ function location_menu($may_cache) {
       'weight'              => 2
     );
   }
-  else {
-    // Add tab for address book.
-//    if (arg(0) == 'user' && is_numeric(arg(1))) {
-//      $items[] = array(
-//        'path'                => 'user/'. arg(1) .'/location-address',
-//        'title'               => t('Address Book'),
-//        'callback'            => '_location_user_address',
-//        'type'                => MENU_LOCAL_TASK,
-//        'weight'              => 1,
-//      );
-//    }
-  }
   return $items;
 }
 
@@ -1457,8 +1445,6 @@ function location_save($location, $cow = TRUE) {
       }
     }
   }
-
-dpm($changed);
 
   if (empty($changed)) {
     // We didn't actually need to save anything.
