@@ -494,7 +494,8 @@ function location_geocoding_parameters_form($country_iso, $service) {
   if (function_exists($geocode_settings_form_function_specific)) {
     return system_settings_form($geocode_settings_form_function_specific());
   }
-  elseif (function_exists($geocode_settings_form_function_general)) {
+  location_load_geocoder($service);
+  if (function_exists($geocode_settings_form_function_general)) {
     return system_settings_form($geocode_settings_form_function_general());
   }
   else {
