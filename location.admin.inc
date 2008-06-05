@@ -112,6 +112,8 @@ function _location_map_link_options_form() {
   );
 
   foreach (location_configured_countries() as $country_iso => $country_name) {
+    location_load_country($country_iso);
+
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
       '#value' => ''
