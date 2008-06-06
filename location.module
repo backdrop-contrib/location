@@ -28,12 +28,12 @@ include_once LOCATION_PATH .'/location.theme';
 function location_menu($may_cache) {
   $items = array();
   if ($may_cache) {
-//    $items[] = array(
-//      'access'              => TRUE,
-//      'callback'            => '_location_autocomplete',
-//      'path'                => 'admin/settings/location/autocomplete',
-//      'type'                => MENU_CALLBACK
-//    );
+    $items[] = array(
+      'path' => 'location/autocomplete',
+      'access' => user_access('access content'),
+      'callback' => '_location_autocomplete',
+      'type' => MENU_CALLBACK,
+    );
     $items[] = array(
       'path'                => 'admin/settings/location',
       'title'               => t('Location'),
@@ -434,17 +434,31 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
           );
         // @@@ These two need revisited.
         case 'province':
-          return array(
+          drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
+          /*return array(
             '#type' => 'select',
             '#title' => t('State/Province'),
             '#default_value' => $obj,
             '#options' => location_province_select_options(),
             '#multiple' => FALSE,
             '#required' => ($a4 == 2),
+          );*/
+          return array(
+            '#type' => 'textfield',
+            '#title' => t('State/Province'),
+            '#autocomplete_path' => 'location/autocomplete/us', // @@@ This needs to default to the current country!
+            '#default_value' => $obj,
+            '#size' => 64,
+            '#maxlength' => 64,
+            '#description' => NULL,
+            '#attributes' => array('class' => 'location_auto_province'),
+            '#required' => ($a4 == 2),
           );
 
         case 'country':
-          return _location_country_select_options($obj, ($a4 == 2), NULL);//@@@
+          $field =  _location_country_select_options($obj, ($a4 == 2), NULL);//@@@
+          $field['#attributes']['class'] = 'location_auto_country';
+          return $field;
 
         case 'postal_code':
           return array(
@@ -1260,7 +1274,6 @@ function location_user($op, &$edit, &$account, $category = NULL) {
   }
 }
 
-// @@@ From the megapatch.
 /**
  * Create a list of states from a given country.
  *
@@ -1271,27 +1284,25 @@ function location_user($op, &$edit, &$account, $category = NULL) {
  * @return
  *   Javascript array. List of states
  */
-/*
 function _location_autocomplete($country, $string = '') {
   $string   = strtolower($string);
   $string   = '/^'. $string .'/';
   $matches  = array();
-  $states   = _location_province_get($country);
+  $provinces = location_get_provinces($country);
 
-  if (!empty($states)) {
-    while (list($code, $name) = each($states)) {
+  if (!empty($provinces)) {
+    while (list($code, $name) = each($provinces)) {
       if ($counter < 5) {
         if (preg_match($string, strtolower($name))) {
-          $matches[$code] = strtolower($name);
+          $matches[$code] = $name;
           ++$counter;
         }
       }
     }
   }
   echo drupal_to_js($matches);
-  exit();
+  return;
 }
- */
 
 /**
  * Epsilon test.
