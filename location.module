@@ -208,24 +208,7 @@ function _location_expand_location($element) {
   foreach ($fields as $field => $title) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
-      if ($location_settings[$field] == 0) {
-        // Do not collect (But preserve legacy data anyway!)
-/*        switch ($key) {
-          case 'name':
-          case 'street':
-          case 'additional':
-          case 'city':
-          case 'postal_code':
-            $element[$key] = array(
-              '#type' => 'value',
-              '#value' => isset($element['#default_value'][$key]) ? $element['#default_value'][$key] : '',
-            );
-            break;
-          default:
-            $element[$key] = location_invoke_locationapi($element['#default_value'][$key], 'field_expand_hidden', $key, $element);
-        }*/
-      }
-      else { // Collect.
+      if ($location_settings[$field] != 0) {
         $element[$field] = location_invoke_locationapi($element['#default_value'][$field], 'field_expand', $field, $location_settings[$field], $element['#default_value']);
       }
     }
@@ -406,6 +389,25 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         'is_primary' => 0, // @@@
       );
 
+    case 'validate':
+      if (!empty($obj['country'])) {
+        if (!empty($obj['province'])) {
+          $provinces = location_get_provinces($obj['country']);
+          $found = FALSE;
+          $p = strtoupper($obj['province']);
+          foreach ($provinces as $k => $v) {
+            if ($p == strtoupper($k) || $p == strtoupper($v)) {
+              $found = TRUE;
+              break;
+            }
+          }
+          if (!$found) {
+            form_error($a3['province'], t('The specified province was not found in the specified country.'));
+          }
+        }
+      }
+      break;
+
     case 'field_expand':
       switch ($a3) {
         case 'name':
@@ -419,6 +421,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#attributes'     => NULL,
             '#required'       => ($a4 == 2),
           );
+
         case 'street':
           return array(
             '#type'           => 'textfield',
@@ -428,6 +431,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#maxlength'      => 64,
             '#required'       => ($a4 == 2),
           );
+
         case 'additional':
           return array(
             '#type'           => 'textfield',
@@ -437,6 +441,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#maxlength'      => 64,
             // @@@ Err, #required?
           );
+
         case 'city':
           return array(
             '#type'           => 'textfield',
@@ -448,17 +453,9 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#attributes'     => NULL,
             '#required'       => ($a4 == 2),
           );
-        // @@@ These two need revisited.
+
         case 'province':
           drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
-          /*return array(
-            '#type' => 'select',
-            '#title' => t('State/Province'),
-            '#default_value' => $obj,
-            '#options' => location_province_select_options(),
-            '#multiple' => FALSE,
-            '#required' => ($a4 == 2),
-          );*/
           return array(
             '#type' => 'textfield',
             '#title' => t('State/Province'),
@@ -1049,7 +1046,9 @@ function location_node_settings_validate($form_id, $form_values) {
 function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'validate':
-      //if (isset($a3['))
+      if (!empty($a3)) {
+        return location_validate_form($a3['locations'], $node->locations);
+      }
       break;
 
     case 'delete revision':
@@ -1361,7 +1360,6 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a
   return $return;
 }
 
-// COW -- copy on write
 /**
  * Save a location.
  *
@@ -1482,8 +1480,7 @@ function location_save($location, $cow = TRUE) {
   // Perform geocoding logic, coordinate normalization, etc.
   _location_geo_logic($location, $changed, $filled);
 
-
-  // If we are in COW mode,
+  // If we are in COW mode, we need to make a new lid.
   if ($cow) {
     unset($location['lid']);
   }
@@ -1643,8 +1640,10 @@ Validation crap removed from nodeapi: move into the correct place.
 /**
  * Perform validation against a location fieldset in a form.
  */
-function location_validate_location($form) {
-  dpm($form);
+function location_validate_form($form, $form_values) {
+  foreach (element_children($form) as $key) {
+    location_invoke_locationapi($form_values[$key], 'validate', $form[$key]);
+  }
 }
 
 /**
