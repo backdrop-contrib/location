@@ -1600,6 +1600,9 @@ function _location_geo_logic(&$location, $changed, $filled) {
       }
     }
   }
+
+  // @@@ Now would be a GREAT time to hook.
+
 }
 
 
@@ -1623,19 +1626,6 @@ Validation crap removed from nodeapi: move into the correct place.
             }
           }
           $node->locations[$index][$field_name] = trim($node->locations[$index][$field_name]);
-        }
-
-
-        // Check if the (province, country) pair is valid
-        if (isset($node->locations[$index]['province']) && !empty($node->locations[$index]['province']) && $node->locations[$index]['province'] != 'xx' &&
-            isset($node->locations[$index]['country']) && !empty($node->locations[$index]['country']) && $node->locations[$index]['country'] != 'xx') {
-          $province_list_function = 'location_province_list_'. $node->locations[$index]['country'];
-          if (function_exists($province_list_function)) {
-            $translated_location = location_form2api($node->locations[$index]);
-            if (!in_array($translated_location['province'], array_keys($province_list_function()))) {
-              form_set_error('locations]['. $index .'][province', t('Please make sure to select a state/province from the country you have selected.'));
-            }
-          }
         }
 
         // Check if submitted lat/lon are valid
