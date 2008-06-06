@@ -194,10 +194,8 @@ function _location_expand_location($element) {
   }
 
   // Keep track of the LID.
-  // For some reason, hidden seems to work best....
+  // @@@ For some reason, hidden seems to work best.
   $element['lid'] = array(
-//    '#title' => 'lid',
-//    '#type' => 'item', // @@@ Debugging, change back to value.
     '#type' => 'hidden',
     '#value' => isset($element['#default_value']['lid']) ? $element['#default_value']['lid'] : FALSE,
   );
@@ -1018,7 +1016,6 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'insert':
     case 'update':
       if (!empty($node->locations)) {
-        //$old_locations = location_load_locations()
         db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
         foreach ($node->locations as $location) {
           $lid = location_save($location, TRUE);
