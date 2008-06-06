@@ -866,8 +866,10 @@ function _location_node_form_alter($form_id, &$form) {
       '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
     );
 
-    // @@@ Was added in megapatch in a bad manner, but it is an idea.
-    //  if (variable_get('location_maxnum_'. $form['type']['#value'], 1) > 1) {
+    // If there is only one location, hide the outer fieldset.
+    if (variable_get('location_maxnum_'. $form['type']['#value'], 0) == 1) {
+      $form['locations']['#type'] = 'markup';
+    }
 
     $settings = variable_get('location_fields_'. $node->type, array());
 
