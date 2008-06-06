@@ -1586,6 +1586,20 @@ function _location_geo_logic(&$location, $changed, $filled) {
       }
     }
   }
+
+  // Normalize province.
+  // Note: Validation is performed elsewhere. We assume that the province
+  // specified matches either the short or long form of a province.
+  if (!empty($location['province']) && !empty($location['country'])) {
+    $provinces = location_get_provinces($location['country']);
+    $p = strtoupper($location['province']);
+    foreach ($provinces as $k => $v) {
+      if ($p == strtoupper($k) || $p == strtoupper($v)) {
+        $location['province'] = $k;
+        break;
+      }
+    }
+  }
 }
 
 
