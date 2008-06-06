@@ -233,8 +233,7 @@ function _location_expand_location($element) {
 
     if (function_exists('gmap_get_auto_mapid') && variable_get('location_usegmap', FALSE)) {
       $mapid = gmap_get_auto_mapid();
-      // @@@ gmap_user_map? "Huh?"
-      $map = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|center=0,30|zoom=16|width=100%|height=400px]'));
+      $map = gmap_parse_macro(variable_get('location_locpick_macro', '[gmap]'));
       $map['behavior']['locpick'] = TRUE;
       $map['behavior']['collapsehack'] = TRUE;
       $element['locpick']['user_latitude']['#map'] = $mapid;
@@ -250,8 +249,6 @@ function _location_expand_location($element) {
     }
   }
 
-//      $form['locations'][$index] = array_merge($form['locations'][$index], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->locations[$index] ? location_api2form($node->locations[$index]) : array()));
-// $element['#theme'] = 'location_element';
   return $element;
 }
 

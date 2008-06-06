@@ -74,6 +74,15 @@ function _location_admin_settings() {
 //    '#disabled'       => !module_exists('gmap'),
   );
 
+  $form['location_locpick_macro'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Location chooser macro'),
+    '#size' => 50,
+    '#maxlength' => 500,
+    '#default_value' => variable_get('location_locpick_macro', '[gmap]'),
+    '#description' => t('If you would like to change the macro used to generate the location chooser map, you can do so here. Note: Behaviors <em>locpick</em> and <em>collapsehack</em> are forced to be enabled and cannot be changed.'),
+  );
+
   $form['location_garbagecollect'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable garbage collection of unused locations'),
