@@ -189,7 +189,8 @@ function _location_expand_location($element) {
     //@@@ Get some sort of sane default?
   }
   if (!isset($element['#default_value']) || $element['#default_value'] == 0) {
-    $element['#default_value'] = array();
+    $dummy = '';
+    $element['#default_value'] = location_invoke_locationapi($dummy, 'default values');
   }
 
   // Keep track of the LID.
@@ -225,7 +226,7 @@ function _location_expand_location($element) {
         }*/
       }
       else { // Collect.
-        $element[$field] = location_invoke_locationapi($element['#default_value'][$field], 'field_expand', $field, $location_settings[$field]);
+        $element[$field] = location_invoke_locationapi($element['#default_value'][$field], 'field_expand', $field, $location_settings[$field], $element['#default_value']);
       }
     }
   }
@@ -382,13 +383,28 @@ function location_field_names() {
 /**
  * Implementation of hook_locationapi().
  */
-function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
+function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {
     case 'fields':
       return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 
     case 'collection default':
       return array('name' => 1, 'street' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
+
+    case 'default values':
+      return array(
+        'name' => '',
+        'street' => '',
+        'additional' => '',
+        'city' => '',
+        'province' => '',
+        'postal_code' => '',
+        'country' => variable_get('location_default_country', 'us'),
+        'latitude' => 0,
+        'longitude' => 0,
+        'source' => LOCATION_LATLON_UNDEFINED,
+        'is_primary' => 0, // @@@
+      );
 
     case 'field_expand':
       switch ($a3) {
@@ -446,7 +462,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
           return array(
             '#type' => 'textfield',
             '#title' => t('State/Province'),
-            '#autocomplete_path' => 'location/autocomplete/us', // @@@ This needs to default to the current country!
+            '#autocomplete_path' => 'location/autocomplete/'. $a5['country'],
             '#default_value' => $obj,
             '#size' => 64,
             '#maxlength' => 64,
@@ -456,9 +472,16 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL) {
           );
 
         case 'country':
-          $field =  _location_country_select_options($obj, ($a4 == 2), NULL);//@@@
-          $field['#attributes']['class'] = 'location_auto_country';
-          return $field;
+          $options = array_merge(array('' => t('Please select'), 'xx' => 'NOT LISTED'), location_get_iso3166_list());
+          return array(
+            '#type'           => 'select',
+            '#title'          => t('Country'),
+            '#default_value'  => $obj,
+            '#options'        => $options,
+            '#description'    => NULL,
+            '#required'       => ($a4 == 2),
+            '#attributes'     => array('class' => 'location_auto_country'),
+          );
 
         case 'postal_code':
           return array(
@@ -1320,14 +1343,14 @@ function _location_floats_are_equal($x, $y) {
  *
  * @param &$location A location object.
  * @param $op A string containing the name of the locationapi operation.
- * @param $a3, $a4 Arguments to pass on to the hook.
+ * @param $a3, $a4, $a5 Arguments to pass on to the hook.
  * @return The returned value of the invoked hooks.
  */
-function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
+function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   $return = array();
   foreach (module_implements('locationapi') as $name) {
     $function = $name .'_locationapi';
-    $result = $function($location, $op, $a3, $a4);
+    $result = $function($location, $op, $a3, $a4, $a5);
     if (isset($result) && is_array($result)) {
       $return = array_merge($return, $result);
     }
@@ -1371,19 +1394,6 @@ function location_save($location, $cow = TRUE) {
 
   $dummy = array();
   $emptyloc = location_invoke_locationapi($dummy, 'default values');
-  $emptyloc = array_merge(array(
-    'name' => '',
-    'street' => '',
-    'additional' => '',
-    'city' => '',
-    'province' => '',
-    'postal_code' => '',
-    'country' => '',
-    'latitude' => 0,
-    'longitude' => 0,
-    'source' => LOCATION_LATLON_UNDEFINED,
-    'is_primary' => 0, // @@@
-  ), $emptyloc);
 
   // Effective location for determining "emptiness"
   $shadow = $location;
