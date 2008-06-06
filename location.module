@@ -883,65 +883,6 @@ function _location_node_form_alter($form_id, &$form) {
     if ($location_form_count == 1) {
       $form['locations'][0]['#title'] = t('Location');
     }
-
-
-  /*  for ($index = 0; $index < $location_form_count; $index++) {
-      if (!isset($node->locations[$index]['country']) || $node->locations[$index]['country'] == '') {
-        $node->locations[$index]['country'] = variable_get('location_default_country', 'us');
-      }
-    }
-
-  $suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
-
-  // @@@ Clean this mess up. --Bdragon
-  if (isset($_POST['op']) && ($_POST['op'] == t('Preview') || ($_POST['op'] == t('Submit')) && form_get_errors())) {
-    for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? $node->locations[$index] : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
-    }
-  }
-  else {
-    for ($index = 0; $index < $location_form_count; $index++) {
-      if (!isset($form['locations'][$index])) {
-        $form['locations'][$index] = array();
-      }
-      $form['locations'][$index] = array_merge($form['locations'][$index], location_form($location_fields, $node->locations[$index] ? location_api2form($node->locations[$index]) : array(), ($index == 0) ? $required_fields : array(), $suppressed_values));
-    }
-  }
-
-  if (user_access('submit latitude/longitude')) {
-    for ($index = 0; $index < $location_form_count; $index++) {
-      $form['locations'][$index][] = array(
-        '#type' => 'markup',
-        '#value' => "<br/>\n"
-      );
-
-      if ($node->nid || isset($node->locations[$index]['previous_source'])) {
-        $form['locations'][$index]['previous_source'] = array(
-          '#type' => 'hidden',
-          '#value' => $node->locations[$index]['source']
-        );
-        $form['locations'][$index]['previous_latitude'] = array(
-          '#type' => 'hidden',
-          '#value' => $node->locations[$index]['latitude']
-        );
-        $form['locations'][$index]['previous_longitude'] = array(
-          '#type' => 'hidden',
-          '#value' => $node->locations[$index]['longitude']
-        );
-      }
-
-      $form['locations'][$index] = array_merge($form['locations'][$index], location_latlon_form(t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'), $node->locations[$index] ? location_api2form($node->locations[$index]) : array()));
-    }
-  }
-
-  // foreach of the locations, make sure we have an lid field
-  for ($index = 0; $index < $location_form_count; $index++) {
-    $form['locations'][$index]['lid'] = array(
-      '#type' => 'hidden',
-      '#value' => $node->locations[$index]['lid']
-    );
-  }
- */
   }
 }
 
