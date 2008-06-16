@@ -59,16 +59,3 @@ INSTALLATION
 
      cd sites/SITENAME/modules/location
      mysql -u username -p database-name < database/zipcodes.us.mysql
-
-
-Step 3
-------
-Enable the location module on your site.
-
-Visit the settings page for location.module and enable features for U.S.
-(the only option as of now).
-
-Finally, go to the default workflow settings for each node type and enable
-(or require) location collection on a field-by-field basis. It is encouraged
-that you enable postal codes and country fields for node types for which you
-want to enable proximity searches.
