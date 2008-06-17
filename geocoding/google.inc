@@ -7,7 +7,7 @@
  */
 
 /**
- * Returns lower-case of iso codes for countries supported by Google's geocoder
+ * Return the list of ISO3166 codes supported by this geocoder.
  */
 function google_geocode_country_list() {
   return array(
@@ -38,7 +38,7 @@ function google_geocode_country_list() {
 }
 
 /**
- * Return general info.
+ * Return general information about this geocoder.
  */
 function google_geocode_info() {
   return array(
@@ -49,6 +49,13 @@ function google_geocode_info() {
   );
 }
 
+/**
+ * Perform a geocode on a location array.
+ * @param $location
+ *   The location array to process.
+ * @return
+ *   an associative array with keys 'lat' and 'lon' containing the coordinates.
+ */
 function google_geocode_location($location = array()) {
   switch ($location['country']) {
     case 'li':
@@ -108,6 +115,9 @@ function google_geocode_location($location = array()) {
   return array('lat' => $latlon_exploded[1], 'lon' => $latlon_exploded[0]);
 }
 
+/**
+ * General settings for this geocoder.
+ */
 function google_geocode_settings() {
   $form = array();
 
