@@ -1640,17 +1640,20 @@ function location_token_values($type, $object = NULL) {
     $countries = _location_supported_countries();
     if (!empty($node->locations)) {
       foreach ($node->locations as $key => $location) {
-        $provincelist = 'location_province_list_'. strtolower($node->locations[$key]['country']);
-        $provincenames = $provincelist();
-        $values['location-name_'. $key]         = check_plain($node->locations[$key]['name']);
-        $values['location-street_'. $key]       = check_plain($node->locations[$key]['street']);
-        $values['location-additional_'. $key]   = check_plain($node->locations[$key]['additional']);
-        $values['location-city_'. $key]         = check_plain($node->locations[$key]['city']);
+        $l = $node->locations[$key];
+        $provinces = array();
+        if (!empty($l['country'])) {
+          $provinces = location_get_provinces($l['country']);
+        }
+        $values['location-name_'. $key]         = check_plain($l['name']);
+        $values['location-street_'. $key]       = check_plain($l['street']);
+        $values['location-additional_'. $key]   = check_plain($l['additional']);
+        $values['location-city_'. $key]         = check_plain($l['city']);
+        $values['location-provincename_'. $key] = isset($provinces[$l['province']]) ? check_plain($provinces[$l['province']]) : '';
         $values['location-province_'. $key]     = check_plain($node->locations[$key]['province']);
-        $values['location-provincename_'. $key] = check_plain($provincenames[$node->locations[$key]['province']]);
         $values['location-postal_code_'. $key]  = check_plain($node->locations[$key]['postal_code']);
+        $values['location-countryname_'. $key]  = isset($countries[$l['country']]) ? check_plain($countries[$l['country']]) : '';
         $values['location-country_'. $key]      = check_plain($node->locations[$key]['country']);
-        $values['location-countryname_'. $key]  = check_plain($countries[$node->locations[$key]['country']]);
         $values['location-latitude_'. $key]     = check_plain($node->locations[$key]['latitude']);
         $values['location-longitude_'. $key]    = check_plain($node->locations[$key]['longitude']);
       }
