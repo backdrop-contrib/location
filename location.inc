@@ -898,44 +898,6 @@ function location_latlon_exact($location = array()) {
 }
 
 /**
- * @param $location
- *   An array where
- *     -> the key values are 'street', 'additional', 'province', 'country', 'postal_code'
- *     -> the values are:
- *         'street'         => the string representing the street location
- *         'additional'     => the string representing the additional street location portion in the location form
- *         'city'           => the city name
- *         'province'       => the province code defined in the country-specific include file
- *         'country'        => the lower-case of the two-letter ISO code
- *         'postal_code'    => the postal-code
- *         'lat'            => a floating-point of the latitude coordinate of this location if one is available
- *         'lon'            => a floating-point of the longitude coordinate of this location if one is available
- *
- * @return
- *   A string of HTML META tags to be include in the HTML head of an HTML page that geocodes
- *   as specifically as possible given the completeness of the parameter $location.  To be used
- *   to register location-specific content to search engines that crawl the site.
- */
-function location_geocode_meta_tags($location = array()) {
-  $output = "\n";
-  if (isset($location['lat']) && isset($location['lon'])) {
-    $output .= '<meta name=\'ICBM\' content="'. $location['lat'] .', '. $location['lon'] .'" />'."\n";
-    $output .= '<meta name="geo.position" content="'. $location['lat'] .';'. $location['lon'] .'" />'."\n";
-  }
-  if (isset($location['country'])) {
-    $output .= '<meta name="geo.region" content="'. strtoupper($location['country']);
-    if (isset($location['province'])) {
-      $output .= '-'. $location['province'];
-    }
-    $output .= '" />'."\n";
-  }
-  if (isset($location['city'])) {
-    $output .= '<meta name="geo.placename" content="'. $location['city'] .'" />'."\n";
-  }
-  return $output;
-}
-
-/**
  * Returns an associative array of countries currently recognized by the
  * site admin's configuration where:
  *   -> the keys represent the two-letter ISO code and
