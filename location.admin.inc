@@ -101,6 +101,7 @@ function _location_admin_settings() {
 
   $form['countries']['location_configured_countries'] = array(
     '#type'           => 'checkboxes',
+    '#theme'          => 'location_configured_countries',
     '#title'          => t('Enable all <em>available</em> features for locations from the following countries'),
     '#default_value'  => location_get_configured_countries(),
     '#options'        => $supported_countries,
@@ -108,6 +109,22 @@ function _location_admin_settings() {
 
   return system_settings_form($form);
 }
+
+function theme_location_configured_countries($element) {
+  foreach (element_children($element) as $key) {
+    $row = array();
+    $title = $element[$key]['#title'];
+    unset($element[$key]['#title']);
+    $row[] = array('data' => drupal_render($element[$key]));
+    $row[] = $title;
+    $row[] = $key;
+    $rows[] = $row;
+  }
+  $header = array(theme('table_select_header_cell'), t('Country'), t('Country code'));
+
+  return theme('table', $header, $rows);
+}
+
 
 /**
  * Settings page for map links.
