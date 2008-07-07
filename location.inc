@@ -32,6 +32,8 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
     return '';
   }
 
+  location_load_country($location['country']);
+
   $default_func = 'location_map_link_'. $location['country'] .'_default_providers';
   $providers_func = 'location_map_link_'. $location['country'] .'_providers';
   $providers = function_exists($providers_func) ? $providers_func() : array();
