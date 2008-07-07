@@ -116,7 +116,7 @@ function location_views_tables() {
   }
 
   $tables['location']['filters']['province_select'] = array(
-    'field' => 'province_select',
+    'field' => 'province',
     'name' => t('Location: Province Selector'),
     'operator' => 'location_handler_operator_eq',
     'handler' => 'location_handler_filter_eq',
@@ -272,8 +272,8 @@ function location_views_tables() {
       ),
     );
 
-    $tables['user_location']['filters']['province'] = array(
-      'field' => 'province_select',
+    $tables['user_location']['filters']['province_select'] = array(
+      'field' => 'province',
       'name' => t('User Location: Province Selector'),
       'operator' => 'location_handler_operator_eq',
       'handler' => 'location_handler_filter_eq',
