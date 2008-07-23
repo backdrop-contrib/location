@@ -27,17 +27,29 @@ function location_views_tables() {
       'street'      => array('name' => t('Location: Street'),      'sortable' => true),
       'additional'  => array('name' => t('Location: Additional'),  'sortable' => true),
       'city'        => array('name' => t('Location: City'),        'sortable' => true),
+      // Should be province_name, but can't change history.
       'province'    => array(
-        'name' => t('Location: Province'),
+        'name' => t('Location: Province name'),
         'handler' => 'location_views_province_handler',
         'addlfields' => array('country'),
-        'sortable' => true,
+        'sortable' => TRUE,
+      ),
+      'province_code' => array(
+        'field' => 'province',
+        'name' => t('Location: Province code'),
+        'sortable' => TRUE,
       ),
       'postal_code' => array('name' => t('Location: Postal Code'), 'sortable' => true),
+      // Should be country_name, but can't change history.
       'country'     => array(
         'name' => t('Location: Country'),
         'handler' => 'location_views_country_handler',
-        'sortable' => true,
+        'sortable' => TRUE,
+      ),
+      'country_code' => array(
+        'field' => 'country',
+        'name' => t('Location: Country code'),
+        'sortable' => TRUE,
       ),
       'latitude'    => array('name' => t('Location: Latitude'),    'sortable' => true),
       'longitude'   => array('name' => t('Location: Longitude'),   'sortable' => true),
@@ -98,6 +110,14 @@ function location_views_tables() {
         'field' => 'vid',
       ),
     ),
+    'filters' => array(
+      'has_location' => array(
+        'field' => 'vid',
+        'name' => t('Location: Has location'),
+        'operator' => array('IS NOT' => t('Has location'), 'IS' => t('No location')),
+        'handler' => 'views_handler_filter_null',
+      ),
+    ),
   );
 
   if (module_exists('usernode')) {
@@ -110,6 +130,14 @@ function location_views_tables() {
         ),
         'right' => array(
           'field' => 'uid',
+        ),
+      ),
+      'filters' => array(
+        'has_location' => array(
+          'field' => 'uid',
+          'name' => t('Location: Has location'),
+          'operator' => array('IS NOT' => t('Has location'), 'IS' => t('No location')),
+          'handler' => 'views_handler_filter_null',
         ),
       ),
     );
@@ -169,7 +197,7 @@ function location_views_tables() {
     'handler'    => 'location_views_field_handler_address',
     'notafield'  => true,
     'sortable'   => false,
-    'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
+    'addlfields' => array('lid'),
     'help' => t('Complete formatted address in a single cell, using the location theme.'),
   );
 
@@ -220,17 +248,30 @@ function location_views_tables() {
         'street'      => array('name' => t('User Location: Street'),      'sortable' => true),
         'additional'  => array('name' => t('User Location: Additional'),  'sortable' => true),
         'city'        => array('name' => t('User Location: City'),        'sortable' => true),
+
+        // Should be province_name, but can't change history.
         'province'    => array(
-          'name' => t('User Location: Province'),
+          'name' => t('User Location: Province name'),
           'handler' => 'location_views_province_handler',
           'addlfields' => array('country'),
-          'sortable' => true,
+          'sortable' => TRUE,
+        ),
+        'province_code' => array(
+          'field' => 'province',
+          'name' => t('User Location: Province code'),
+          'sortable' => TRUE,
         ),
         'postal_code' => array('name' => t('User Location: Postal Code'), 'sortable' => true),
+        // Should be country_name, but can't change history.
         'country'     => array(
           'name' => t('User Location: Country'),
           'handler' => 'location_views_country_handler',
-          'sortable' => true,
+          'sortable' => TRUE,
+        ),
+        'country_code' => array(
+          'field' => 'country',
+          'name' => t('User Location: Country code'),
+          'sortable' => TRUE,
         ),
         'latitude'    => array('name' => t('User Location: Latitude'),    'sortable' => true),
         'longitude'   => array('name' => t('User Location: Longitude'),   'sortable' => true),
@@ -328,7 +369,7 @@ function location_views_tables() {
       'handler'    => 'location_views_field_handler_user_address',
       'notafield'  => true,
       'sortable'   => false,
-      'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code'),
+      'addlfields' => array('lid'),
       'help' => t('Complete formatted address in a single cell, using the location theme.'),
     );
 
@@ -943,41 +984,26 @@ dpm($filter['value']);
  * Format a country name.
  */
 function location_views_country_handler($fieldinfo, $fielddata, $value, $data) {
-  location_standardize_country_code($value);
-  $countries = _location_supported_countries();
-  return $countries[$value];
+  return location_country_name($value);
 }
 
 /**
  * Format a province name.
  */
 function location_views_province_handler($fieldinfo, $fielddata, $value, $data) {
-  $country = $data->location_country;
-  location_standardize_country_code($country);
-  $provinces = location_get_provinces($country);
-  return $provinces[$data->location_province];
+  return location_province_name($data->location_country, $data->location_province);
 }
 
 /**
  * Format complete address as a single field.
  */
 function location_views_field_handler_user_address($fieldinfo, $fielddata, $value, $data) {
-  $location['name'] = $data->user_location_name;
-  $location['street'] = $data->user_location_street;
-  $location['city'] = $data->user_location_city;
-  $location['province'] = $data->user_location_province;
-  $location['country'] = $data->user_location_country;
-  $location['postal_code'] = $data->user_location_postal_code;
+  $location = location_load_location($data->user_location_lid);
   return theme('location', $location);
 }
 
 function location_views_field_handler_address($fieldinfo, $fielddata, $value, $data) {
-  $location['name'] = $data->location_name;
-  $location['street'] = $data->location_street;
-  $location['city'] = $data->location_city;
-  $location['province'] = $data->location_province;
-  $location['country'] = $data->location_country;
-  $location['postal_code'] = $data->location_postal_code;
+  $location = location_load_location($data->location_lid);
   return theme('location', $location);
 }
 
