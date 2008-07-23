@@ -53,6 +53,28 @@ function location_views_tables() {
       ),
       'latitude'    => array('name' => t('Location: Latitude'),    'sortable' => true),
       'longitude'   => array('name' => t('Location: Longitude'),   'sortable' => true),
+
+      // add a complete address in a single box as a field option
+      'address' => array(
+        'name'       => t('Location: Address'),
+        'handler'    => 'location_views_field_handler_address',
+        'notafield'  => true,
+        'sortable'   => false,
+        'addlfields' => array('lid'),
+        'help' => t('Complete formatted address in a single cell, using the location theme.'),
+      ),
+
+      // @@@ This one DEFINATELY needs a sanity check.
+      // add field showing distance from selected zip code
+      'distance' => array(
+        'name'       => t('Location: Distance'),
+        'handler'    => 'location_views_field_handler_distance',
+        'notafield'  => true,
+        'sortable'   => false,
+        'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+        'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
+      ),
+
     ),
     'sorts' => array(
       'name'        => array('name' => t('Location: Name')),
@@ -95,6 +117,62 @@ function location_views_tables() {
         'operator' => array('IS NOT' => t('Has coordinates'), 'IS' => t('No coordinates')),
         'handler' => 'views_handler_filter_null',
       ),
+      'province_select' => array(
+        'field' => 'province',
+        'name' => t('Location: Province Selector'),
+        'operator' => 'location_handler_operator_eq',
+        'handler' => 'location_handler_filter_eq',
+        'list' => location_province_select_options(), // @@@ Dunno how sane this is....
+        'list-type' => 'select',
+      ),
+      'province' => array(
+        'field' => 'province',
+        'name' => t('Location: Province'),
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
+      ),
+      'postal_code' => array(
+        'field' => 'postal_code',
+        'name' => t('Location: Postal Code'),
+        'operator' => 'views_handler_operator_like',
+        'handler' => 'views_handler_filter_like',
+      ),
+      'country' => array(
+        'field' => 'country',
+        'name' => t('Location: Country'),
+        'operator' => 'location_handler_operator_eq',
+        'handler' => 'location_handler_filter_eq',
+        'list' => location_views_countries(),
+        'list-type' => 'select',
+      ),
+      'latitude' => array(
+        'field' => 'latitude',
+        'name' => t('Location: Latitude'),
+        'operator' => 'views_handler_operator_gtlt',
+      ),
+      'longitude' => array(
+        'field' => 'longitude',
+        'name' => t('Location: Longitude'),
+        'operator' => 'views_handler_operator_gtlt',
+      ),
+      'proximity' => array(
+        'field' => 'distance',
+        'name' => t('Location: Proximity'),
+        'operator' => location_views_proximity_operators(),
+        'handler' => 'location_views_filter_handler_proximity',
+        'value' => location_views_proximity_form(),
+        'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
+        'cacheable' => 'no',
+      ),
+      'proximity_map' => array(
+        'field' => 'distance',
+        'name' => t('Location: Proximity Map'),
+        'operator' => location_views_proximity_operators(),
+        'handler' => 'location_views_filter_handler_proximity',
+        'value' => location_views_map_input_form(),
+        'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
+        'cacheable' => 'no',
+      ),
     ),
   );
 
@@ -135,101 +213,13 @@ function location_views_tables() {
       'filters' => array(
         'has_location' => array(
           'field' => 'uid',
-          'name' => t('Location: Has location'),
+          'name' => t('User Location: Has location'),
           'operator' => array('IS NOT' => t('Has location'), 'IS' => t('No location')),
           'handler' => 'views_handler_filter_null',
         ),
       ),
     );
   }
-
-  $tables['location']['filters']['province_select'] = array(
-    'field' => 'province',
-    'name' => t('Location: Province Selector'),
-    'operator' => 'location_handler_operator_eq',
-    'handler' => 'location_handler_filter_eq',
-    'list' => location_province_select_options(), // @@@ Dunno how sane this is....
-    'list-type' => 'select',
-  );
-  $tables['location']['filters']['province'] = array(
-    'field' => 'province',
-    'name' => t('Location: Province'),
-    'operator' => 'views_handler_operator_like',
-    'handler' => 'views_handler_filter_like',
-  );
-
-  $tables['location']['filters']['postal_code'] = array(
-    'field' => 'postal_code',
-    'name' => t('Location: Postal Code'),
-    'operator' => 'views_handler_operator_like',
-    'handler' => 'views_handler_filter_like',
-  );
-  $tables['location']['filters']['country'] = array(
-    'field' => 'country',
-    'name' => t('Location: Country'),
-    'operator' => 'location_handler_operator_eq',
-    'handler' => 'location_handler_filter_eq',
-    'list' => location_views_countries(),
-    'list-type' => 'select',
-  );
-/*  $tables['location']['filters']['type'] = array(
-    'field' => 'type',
-    'name' => t('Location: Type'),
-    'operator' => 'location_handler_operator_eq',
-    'handler' => 'location_handler_filter_eq',
-    'list' => drupal_map_assoc(array('node', 'user')),
-    'list-type' => 'select',
-  );*/
-  $tables['location']['filters']['latitude'] = array(
-    'field' => 'latitude',
-    'name' => t('Location: Latitude'),
-    'operator' => 'views_handler_operator_gtlt',
-  );
-  $tables['location']['filters']['longitude'] = array(
-    'field' => 'longitude',
-    'name' => t('Location: Longitude'),
-    'operator' => 'views_handler_operator_gtlt',
-  );
-
-  // add a complete address in a single box as a field option
-  $tables['location']['fields']['address'] = array(
-    'name'       => t('Location: Address'),
-    'handler'    => 'location_views_field_handler_address',
-    'notafield'  => true,
-    'sortable'   => false,
-    'addlfields' => array('lid'),
-    'help' => t('Complete formatted address in a single cell, using the location theme.'),
-  );
-
-  $tables['location']['filters']['proximity'] = array(
-    'field' => 'distance',
-    'name' => t('Location: Proximity'),
-    'operator' => location_views_proximity_operators(),
-    'handler' => 'location_views_filter_handler_proximity',
-    'value' => location_views_proximity_form(),
-    'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
-    'cacheable' => 'no',
-  );
-
-  $tables['location']['filters']['proximity_map'] = array(
-    'field' => 'distance',
-    'name' => t('Location: Proximity Map'),
-    'operator' => location_views_proximity_operators(),
-    'handler' => 'location_views_filter_handler_proximity',
-    'value' => location_views_map_input_form(),
-    'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
-    'cacheable' => 'no',
-  );
-
-  // add field showing distance from selected zip code
-  $tables['location']['fields']['distance'] = array(
-    'name'       => t('Location: Distance'),
-    'handler'    => 'location_views_field_handler_distance',
-    'notafield'  => true,
-    'sortable'   => false,
-    'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
-    'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
-  );
 
   if (module_exists('usernode')) {
     $tables['user_location'] = array(
@@ -275,6 +265,27 @@ function location_views_tables() {
         ),
         'latitude'    => array('name' => t('User Location: Latitude'),    'sortable' => true),
         'longitude'   => array('name' => t('User Location: Longitude'),   'sortable' => true),
+
+        // add a complete address in a single box as a field option
+        'address' => array(
+          'name'       => t('User Location: Address'),
+          'handler'    => 'location_views_field_handler_user_address',
+          'notafield'  => true,
+          'sortable'   => false,
+          'addlfields' => array('lid'),
+          'help' => t('Complete formatted address in a single cell, using the location theme.'),
+        ),
+
+        // @@@ This one DEFINATELY needs a sanity check.
+        // add field showing distance from selected zip code
+        'distance' => array(
+          'name'       => t('User Location: Distance'),
+          'handler'    => 'location_views_field_handler_distance',
+          'notafield'  => true,
+          'sortable'   => false,
+          'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
+          'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
+        ),
       ),
       'sorts' => array(
         'name'        => array('name' => t('User Location: Name')),
@@ -310,97 +321,63 @@ function location_views_tables() {
           'operator' => 'views_handler_operator_like',
           'handler' => 'views_handler_filter_like',
         ),
+        'province_select' => array(
+          'field' => 'province',
+          'name' => t('User Location: Province Selector'),
+          'operator' => 'location_handler_operator_eq',
+          'handler' => 'location_handler_filter_eq',
+          'list' => location_province_select_options(), // @@@ Dunno how sane this is.
+          'list-type' => 'select',
+        ),
+        'province' => array(
+          'field' => 'province',
+          'name' => t('User Location: Province'),
+          'operator' => 'views_handler_operator_like',
+          'handler' => 'views_handler_filter_like',
+        ),
+        'postal_code' => array(
+          'field' => 'postal_code',
+          'name' => t('User Location: Postal Code'),
+          'operator' => 'views_handler_operator_like',
+          'handler' => 'views_handler_filter_like',
+        ),
+        'country' => array(
+          'field' => 'country',
+          'name' => t('User Location: Country'),
+          'operator' => 'location_handler_operator_eq',
+          'handler' => 'location_handler_filter_eq',
+          'list' => location_views_countries(),
+          'list-type' => 'select',
+        ),
+        'latitude' => array(
+          'field' => 'latitude',
+          'name' => t('User Location: Latitude'),
+          'operator' => 'views_handler_operator_gtlt',
+        ),
+        'longitude' => array(
+          'field' => 'longitude',
+          'name' => t('User Location: Longitude'),
+          'operator' => 'views_handler_operator_gtlt',
+        ),
+        'proximity' => array(
+          'field' => 'distance',
+          'name' => t('User Location: Proximity'),
+          'operator' => location_views_proximity_operators(),
+          'handler' => 'location_views_filter_handler_user_proximity',
+          'value' => location_views_proximity_form(),
+          'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
+          'cacheable' => 'no',
+        ),
+        'proximity_map' => array(
+          'field' => 'distance',
+          'name' => t('User Location: Proximity Map'),
+          'operator' => location_views_proximity_operators(),
+          'handler' => 'location_views_filter_handler_user_proximity',
+          'value' => location_views_map_input_form(),
+          'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
+          'cacheable' => 'no',
+        ),
       ),
-    );
-
-    $tables['user_location']['filters']['province_select'] = array(
-      'field' => 'province',
-      'name' => t('User Location: Province Selector'),
-      'operator' => 'location_handler_operator_eq',
-      'handler' => 'location_handler_filter_eq',
-      'list' => location_province_select_options(), // @@@ Dunno how sane this is.
-      'list-type' => 'select',
-    );
-    $tables['user_location']['filters']['province'] = array(
-      'field' => 'province',
-      'name' => t('User Location: Province'),
-      'operator' => 'views_handler_operator_like',
-      'handler' => 'views_handler_filter_like',
-    );
-
-    $tables['user_location']['filters']['postal_code'] = array(
-      'field' => 'postal_code',
-      'name' => t('User Location: Postal Code'),
-      'operator' => 'views_handler_operator_like',
-      'handler' => 'views_handler_filter_like',
-    );
-    $tables['user_location']['filters']['country'] = array(
-      'field' => 'country',
-      'name' => t('User Location: Country'),
-      'operator' => 'location_handler_operator_eq',
-      'handler' => 'location_handler_filter_eq',
-      'list' => location_views_countries(),
-      'list-type' => 'select',
-    );
-/*
-    $tables['user_location']['filters']['type'] = array(
-      'field' => 'type',
-      'name' => t('User Location: Type'),
-      'operator' => 'location_handler_operator_eq',
-      'handler' => 'location_handler_filter_eq',
-      'list' => drupal_map_assoc(array('node', 'user')),
-      'list-type' => 'select',
-    );
- */
-    $tables['user_location']['filters']['latitude'] = array(
-      'field' => 'latitude',
-      'name' => t('User Location: Latitude'),
-      'operator' => 'views_handler_operator_gtlt',
-    );
-    $tables['user_location']['filters']['longitude'] = array(
-      'field' => 'longitude',
-      'name' => t('User Location: Longitude'),
-      'operator' => 'views_handler_operator_gtlt',
-    );
-
-    // add a complete address in a single box as a field option
-    $tables['user_location']['fields']['address'] = array(
-      'name'       => t('User Location: Address'),
-      'handler'    => 'location_views_field_handler_user_address',
-      'notafield'  => true,
-      'sortable'   => false,
-      'addlfields' => array('lid'),
-      'help' => t('Complete formatted address in a single cell, using the location theme.'),
-    );
-
-    $tables['user_location']['filters']['proximity'] = array(
-      'field' => 'distance',
-      'name' => t('User Location: Proximity'),
-      'operator' => location_views_proximity_operators(),
-      'handler' => 'location_views_filter_handler_user_proximity',
-      'value' => location_views_proximity_form(),
-      'help' => t('Select the postal code and the distance units to be used for the proximity filter.'),
-      'cacheable' => 'no',
-    );
-
-    $tables['user_location']['filters']['proximity_map'] = array(
-      'field' => 'distance',
-      'name' => t('User Location: Proximity Map'),
-      'operator' => location_views_proximity_operators(),
-      'handler' => 'location_views_filter_handler_user_proximity',
-      'value' => location_views_map_input_form(),
-      'help' => t('Map the central point and the distance units to be used for the proximity filter.'),
-      'cacheable' => 'no',
-    );
-
-    // add field showing distance from selected zip code
-    $tables['user_location']['fields']['distance'] = array(
-      'name'       => t('User Location: Distance'),
-      'handler'    => 'location_views_field_handler_distance',
-      'notafield'  => true,
-      'sortable'   => false,
-      'addlfields' => array('name', 'street', 'additional', 'city', 'province', 'country', 'postal_code', 'longitude', 'latitude'),
-      'help' => t('Combine with proximity filter. Displays distance from each node to the central location selected with the proximity filter.'),
     );
   }
   return $tables;
