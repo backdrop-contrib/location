@@ -173,9 +173,8 @@ function theme_location($location = array(), $hide = array()) {
       $output .= implode(', ', $city_province_postal);
     }
 
-    if (!empty($location['country']) && !in_array('country', $hide)) {
-      $countries = location_get_iso3166_list();
-      $output .= '<div class="country-name">'. t($countries[$location['country']]) .'</div>';
+    if (!empty($location['country_name']) && !in_array('country', $hide)) {
+      $output .= '<div class="country-name">'. $location['country_name'] .'</div>';
     }
 
     if (isset($location['latitude']) && isset($location['longitude'])) {

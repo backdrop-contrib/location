@@ -1039,6 +1039,35 @@ function location_get_provinces($country = 'us') {
 
 // @@@ New in 3.x, document.
 /**
+ * Get the translated name of a country code.
+ */
+function location_country_name($country = 'us') {
+  $countries = location_get_iso3166_list();
+  if (isset($countries[$country])) {
+    return $countries[$country];
+  }
+  else {
+    return '';
+  }
+}
+
+// @@@ New in 3.x, document.
+/**
+ * Get the full name of a province code.
+ */
+function location_province_name($country = 'us', $province = 'xx') {
+  $provinces = location_get_provinces($country);
+  if (isset($provinces[$province])) {
+    return $provinces[$province];
+  }
+  else {
+    return '';
+  }
+}
+
+
+// @@@ New in 3.x, document.
+/**
  * Canonicalize a country code.
  */
 function location_standardize_country_code(&$country) {
