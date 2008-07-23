@@ -51,3 +51,33 @@ function location_phone_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
       break;
   }
 }
+
+function location_phone_views_tables() {
+  $tables['location_phone'] = array(
+    'name' => 'location_phone',
+    'join' => array(
+      'left' => array(
+        'table' => 'location',
+        'field' => 'lid',
+      ),
+      'right' => array(
+        'field' => 'lid',
+      ),
+    ),
+    'fields' => array(
+      'phone' => array(
+        'name' => t('Location: Phone'),
+        'sortable' => TRUE,
+      ),
+    ),
+    'filters' => array(
+      'has_phone' => array(
+        'field' => 'phone',
+        'name' => t('Location: Has phone'),
+        'operator' => array('IS NOT' => t('Has phone'), 'IS' => t('No phone')),
+        'handler' => 'views_handler_filter_null',
+      ),
+    ),
+  );
+  return $tables;
+}

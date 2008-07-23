@@ -51,3 +51,33 @@ function location_fax_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
       break;
   }
 }
+
+function location_fax_views_tables() {
+  $tables['location_fax'] = array(
+    'name' => 'location_fax',
+    'join' => array(
+      'left' => array(
+        'table' => 'location',
+        'field' => 'lid',
+      ),
+      'right' => array(
+        'field' => 'lid',
+      ),
+    ),
+    'fields' => array(
+      'phone' => array(
+        'name' => t('Location: Fax'),
+        'sortable' => TRUE,
+      ),
+    ),
+    'filters' => array(
+      'has_fax' => array(
+        'field' => 'fax',
+        'name' => t('Location: Has fax'),
+        'operator' => array('IS NOT' => t('Has fax'), 'IS' => t('No fax')),
+        'handler' => 'views_handler_filter_null',
+      ),
+    ),
+  );
+  return $tables;
+}
