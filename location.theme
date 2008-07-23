@@ -101,6 +101,8 @@ function theme_locations($locations = array(), $hide = array()) {
   return $output;
 }
 
+
+// @@@ All this in_array is really stupid.
 /**
  * Generates HTML for the passed location.
  *
@@ -119,7 +121,7 @@ function theme_locations($locations = array(), $hide = array()) {
 function theme_location($location = array(), $hide = array()) {
   // Check if it have at least one field to be displayed.
   array_flip($hide);
-  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
+  foreach (array('street', 'city', 'province', 'postal_code', 'country', 'latitude', 'longitude') as $field) {
     if (!empty($location[$field]) && empty($hide[$field])) {
       $display = TRUE;
       break;
@@ -177,7 +179,7 @@ function theme_location($location = array(), $hide = array()) {
       $output .= '<div class="country-name">'. $location['country_name'] .'</div>';
     }
 
-    if (isset($location['latitude']) && isset($location['longitude'])) {
+    if (isset($location['latitude']) && isset($location['longitude']) && !in_array('latitude', $hide) && !in_array('longitude', $hide)) {
       // "Geo" microformat, see http://microformats.org/wiki/geo
       $output .= '<span class="geo"><abbr class="latitude" title="'. $location['latitude'] .'">'. theme('location_latitude_dms', $location['latitude']) .'</abbr>, <abbr class="longitude" title="'. $location['longitude'] .'">'. theme('location_longitude_dms', $location['longitude']) .'</abbr></span>';
     }
