@@ -1181,6 +1181,9 @@ function location_save($location, $cow = TRUE) {
   $oldloc = array();
   if ($location['lid']) {
     $oldloc = (array)location_load_location($location['lid']);
+    // Remove the "virtual fields" that we provide for themers.
+    unset($oldloc['province_name']);
+    unset($oldloc['country_name']);
   }
 
   // @@@ This isn't the best place to do this...
