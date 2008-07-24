@@ -669,6 +669,11 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
     '#title' => 'Display location in full view',
     '#default_value' => variable_get('location_display_full_'. $type, TRUE),
   );
+  $form['location']['display']['location_display_weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Display Weight'),
+    '#default_value' => variable_get('location_display_weight_'. $type, 0),
+  );
 
 
   // @@@ THIS IS NOT GOOD. --Bdragon
@@ -885,6 +890,7 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $node->content['locations'] = array(
               '#type' => 'markup',
               '#value' => $output,
+              '#weight' => variable_get('location_display_weight_'. $node->type, 0),
             );
           }
         }
