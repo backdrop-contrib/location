@@ -7,7 +7,6 @@
  */
 
 function theme_location_map_link_options(&$form) {
-
   $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
 
   $rows = array();
