@@ -274,14 +274,6 @@ function location_views_tables() {
  */
 function location_views_default_views() {
 
-  // find all location-enabled nodes
-  $location_node_types = array();
-  foreach (node_get_types('names') as $type => $name) {
-    if (variable_get('location_maxnum_'. $type, 0)) {
-      $location_node_types[] = $type;
-    }
-  }
-
   $view = new stdClass();
   $view->name = 'location_table';
   $view->description = 'Node location table.';
@@ -301,10 +293,14 @@ function location_views_default_views() {
   $view->use_pager = TRUE;
   $view->nodes_per_page = '10';
   $view->menu = TRUE;
-  $view->menu_title = 'location table';
+  $view->menu_title = 'Location table';
   $view->menu_tab = FALSE;
+  $view->menu_tab_weight = '0';
   $view->menu_tab_default = FALSE;
-  $view->menu_weight = '';
+  $view->menu_tab_default_parent = NULL;
+  $view->menu_tab_default_parent_type = 'tab';
+  $view->menu_parent_tab_weight = '0';
+  $view->menu_parent_title = '';
   $view->sort = array();
   $view->argument = array();
   $view->field = array(
@@ -313,6 +309,7 @@ function location_views_default_views() {
       'field' => 'title',
       'label' => 'Title:',
       'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
       'sortable' => '1',
       'defaultsort' => 'ASC',
     ),
@@ -356,23 +353,15 @@ function location_views_default_views() {
       'value' => '1',
     ),
     array(
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
+      'tablename' => 'location_instance_node',
+      'field' => 'has_location',
+      'operator' => 'IS NOT',
       'options' => '',
-      'value' => $location_node_types,
+      'value' => '',
     ),
-/*    array(
-    'tablename' => 'location',
-    'field' => 'type',
-    'operator' => '=',
-    'options' => '',
-    'value' => 'node',
-    ),*/
   );
-
   $view->exposed_filter = array();
-  $view->requires = array('node', 'location_instance', 'location');
+  $view->requires = array('node', 'location', 'location_instance_node');
   $views[$view->name] = $view;
 
   $view = new stdClass();
@@ -396,59 +385,70 @@ function location_views_default_views() {
   $view->menu = TRUE;
   $view->menu_title = 'Locations';
   $view->menu_tab = FALSE;
+  $view->menu_tab_weight = '0';
   $view->menu_tab_default = FALSE;
-  $view->menu_weight = '';
+  $view->menu_tab_default_parent = NULL;
+  $view->menu_tab_default_parent_type = 'tab';
+  $view->menu_parent_tab_weight = '0';
+  $view->menu_parent_title = '';
   $view->sort = array();
   $view->argument = array(
     array(
       'type' => 'country',
       'argdefault' => '6',
-      'title' => t('Country'),
+      'title' => 'Country',
       'options' => '',
+      'wildcard' => '',
+      'wildcard_substitution' => '',
     ),
     array(
       'type' => 'province',
       'argdefault' => '6',
-      'title' => t('State'),
+      'title' => 'State',
       'options' => '',
+      'wildcard' => '',
+      'wildcard_substitution' => '',
     ),
     array(
       'type' => 'city',
       'argdefault' => '6',
-      'title' => t('City'),
+      'title' => 'City',
       'options' => '1',
+      'wildcard' => '',
+      'wildcard_substitution' => '',
     ),
   );
   $view->field = array(
     array(
       'tablename' => 'node',
       'field' => 'title',
-      'label' => t('Title:'),
+      'label' => 'Title:',
       'handler' => 'views_handler_field_nodelink',
       'sortable' => '1',
+      'options' => 'link',
     ),
     array(
       'tablename' => 'location',
       'field' => 'street',
-      'label' => t('Street:'),
+      'label' => 'Street:',
       'sortable' => '1',
     ),
     array(
       'tablename' => 'location',
       'field' => 'city',
-      'label' => t('City:'),
+      'label' => 'City:',
       'sortable' => '1',
     ),
     array(
       'tablename' => 'location',
       'field' => 'province',
-      'label' => t('Province:'),
+      'label' => 'Province:',
       'sortable' => '1',
     ),
     array(
       'tablename' => 'location',
       'field' => 'postal_code',
-      'label' => t('Postal Code:'),
+      'label' => 'Postal Code:',
       'sortable' => '1',
     ),
     array(
@@ -467,22 +467,15 @@ function location_views_default_views() {
       'value' => '1',
     ),
     array(
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
+      'tablename' => 'location_instance_node',
+      'field' => 'has_location',
+      'operator' => 'IS NOT',
       'options' => '',
-      'value' => $location_node_types,
+      'value' => '',
     ),
-/*    array(
-      'tablename' => 'location',
-      'field' => 'type',
-      'operator' => '=',
-      'options' => '',
-      'value' => 'node',
-    ), */
   );
   $view->exposed_filter = array();
-  $view->requires = array('node', 'location_instance', 'location');
+  $view->requires = array(node, location, location_instance_node);
   $views[$view->name] = $view;
 
   if (module_exists('usernode')) {
@@ -505,10 +498,14 @@ function location_views_default_views() {
     $view->use_pager = TRUE;
     $view->nodes_per_page = '10';
     $view->menu = TRUE;
-    $view->menu_title = 'user location table';
+    $view->menu_title = 'User location table';
     $view->menu_tab = FALSE;
+    $view->menu_tab_weight = '0';
     $view->menu_tab_default = FALSE;
-    $view->menu_weight = '';
+    $view->menu_tab_default_parent = NULL;
+    $view->menu_tab_default_parent_type = 'tab';
+    $view->menu_parent_tab_weight = '0';
+    $view->menu_parent_title = '';
     $view->sort = array();
     $view->argument = array();
     $view->field = array(
@@ -519,6 +516,7 @@ function location_views_default_views() {
         'handler' => 'views_handler_field_nodelink',
         'sortable' => '1',
         'defaultsort' => 'ASC',
+        'options' => 'link',
       ),
       array(
         'tablename' => 'user_location',
@@ -566,19 +564,19 @@ function location_views_default_views() {
         'options' => '',
         'value' => array(0 => 'usernode'),
       ),
-/*      array(
-        'tablename' => 'user_location',
-        'field' => 'type',
-        'operator' => '=',
+      array(
+        'tablename' => 'location_instance_user',
+        'field' => 'has_location',
+        'operator' => 'IS NOT',
         'options' => '',
-        'value' => 'user',
+        'value' => '',
       ),
- */
     );
-    $view->exposed_filter = array();
-    $view->requires = array('node', 'user_location', 'location');
+    $view->exposed_filter = array ();
+    $view->requires = array(node, user_location, location_instance_user);
     $views[$view->name] = $view;
   }
+
   return $views;
 }
 
