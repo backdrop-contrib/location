@@ -736,6 +736,9 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
       // This works best when the country argument appears before.
 
       $country = isset($query->_location_country_arg) ? $query->_location_country_arg : 'us';
+      if ($country == t('unknown')) {
+        $country = '';
+      }
       // Add country as a fake field.
       $query->add_field("'$country'", NULL, 'location_country_arg');
 
@@ -746,14 +749,13 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
         $query->add_where("location_instance_user.uid IS NOT NULL");
       }
 
-      $fieldinfo['field'] = "IF (location.province = '' OR location.province IS NULL, 'xx', location.province)";
+      $fieldinfo['field'] = "IF (location.province = '' OR location.province IS NULL, '". t('unknown') ."', location.province)";
       $fieldinfo['fieldname'] = 'province';
       return $fieldinfo;
 
     case 'link':
-      // Figure out what country to load.
-      $provinces = location_get_provinces($query->location_country_arg);
-      return l(!isset($provinces[$query->province]) ? t('unknown') : $provinces[$query->province], "$arg/$query->province");
+      $name = location_province_name($query->location_country_arg, $query->province);
+      return l(empty($name) ? t('unknown') : $name, "$arg/$query->province");
 
     default:
       return location_views_handler_any($op, $query, $argtype, $arg, $type, 'province');
@@ -766,9 +768,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
 function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = '') {
   switch ($op) {
     case 'link':
-      $all_countries = location_get_iso3166_list();
-      $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
-      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+      return l($query->country == t('unknown') ? t('unknown') : location_country_name($query->country), "$arg/$query->country");
 
     case 'title':
       global $_location_views_country;
@@ -783,9 +783,7 @@ function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = 
 function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
   switch ($op) {
     case 'link':
-      $all_countries = location_get_iso3166_list();
-      $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
-      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+      return l($query->country == t('unknown') ? t('unknown') : location_country_name($query->country), "$arg/$query->country");
 
     case 'title':
       global $_location_views_country;
