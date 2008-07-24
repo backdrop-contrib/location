@@ -403,7 +403,7 @@ function _location_supported_countries() {
 
   // Try first to load from cache, it's much faster than the scan below.
   if ($cache = cache_get('location:supported-countries', 'cache_location')) {
-    $supported_countries = unserialize($cache->data);
+    $supported_countries = $cache->data;
   }
   else {
     // '<ISO two-letter code>' => '<English name for country>'
@@ -414,7 +414,7 @@ function _location_supported_countries() {
         $supported_countries[$cc] = $name;
       }
     }
-    cache_set('location:supported-countries', 'cache_location', serialize($supported_countries));
+    cache_set('location:supported-countries', $supported_countries, 'cache_location');
   }
   return $supported_countries;
 }
@@ -430,14 +430,14 @@ function location_get_provinces($country = 'us') {
     return $provinces[$country];
   }
   if ($cache = cache_get("provinces:$country", 'cache_location')) {
-    $provinces[$country] = unserialize($cache->data);
+    $provinces[$country] = $cache->data;
     return $provinces[$country];
   }
   location_load_country($country);
   $func = 'location_province_list_'. $country;
   if (function_exists($func)) {
     $provinces[$country] = $func();
-    cache_set("provinces:$country", 'cache_location', serialize($provinces[$country]));
+    cache_set("provinces:$country", $provinces[$country], 'cache_location');
     return $provinces[$country];
   }
   return array();

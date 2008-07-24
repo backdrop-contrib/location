@@ -132,10 +132,11 @@ function theme_location($location = array(), $hide = array()) {
   }
 
   $output = '';
-  if (isset($location['country']) && ($f = theme_get_function('location_'. $location['country']))) {
+// @@@ Fix this.
+/*  if (isset($location['country']) && ($f = theme_get_function('location_'. $location['country']))) {
     $output .= call_user_func($f, $location, $hide);
   }
-  elseif (count($location)) {
+  else*/if (count($location)) {
     $output .= "\n";
     $output .= '<div class="location vcard"><div class="adr">'."\n";
     if (!empty($location['name']) && !in_array('name', $hide)) {
