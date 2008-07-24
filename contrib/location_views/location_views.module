@@ -768,7 +768,7 @@ function location_views_handler_arg_user_country($op, &$query, $argtype, $arg = 
     case 'link':
       $all_countries = location_get_iso3166_list();
       $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
-      return l($query->postal_code == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
 
     case 'title':
       global $_location_views_country;
@@ -785,7 +785,7 @@ function location_views_handler_arg_country($op, &$query, $argtype, $arg = '') {
     case 'link':
       $all_countries = location_get_iso3166_list();
       $country_name = is_object($query) ? $all_countries[$query->country] : $all_countries[$query];
-      return l($query->postal_code == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
+      return l($query->country == t('unknown') ? t('unknown') : $country_name, "$arg/$query->country");
 
     case 'title':
       global $_location_views_country;
