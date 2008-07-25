@@ -28,24 +28,23 @@ function location_views_data() {
 
   $data['location']['table']['join'] = array(
     'location_instance' => array(
-      'left_table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
     ),
     'node' => array(
-      'table' => 'location_instance',
-      'left_field' => 'nid',
-      'field' => 'nid',
+      'left_table' => 'location_instance',
+      'left_field' => 'lid',
+      'field' => 'lid',
     ),
     'node_revisions' => array(
       'table' => 'location_instance',
-      'left_field' => 'vid',
-      'field' => 'vid',
+      'left_field' => 'lid',
+      'field' => 'lid',
     ),
     'users' => array(
       'table' => 'location_instance',
-      'left_field' => 'uid',
-      'field' => 'uid',
+      'left_field' => 'lid',
+      'field' => 'lid',
     ),
   );
 
@@ -153,7 +152,6 @@ function location_views_data() {
 
   $data['location_instance']['table']['group']  = t('Location');
 
-  // @@@ Is all this actually needed?
   $data['location_instance']['table']['join'] = array(
     'location' => array(
       'left_field' => 'lid',
