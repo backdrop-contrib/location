@@ -138,7 +138,13 @@ function location_theme() {
   return array(
     'location_settings' => array('arguments' => array('element')),
     'locations' => array('arguments' => array('locations', 'hide')),
-    'location' => array('arguments' => array('location', 'hide')),
+    'location' => array(
+      'template' => 'location',
+      'arguments' => array(
+        'location' => NULL,
+        'hide' => array(),
+      ),
+    ),
     'location_latitude_dms' => array('arguments' => array('latitude')),
     'location_longitude_dms' => array('arguments' => array('longitude')),
   );
@@ -1557,4 +1563,54 @@ function location_token_list($type = 'all') {
     $tokens['location']['location-countryname_N']     = t('Country Name (If there are multiple locations per node, N is the iteration, starting with 0)');
     return $tokens;
   }
+}
+
+/**
+ * Theme preprocess function for a location.
+ */
+function template_preprocess_location(&$variables) {
+  $location = $variables['location'];
+  foreach(array_keys($variables['hide']) as $key) {
+    unset($location[$key]);
+  }
+
+  // Location name.
+  $variables['name'] = '';
+  if (!empty($location['name'])) {
+    $variables['name'] = theme('placeholder', $location['name']);
+  }
+
+  // Theme latitude and longitude as d/m/s.
+  $variables['latitude'] = '';
+  $variables['latitude_dms'] = '';
+  if (!empty($location['latitude'])) {
+    $variables['latitude'] = check_plain($location['latitude']);
+    $variables['latitude_dms'] = theme('location_latitude_dms', $location['latitude']);
+  }
+
+  $variables['longitude'] = '';
+  $variables['longitude_dms'] = '';
+  if (!empty($location['longitude'])) {
+    $variables['longitude'] = check_plain($location['longitude']);
+    $variables['longitude_dms'] = theme('location_longitude_dms', $location['longitude']);
+  }
+
+  $variables['map_link'] = '';
+  if (!in_array('map_link', $variables['hide'])) {
+    $variables['map_link'] = location_map_link($variables['location']);
+  }
+
+  foreach (array('street', 'additional', 'city', 'province', 'country', 'postal_code', 'province_name', 'country_name') as $key) {
+    $variables[$key] = '';
+    if (!empty($location[$key])) {
+      $variables[$key] = check_plain($location[$key]);
+    }
+  }
+
+/*
+// @@@ Fix this. (I think in D6 we should just call theme with an array?)
+  if (isset($location['country']) && ($f = theme_get_function('location_'. $location['country']))) {
+    $output .= call_user_func($f, $location, $hide);
+  }
+*/
 }
