@@ -683,7 +683,6 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
   }
 }
 
-// @@@ Move to element validation.
 /**
  * Validation function for node settings form.
  * Logically, the default number of locations per node cannot
@@ -692,11 +691,11 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
  * @ingroup $form
  */
 function location_node_settings_validate($form, &$form_state) {
-  if (!empty($form['location_maxnum']) && empty($form['location_defaultnum'])) {
+  if (!empty($form_state['values']['location_maxnum']) && empty($form_state['values']['location_defaultnum'])) {
     form_set_error('location_defaultnum',
       t("You must have at least 1 default location-form enabled if you are going to allow locations to be submitted for nodes of this type. If you don't intend to allow locations to be submitted for nodes of this type, set the maximum number of locations allowed for this type to 0."));
   }
-  elseif ($form['location_defaultnum'] > $form['location_maxnum']) {
+  elseif ($form_state['values']['location_defaultnum'] > $form_state['values']['location_maxnum']) {
     form_set_error('location_defaultnum',
       t("Your default number of location-forms that show up can't be greater than the maximum number of locations allowed for this node type."));
   }
@@ -711,7 +710,7 @@ function _location_node_type_save_submit($form, &$form_state) {
   unset($form_state['values']['location_fields']);
 }
 
-function _location_node_form_alter($form_id, &$form) {
+function _location_node_form_alter(&$form, &$form_state, $form_id) {
   $node = $form['#node'];
 
   $location_fields = array();
@@ -840,7 +839,7 @@ function location_form_alter(&$form, &$form_state, $form_id) {
     if ($form_id == 'usernode_node_form') {
       return;
     }
-    _location_node_form_alter($form_id, $form);
+    _location_node_form_alter($form, $form_state, $form_id);
   }
 }
 
