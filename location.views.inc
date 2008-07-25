@@ -6,6 +6,16 @@
  * Views 2 support for Location.
  */
 
+/*
+
+TODO:
+ * Finish porting!
+ * Write "relationships" -- see book.views.inc, upload.views.inc, nodequeue...
+
+
+*/
+
+
 /**
  * Implementatin of hook_views_data().
  */
@@ -27,20 +37,19 @@ function location_views_data() {
   );
 
   $data['location']['table']['join'] = array(
-    'location_instance' => array(
-      'left_field' => 'lid',
-      'field' => 'lid',
-    ),
+    // Location links to node through location_instance via lid.
     'node' => array(
       'left_table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
     ),
+    // Location links to node_revisions through location_instance via lid.
     'node_revisions' => array(
       'table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
     ),
+    // Location links to users through location_instance via lid.
     'users' => array(
       'table' => 'location_instance',
       'left_field' => 'lid',
@@ -169,6 +178,24 @@ function location_views_data() {
       'left_field' => 'vid',
       'field' => 'vid',
     ),
+  );
+
+
+  // Tell the base tables about us.
+  $data['node']['table']['join']['location'] = array(
+    'left_table' => 'location_instance',
+    'left_field' => 'vid',
+    'right_field' => 'vid',
+  );
+  $data['node_revisions']['table']['join']['location'] = array(
+    'left_table' => 'location_instance',
+    'left_field' => 'vid',
+    'right_field' => 'vid',
+  );
+  $data['users']['table']['join']['location'] = array(
+    'left_table' => 'location_instance',
+    'left_field' => 'vid',
+    'right_field' => 'vid',
   );
 
   return $data;
