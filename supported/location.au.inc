@@ -137,7 +137,7 @@ function location_map_link_au_yahoo($location = array()) {
     $get_query .= 'addr='. urlencode($location['street']) .'&amp;';
   }
   if ($location['province'] != '' || $location['city'] != '' || $location['postal_code'] != '') {
-    $get_query .= 'csz='. _location_us_yahoo_csz_get_field($location) .'&amp;';
+    $get_query .= 'csz='. _location_au_yahoo_csz_get_field($location) .'&amp;';
   }
   $get_query .= 'country='. urlencode($location['country']);
   return ('http://maps.yahoo.com/maps_result'. $get_query);
