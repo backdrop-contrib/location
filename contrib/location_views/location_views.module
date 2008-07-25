@@ -23,22 +23,6 @@ function location_views_tables() {
       ),
     ),
     'fields' => array(
-      'name' => array(
-        'name' => t('Name'),
-        'sortable' => TRUE,
-      ),
-      'street' => array(
-        'name' => t('Street'),
-        'sortable' => TRUE,
-      ),
-      'additional' => array(
-        'name' => t('Additional'),
-        'sortable' => TRUE,
-      ),
-      'city' => array(
-        'name' => t('City'),
-        'sortable' => TRUE,
-      ),
 
       // Should be province_name, but can't change history.
       'province' => array(
@@ -66,14 +50,6 @@ function location_views_tables() {
       'country_code' => array(
         'field' => 'country',
         'name' => t('Country code'),
-        'sortable' => TRUE,
-      ),
-      'latitude' => array(
-        'name' => t('Latitude'),
-        'sortable' => TRUE,
-      ),
-      'longitude' => array(
-        'name' => t('Longitude'),
         'sortable' => TRUE,
       ),
 
