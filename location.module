@@ -1452,6 +1452,8 @@ function location_element_validate($form, &$form_state) {
  * Convert decimal degrees to degrees,minutes,seconds.
  */
 function location_dd_to_dms($coord) {
+  $negative = ($coord < 0) ? TRUE : FALSE;
+  $coord = abs($coord);
   $degrees = floor($coord);
   $coord -= $degrees;
   $coord *= 60;
@@ -1459,7 +1461,7 @@ function location_dd_to_dms($coord) {
   $coord -= $minutes;
   $coord *= 60;
   $seconds = round($coord, 6);
-  return array($degrees, $minutes, $seconds);
+  return array($degrees, $minutes, $seconds, $negative);
 }
 
 /**
@@ -1467,9 +1469,9 @@ function location_dd_to_dms($coord) {
  */
 function theme_location_latitude_dms($latitude) {
   $output = '';
-  list($degrees, $minutes, $seconds) = location_dd_to_dms($latitude);
+  list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($latitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
-  if ($degrees > 0) {
+  if (!$negative) {
     $output .= 'N';
   }
   else {
@@ -1480,9 +1482,9 @@ function theme_location_latitude_dms($latitude) {
 
 function theme_location_longitude_dms($longitude) {
   $output = '';
-  list($degrees, $minutes, $seconds) = location_dd_to_dms($longitude);
+  list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($longitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
-  if ($degrees > 0) {
+  if (!$negative) {
     $output .= 'E';
   }
   else {
