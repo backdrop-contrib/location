@@ -4,7 +4,8 @@
 // Belgium
 
 function location_province_list_be() {
-  return array('VAN' => "Antwerpen",
+  return array(
+    'VAN' => "Antwerpen",
     'VBR' => "Vlaams Brabant",
     'VLI' => "Limburg",
     'VOV' => "Oost-Vlaanderen",
@@ -13,5 +14,11 @@ function location_province_list_be() {
     'WHT' => "Hainaut",
     'WLG' => "Liege",
     'WLX' => "Luxembourg",
-    'WNA' => "Namur");
+    'WNA' => "Namur",
+    // While technically not a province, Brussels-Capital Region is needed here
+    // because some places would be completely without a province if we did not
+    // include it.
+    // See http://drupal.org/node/228766 and http://drupal.org/node/291590.
+    'BRU' => "Brussels",
+  );
 }
