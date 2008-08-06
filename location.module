@@ -147,6 +147,8 @@ function location_theme() {
     ),
     'location_latitude_dms' => array('arguments' => array('latitude')),
     'location_longitude_dms' => array('arguments' => array('longitude')),
+    'location_map_link_options' => array('arguments' => array('form')),
+    'location_geocoding_options' => array('arguments' => array('form')),
   );
 }
 
@@ -1015,24 +1017,6 @@ function location_load_location($lid) {
   $location = array_merge($location, location_invoke_locationapi($location, 'load', $lid));
 
   return $location;
-}
-
-/**
- * Returns an array of countries whose locations will be allowed entry
- * into the site's location system.  The array returned is an associative
- * array where the keys are the ISO codes (see location.inc) and the values
- * are the shortened English names.
- */
-function location_get_configured_countries() {
-  $configured_countries = variable_get('location_configured_countries', array('us' => 1));
-  $configured_countries = is_array($configured_countries) ? $configured_countries : array('us' => 1);
-  $return = array();
-  foreach ($configured_countries as $country => $enabled) {
-    if ($enabled) {
-      $return[] = $country;
-    }
-  }
-  return $return;
 }
 
 // @@@ There are significant changes in the megapatch.

@@ -350,38 +350,6 @@ function location_latlon_exact($location = array()) {
 }
 
 /**
- * Returns an associative array of countries currently recognized by the
- * site admin's configuration where:
- *   -> the keys represent the two-letter ISO code and
- *   -> the values represent the English name of the country.
- *
- * The array is sorted by the values.
- *
- * Please note the difference between "supported" countries and "configured"
- * countries: A country being "supported" means that there is an include file
- * to support the country while "configured" implies that the site admin has
- * configured the site to actually use that country's include file.
- */
-function location_configured_countries() {
-  static $countries = array();
-  if (empty($countries)) {
-    $configured_countries = variable_get('location_configured_countries', array('us' => 'us')); // <integer index> => <ISO code>
-
-    $configured_countries = is_array($configured_countries) ? $configured_countries : array();
-    $supported_countries = _location_supported_countries(); // <ISO code> => <English name>
-
-    foreach ($configured_countries as $country_code) {
-      if (array_key_exists($country_code, $supported_countries)) {
-        $countries[$country_code] = $supported_countries[$country_code];
-      }
-    }
-
-    asort($countries);
-  }
-  return $countries;
-}
-
-/**
  * Returns an associative array of countries currently supported
  * by the location system where
  *   -> the keys represent the two-letter ISO code and
@@ -508,6 +476,8 @@ function location_load_geocoder($geocoder) {
   include_once drupal_get_path('module', 'location') .'/geocoding/'. $geocoder .'.inc';
 }
 
+
+// @@@ Kill this, it is no longer sane.
 /**
  * The array that is returned is a complete list of state/provinces
  * that belong to the countries enabled by the site's location system.
@@ -543,7 +513,8 @@ function location_province_select_options($country = NULL) {
     $countries = array($country => TRUE);
   }
   else {
-    $countries = location_configured_countries();
+    // @@@ Massive slowdown.
+    $countries = _location_supported_countries();
   }
   foreach ($countries as $cc => $name) {
     $provinces = location_get_provinces($cc);

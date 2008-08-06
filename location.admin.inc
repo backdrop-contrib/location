@@ -12,26 +12,13 @@
  * @ingroup form
  */
 function location_admin_settings() {
+  // Recalculate the supported countries.
   cache_clear_all('location:supported-countries', 'cache');
-  $supported_countries = _location_supported_countries();
-
-  $default_country = variable_get('location_default_country', 'us');
-
-  $configured_countries = location_get_configured_countries();
+  _location_supported_countries();
 
   $iso_list_sorted = location_get_iso3166_list();
   array_multisort($iso_list_sorted);
   $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
-
-  if ($default_country && in_array($default_country, array_keys($supported_countries)) && !in_array($default_country, $configured_countries)) {
-    $configured_countries = variable_get('location_configured_countries', array('us' => 1));
-    $configured_countries[$default_country] = 1;
-    variable_set('location_configured_countries', $configured_countries);
-    // clear the views cache to pick up any changes
-    if (function_exists('views_invalidate_cache')) {
-      views_invalidate_cache();
-    }
-  }
 
   $form  = array();
   $form['location_default_country'] = array(
@@ -104,32 +91,8 @@ function location_admin_settings() {
     '#type'           => 'fieldset',
   );
 
-  $form['countries']['location_configured_countries'] = array(
-    '#type'           => 'checkboxes',
-    '#theme'          => 'location_configured_countries',
-    '#title'          => t('Enable all <em>available</em> features for locations from the following countries'),
-    '#default_value'  => location_get_configured_countries(),
-    '#options'        => $supported_countries,
-  );
-
   return system_settings_form($form);
 }
-
-function theme_location_configured_countries($element) {
-  foreach (element_children($element) as $key) {
-    $row = array();
-    $title = $element[$key]['#title'];
-    unset($element[$key]['#title']);
-    $row[] = array('data' => drupal_render($element[$key]));
-    $row[] = $title;
-    $row[] = $key;
-    $rows[] = $row;
-  }
-  $header = array(theme('table_select_header_cell'), t('Country'), t('Country code'));
-
-  return theme('table', $header, $rows);
-}
-
 
 /**
  * Settings page for map links.
@@ -142,7 +105,7 @@ function location_map_link_options_form() {
     '#value' => ''
   );
 
-  foreach (location_configured_countries() as $country_iso => $country_name) {
+  foreach (_location_supported_countries() as $country_iso => $country_name) {
     location_load_country($country_iso);
 
     $form['countries'][$country_iso] = array(
@@ -183,8 +146,9 @@ function location_map_link_options_form() {
     }
   }
 
+  $form = system_settings_form($form);
   $form['#theme'] = 'location_map_link_options';
-  return system_settings_form($form);
+  return $form;
 }
 
 function location_geocoding_options_form() {
@@ -213,7 +177,7 @@ function location_geocoding_options_form() {
     }
   }
 
-  foreach (location_configured_countries() as $country_iso => $country_name) {
+  foreach (_location_supported_countries() as $country_iso => $country_name) {
     location_load_country($country_iso);
 
     $geocoding_options = array();
@@ -290,8 +254,9 @@ function location_geocoding_options_form() {
       }
     }
   }
+  $form = system_settings_form($form);
   $form['#theme'] = 'location_geocoding_options';
-  return system_settings_form($form);
+  return $form;
 }
 
 function location_geocoding_options_form_submit($form_id, $form_values) {

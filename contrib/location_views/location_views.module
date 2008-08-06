@@ -119,6 +119,7 @@ function location_views_tables() {
         'name' => t('Province Selector'),
         'operator' => 'location_handler_operator_eq',
         'handler' => 'location_handler_filter_eq',
+        // FIXME!
         'list' => location_province_select_options(), // @@@ Dunno how sane this is....
         'list-type' => 'select',
       ),
@@ -139,7 +140,7 @@ function location_views_tables() {
         'name' => t('Country'),
         'operator' => 'location_handler_operator_eq',
         'handler' => 'location_handler_filter_eq',
-        'list' => location_views_countries(),
+        'list' => location_get_iso3166_list(),
         'list-type' => 'select',
       ),
       'latitude' => array(
@@ -835,21 +836,6 @@ function location_views_province_handler($fieldinfo, $fielddata, $value, $data) 
 function location_views_field_handler_address($fieldinfo, $fielddata, $value, $data) {
   $location = location_load_location($value);
   return theme('location', $location);
-}
-
-/**
- *  Get an array of all enabled countries.
- */
-function location_views_countries() {
-  $countries = array();
-  $provinces = array();
-  $configured = location_get_configured_countries();
-  $country_list = location_get_iso3166_list();
-
-  foreach ($configured as $country) {
-    $countries[$country] = $country_list[$country];
-  }
-  return $countries;
 }
 
 function location_views_field_handler_distance($fieldinfo, $fielddata, $value, $data) {

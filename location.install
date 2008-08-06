@@ -529,3 +529,4 @@ function location_update_5301() {
  * Drupal 6 update 1.
  */
 // @@@ Convert location.lid to serial.
+// @@@ variable_del('location_configured_countries');

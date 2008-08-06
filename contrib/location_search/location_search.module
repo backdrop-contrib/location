@@ -758,6 +758,7 @@ function _location_country_select_options($value = '', $required = FALSE, $funct
   if ($function) {
     $function = ($function == 'nearby_postalcodes_bylocation' || $function == 'nearby_postalcodes_bylatlon') ? 'latlon_rough' : $function;
     $countrycodes = array();
+    // @@@ BROKEN -- make work with _location_supported_countries()...
     foreach (location_configured_countries() as $code => $full_name) {
       if (function_exists('location_'. $function .'_'. strtolower($code))) {
         $countrycodes[$code] = $full_name;
