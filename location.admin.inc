@@ -238,7 +238,7 @@ function location_geocoding_options_form() {
 
     foreach ($general_geocoders_list as $geocoder_name) {
       if (in_array($country_iso, $general_geocoders_countries[$geocoder_name])) {
-        $geocoding_options[$geocoder_name] = '<a href="'. $general_geocoders_data[$geocoder_name]['url'] .'">'. $general_geocoders_data[$geocoder_name]['name'] .'</a> (<a href="'. $general_geocoder_data[$geocoder_name]['tos'] .'">Terms of Use</a>)';
+        $geocoding_options[$geocoder_name] = '<a href="'. $general_geocoders_data[$geocoder_name]['url'] .'">'. $general_geocoders_data[$geocoder_name]['name'] .'</a> (<a href="'. $general_geocoders_data[$geocoder_name]['tos'] .'">Terms of Use</a>)';
       }
     }
 
