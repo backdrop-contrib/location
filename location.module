@@ -872,8 +872,8 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'update':
       if (!empty($node->locations)) {
         db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
-        foreach ($node->locations as $location) {
-          $lid = location_save($location, TRUE);
+        foreach (array_keys($node->locations) as $key) {
+          $lid = location_save($node->locations[$key], TRUE);
           if ($lid) {
             db_query('INSERT INTO {location_instance} (nid, vid, lid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $lid);
           }
@@ -1031,8 +1031,8 @@ function location_user($op, &$edit, &$account, $category = NULL) {
     case 'update':
       if (!empty($edit['locations'])) {
         db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
-        foreach ($edit['locations'] as $location) {
-          $lid = location_save($location, TRUE);
+        foreach (array_keys($edit['locations']) as $key) {
+          $lid = location_save($edit['locations'][$key], TRUE);
           if ($lid) {
             db_query('INSERT INTO {location_instance} (uid, lid) VALUES (%d, %d)', $account->uid, $lid);
           }
@@ -1168,7 +1168,7 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a
  * @param $cow Copy-on-write, i.e. whether or not to assign a new lid if something changes.
  * @return The lid of the saved location, or FALSE if the location is considered "empty."
  */
-function location_save($location, $cow = TRUE) {
+function location_save(&$location, $cow = TRUE) {
   $oldloc = array();
   if ($location['lid']) {
     $oldloc = (array)location_load_location($location['lid']);
