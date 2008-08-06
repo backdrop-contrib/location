@@ -119,6 +119,7 @@ function location_elements() {
       '#tree' => TRUE,
       '#location_settings' => array(),
       '#attributes' => array('class' => 'location'),
+      '#element_validate' => array('location_element_validate'),
       //'#theme' => 'location_element',
     ),
     'location_settings' => array(
@@ -856,12 +857,6 @@ function location_form_alter(&$form, &$form_state, $form_id) {
  */
 function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
-    case 'validate':
-      if (!empty($a3)) {
-        return location_validate_form($a3['locations'], $node->locations);
-      }
-      break;
-
     case 'delete revision':
       db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
       break;
@@ -1111,6 +1106,7 @@ function location_user($op, &$edit, &$account, $category = NULL) {
  *   Javascript array. List of states
  */
 function _location_autocomplete($country, $string = '') {
+  $counter = 0;
   $string   = strtolower($string);
   $string   = '/^'. $string .'/';
   $matches  = array();
@@ -1445,14 +1441,11 @@ Validation crap removed from nodeapi: move into the correct place.
       break;
  */
 
-// @@@ This is only needed for Drupal 5.
 /**
- * Perform validation against a location fieldset in a form.
+ * Perform validation against a location fieldset.
  */
-function location_validate_form($form, $form_values) {
-  foreach (element_children($form) as $key) {
-    location_invoke_locationapi($form_values[$key], 'validate', $form[$key]);
-  }
+function location_element_validate($form, &$form_state) {
+  location_invoke_locationapi($form['#value'], 'validate', $form);
 }
 
 /**
