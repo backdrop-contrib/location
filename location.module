@@ -1595,7 +1595,8 @@ function template_preprocess_location(&$variables) {
   }
 
   // Add a country-specific template suggestion.
-  if (!empty($location['country'])) {
-    $variables['template_files'][] = 'location-'. location_standardize_country_code($location['country']);
+  if (!empty($location['country']) && location_standardize_country_code($location['country'])) {
+    // $location['country'] is normalized in the previous line.
+    $variables['template_files'][] = 'location-'. $location['country'];
   }
 }
