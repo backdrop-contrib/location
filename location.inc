@@ -609,6 +609,18 @@ function location_get_general_geocoder_list() {
  * ISO 3166-1 alpha-2
  */
 function location_get_iso3166_list($upper = FALSE) {
+  static $countries;
+
+  if (isset($countries)) {
+    // In fact, the ISO codes for countries are all Upper Case.
+    // So, if someone needs the list as the official records,
+    // it will convert.
+    if (!empty($upper)) {
+      return array_change_key_case($countries, CASE_UPPER);
+    }
+    return $countries;
+  }
+
   $countries = array(
     'ad' => t('Andorra'),
     'ae' => t('United Arab Emirates'),
@@ -857,13 +869,14 @@ function location_get_iso3166_list($upper = FALSE) {
     'zw' => t('Zimbabwe'),
   );
 
+  // Sort the list.
+  natcasesort($countries);
+
   // In fact, the ISO codes for countries are all Upper Case.
   // So, if someone needs the list as the official records,
   // it will convert.
   if (!empty($upper)) {
-    $countries = array_change_key_case($countries, CASE_UPPER);
+    return array_change_key_case($countries, CASE_UPPER);
   }
-  // Sort the list and return
-  natcasesort($countries);
   return $countries;
 }
