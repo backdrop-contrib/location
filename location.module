@@ -1218,7 +1218,7 @@ function location_save(&$location, $cow = TRUE) {
     if (!isset($emptyloc[$k])) {
       // @@@ This is an error condition, a module is declaring a field without
       // a corresponding "empty" default!
-      dpm($k);
+      watchdog('Location', 'Module declared field without empty default!', array(), WATCHDOG_ERROR);
       continue;
     }
     if ($emptyloc[$k] == $v) {
