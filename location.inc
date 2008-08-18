@@ -288,6 +288,8 @@ function location_latlon_rough($location = array()) {
     return NULL;
   }
 
+  location_load_country($location['country']);
+
   $latlon_function = 'location_latlon_rough_'. $location['country'];
   if (function_exists($latlon_function)) {
     return $latlon_function($location);
@@ -438,7 +440,6 @@ function location_province_name($country = 'us', $province = 'xx') {
     return '';
   }
 }
-
 
 // @@@ New in 3.x, document.
 /**
