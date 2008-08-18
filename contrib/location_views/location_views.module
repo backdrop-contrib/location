@@ -712,7 +712,7 @@ function location_views_handler_arg_province($op, &$query, $argtype, $arg = '', 
       // Figure out what country to load.
       // This works best when the country argument appears before.
 
-      $country = isset($query->_location_country_arg) ? $query->_location_country_arg : 'us';
+      $country = isset($query->_location_country_arg) ? $query->_location_country_arg : variable_get('location_default_country', 'us');
       if ($country == t('unknown')) {
         $country = '';
       }
