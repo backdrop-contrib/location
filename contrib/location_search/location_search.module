@@ -79,6 +79,11 @@ function location_search_form($location_params = array(), $proximity_params = ar
     $countries[$row->country] = location_country_name($row->country);
   }
 
+  if (empty($countries)) {
+    drupal_set_message(t('Error: Zipcodes table is empty -- Search will not operate.'));
+    return;
+  }
+
   $form['location']['country'] = array(
     '#type' => 'select',
     '#title' => t('Country'),
