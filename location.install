@@ -405,10 +405,12 @@ function location_update_5301() {
         nid int UNSIGNED DEFAULT NULL,
         vid int UNSIGNED DEFAULT NULL,
         uid int UNSIGNED DEFAULT NULL,
+        genid varchar(255) NOT NULL default '',
         lid int UNSIGNED NOT NULL DEFAULT '0',
         INDEX {location_instance}_nid_idx (nid),
         INDEX {location_instance}_vid_idx (vid),
         INDEX {location_instance}_uid_idx (uid),
+        INDEX {location_instance}_genid_idx (genid),
         INDEX {location_instance}_lid_idx (lid)
       ) /*!40100 DEFAULT CHARACTER SET utf8 */");
       break;
@@ -418,12 +420,14 @@ function location_update_5301() {
         nid int DEFAULT NULL CHECK (nid >= 0 OR nid IS NULL),
         vid int DEFAULT NULL CHECK (vid >= 0 OR vid IS NULL),
         uid int DEFAULT NULL CHECK (uid >= 0 OR uid IS NULL),
+        genid varchar(255) NOT NULL default '',
         lid int NOT NULL DEFAULT '0' CHECK (lid >= 0)
       )");
       $ret[] = update_sql('CREATE INDEX {location_instance}_nid_idx ON {location_instance} (nid)');
       $ret[] = update_sql('CREATE INDEX {location_instance}_vid_idx ON {location_instance} (vid)');
       $ret[] = update_sql('CREATE INDEX {location_instance}_uid_idx ON {location_instance} (uid)');
       $ret[] = update_sql('CREATE INDEX {location_instance}_lid_idx ON {location_instance} (lid)');
+      $ret[] = update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
       break;
   }
 
@@ -439,9 +443,17 @@ function location_update_5301() {
   // Users is much simpler.
   $ret[] = update_sql("INSERT INTO {location_instance} (uid,lid) (SELECT eid, lid FROM {location} WHERE type = 'user')");
 
-  // @@@ @TODO before 3.0:
-  // @@@ VERIFY that all data is accounted for. Maybe someone uses a custom type?
-  // @@@ If we find foreign data, do NOT run the next part.
+  // Aug 18 2008:
+  // Save everything else in genid.
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("INSERT INTO {location_instance} (genid, lid) (SELECT CONCAT(type, ':', eid), lid FROM {location} WHERE type <> 'user' AND type <> 'node')");
+      break;
+    case 'pgsql':
+      $ret[] = update_sql("INSERT INTO {location_instance} (genid, lid) (SELECT type||':'||eid, lid FROM {location} WHERE type <> 'user' AND type <> 'node')");
+      break;
+  }
 
   // Remove now unused columns.
   $ret[] = update_sql("ALTER TABLE {location} DROP COLUMN type");
@@ -451,23 +463,50 @@ function location_update_5301() {
   variable_del('location_user'); // Removed in favor of permission check.
 
   // Variable consolidation (as part of the element based system)
-  // @@@ THIS IS NOT TESTED YET!
-  $types = array_keys(node_get_types('types'));
-  foreach ($types as $type) {
-    $defaults = array();
-    $fields = array('name', 'street', 'city', 'province', 'postal_code', 'country', 'phone', 'fax');
-    foreach ($fields as $field) {
-      if (($tmp = variable_get('location_'. $field .'_'. $type, '__INVALID__')) != '__INVALID__') {
-        $defaults[$field] = $tmp;
-        variable_del('location_'. $field .'_'. $type);
-      }
-    }
-    if (!empty($defaults)) {
-      variable_set('location_fields_'. $type, $defaults);
+  // We're doing this "raw" so we can be sure we got everything moved over,
+  // INCLUDING content types that were deleted in the past.
+  // This will let us do better cleanup sometime in the future.
+  $data = array();
+  $todelete = array();
+  foreach(array('name', 'street', 'additional', 'city', 'province', 'postal_code', 'country', 'phone', 'fax') as $field) {
+    $result = db_query("SELECT name, value FROM {variable} WHERE name LIKE 'location_%s%%'", $field);
+    while ($row = db_fetch_object($result)) {
+      $data[substr($row->name, strlen($field) + 10)][$field] = (string)(int)unserialize($row->value);
+      $todelete[] = $row->name;
     }
   }
+  foreach ($data as $type => $value) {
+    // We aren't going to trust that hook_locationapi is operational.
+    // So, stick with some conservative defaults.
+    $value = array_merge(array(
+      'name' => '1',
+      'street' => '1',
+      // additional is left out of this list intentionally.
+      'city' => '0',
+      'province' => '0',
+      'postal_code' => '0',
+      'country' => '1',
+    ), $value);
+    if (!isset($value['additional'])) {
+      // Initialize additional to match street.
+      $value['additional'] = $value['street'];
+    }
+    variable_set('location_fields_'. $type, $value);
+  }
+  foreach ($todelete as $key) {
+    variable_del($key);
+  }
 
-
+  // This update was retrofitted on Aug 18, 2008. Set a flag for use by
+  // the next update in order to handle the case where someone has already
+  // updated to EXACTLY schema revision 5301 before the retrofit took effect.
+  // People who migrated past this point before that date may have the following
+  // inconsistencies:
+  // A) location_{field}_{type} variables were not collected for content types
+  // that had been deleted in the past.
+  // B) Any locations with the 'type' field set to something other than 'node'
+  // or 'user' did not get entries in {location_instance}.
+  variable_set('location_update_5301_retrofit', TRUE);
   return $ret;
 }
 
@@ -477,16 +516,22 @@ function location_update_5301() {
  */
 function location_update_5302() {
   $ret = array();
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      $ret[] = update_sql("ALTER TABLE {location_instance} ADD COLUMN genid varchar(255) NOT NULL default '' AFTER uid");
-      $ret[] = update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
-      break;
-    case 'pgsql':
-      db_add_column($ret, 'location_instance', 'genid', 'varchar(255)', array('not null' => TRUE, 'default' => "''"));
-      $ret[] = update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
-      break;
+  // OK, here's the deal. I retrofitted 5301 on Aug 18 2008 to integrate the genid.
+  // This was needed to fix the pre location 3.x todo item regarding keeping non
+  // user, non node data intact. People doing an update after Aug 18 will already
+  // have the genid column in place, so it can be safely skipped.
+  if (!variable_get('location_update_5301_retrofit', FALSE)) {
+    switch ($GLOBALS['db_type']) {
+      case 'mysql':
+      case 'mysqli':
+        $ret[] = update_sql("ALTER TABLE {location_instance} ADD COLUMN genid varchar(255) NOT NULL default '' AFTER uid");
+        $ret[] = update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
+        break;
+      case 'pgsql':
+        db_add_column($ret, 'location_instance', 'genid', 'varchar(255)', array('not null' => TRUE, 'default' => "''"));
+        $ret[] = update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
+        break;
+    }
   }
   return $ret;
 }
