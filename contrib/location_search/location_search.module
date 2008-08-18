@@ -302,10 +302,10 @@ function location_search_results($location_params, $proximity_params) {
         $adjusted_distance = round($row->distance / (($proximity_params['unit'] == 'km') ? 1000.0 : 1609.347), 1);
 
         if ($adjusted_distance != 1) {
-          $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('miles');
+          $distance_unit = ($proximity_params['unit'] == 'km') ? t('km') : t('miles');
         }
         else {
-          $distance_unit = ($edit['distance_unit'] == 'km') ? t('km') : t('mile');
+          $distance_unit = ($proximity_params['unit'] == 'km') ? t('km') : t('mile');
         }
         $extra['distance'] = t('Approximately %distance %distanceunit from <strong>%location</strong> ', array('%distance' => round($adjusted_distance, 1), '%distanceunit' => $distance_unit, '%location' => $location_params['postal_code']));
       }
