@@ -1557,7 +1557,7 @@ function location_token_list($type = 'all') {
  */
 function template_preprocess_location(&$variables) {
   $location = $variables['location'];
-  foreach(array_keys($variables['hide']) as $key) {
+  foreach($variables['hide'] as $key) {
     unset($location[$key]);
   }
 
@@ -1594,10 +1594,8 @@ function template_preprocess_location(&$variables) {
     }
   }
 
-/*
-// @@@ Fix this. (I think in D6 we should just call theme with an array?)
-  if (isset($location['country']) && ($f = theme_get_function('location_'. $location['country']))) {
-    $output .= call_user_func($f, $location, $hide);
+  // Add a country-specific template suggestion.
+  if (!empty($location['country'])) {
+    $variables['template_files'][] = 'location-'. location_standardize_country_code($location['country']);
   }
-*/
 }
