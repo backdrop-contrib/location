@@ -1124,7 +1124,7 @@ function _location_autocomplete($country, $string = '') {
     while (list($code, $name) = each($provinces)) {
       if ($counter < 5) {
         if (preg_match($string, strtolower($name))) {
-          $matches[$code] = $name;
+          $matches[$name] = $name;
           ++$counter;
         }
       }
