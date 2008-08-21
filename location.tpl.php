@@ -31,8 +31,13 @@
 <?php
   // "Geo" microformat, see http://microformats.org/wiki/geo
   if ($latitude && $longitude) {
+    // Assume that 0, 0 is invalid.
+    if ($latitude != 0 || $longitude != 0) {
 ?>
 <span class="geo"><abbr class="latitude" title="<?php echo $latitude; ?>"><?php echo $latitude_dms; ?></abbr>, <abbr class="longitude" title="<?php echo $longitude; ?>"><?php echo $longitude_dms; ?></abbr></span>
-<?php } ?>
+<?php
+    }
+  }
+?>
 </div></div>
 <?php echo $map_link; ?>
