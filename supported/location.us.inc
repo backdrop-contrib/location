@@ -146,6 +146,7 @@ function location_map_link_us_yahoo($location = array()) {
 
 function location_map_link_us_google($location = array()) {
   $query_params = array();
+  $q = NULL;
 
   foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
     if (isset($location[$field])) {
@@ -153,8 +154,14 @@ function location_map_link_us_google($location = array()) {
     }
   }
 
-  if (count($query_params)) {
-    return ('http://maps.google.com?q='. urlencode(implode(", ", $query_params)));
+  if ($location['latitude'] && $location['longitude']) {
+    $q = urlencode($location['latitude'] . ' ' . $location['longitude'] . ' (' . implode(', ', $query_params) . ')' );
+  } else if (count($query_params) > 0) {
+    $q = urlencode(implode(", ", $query_params));
+  }
+
+  if ($q != NULL) {
+    return ('http://maps.google.com?q='.$q );
   }
   else {
     return NULL;
