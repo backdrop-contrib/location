@@ -237,9 +237,15 @@ function _location_expand_location($element) {
       '#default_value' => isset($element['#default_value']['locpick']['user_longitude']) ? $element['#default_value']['locpick']['user_longitude'] : '',
       '#size' => 16,
       '#maxlength' => 20,
-      '#description' => t('If you wish to supply your own latitude/longitude, you may do so here.  Leaving these fields blank means that the system will determine a latitude/longitude for you, if possible.'),
     );
-
+    
+    $element['locpick']['instructions'] = array(
+      '#type' => 'markup',
+      '#weight' => 1,
+      '#prefix' => '<div class=\'description\'>',
+      '#value' => '<br><br>' . t('If you wish to supply your own latitude and longitude, you may enter them above.  If you leave these fields blank, the system will attempt to determine a latitude and longitude for you from the entered address.  To have the system recalculate your location from the address, for example if you change the address, delete the values for these fields.'),
+      '#suffix' => '</div>',
+      );
     if (function_exists('gmap_get_auto_mapid') && variable_get('location_usegmap', FALSE)) {
       $mapid = gmap_get_auto_mapid();
       $map = gmap_parse_macro(variable_get('location_locpick_macro', '[gmap]'));
@@ -254,6 +260,13 @@ function _location_expand_location($element) {
         '#type' => 'markup',
         '#weight' => -1,
         '#value' => theme('gmap', array('#map' => $mapid, '#settings' => $map)),
+      );
+      $element['locpick']['map_instructions'] = array(
+        '#type' => 'markup',
+        '#weight' => 2,
+        '#prefix' => '<div class=\'description\'>',
+        '#value' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'), 
+        '#suffix' => '</div>',
       );
     }
   }
