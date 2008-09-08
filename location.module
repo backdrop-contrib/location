@@ -238,7 +238,7 @@ function _location_expand_location($element) {
       '#size' => 16,
       '#maxlength' => 20,
     );
-    
+
     $element['locpick']['instructions'] = array(
       '#type' => 'markup',
       '#weight' => 1,
@@ -265,7 +265,7 @@ function _location_expand_location($element) {
         '#type' => 'markup',
         '#weight' => 2,
         '#prefix' => '<div class=\'description\'>',
-        '#value' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'), 
+        '#value' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'),
         '#suffix' => '</div>',
       );
     }
