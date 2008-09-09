@@ -390,7 +390,6 @@ function _location_expand_location_settings($element) {
 }
 
 function theme_location_settings($element) {
-dpm($element);
   return theme('form_element', $element, $element['#children']);
 }
 
@@ -1356,7 +1355,6 @@ function location_save(&$location, $cow = TRUE) {
   }
   drupal_write_record('location', $location);
 
-  dpm($location);
 /*
   db_query("INSERT INTO {location}
     (lid, name, street, additional, city, province, postal_code, country, latitude, longitude, source)
