@@ -649,7 +649,7 @@ function location_geocoding_parameters_page($country_iso, $service) {
   return drupal_get_form('location_geocoding_parameters_form', $country_iso, $service);
 }
 
-function location_geocoding_parameters_form($country_iso, $service) {
+function location_geocoding_parameters_form(&$form_state, $country_iso, $service) {
   location_load_country($country_iso);
   $geocode_settings_form_function_specific = 'location_geocode_'. $country_iso .'_'. $service .'_settings';
   $geocode_settings_form_function_general = $service .'_geocode_settings';
