@@ -1017,22 +1017,22 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
     case 'rss item':
       $items = array();
-      $mode = variable_get('location_rss_'. $node->type, 'w3c'); // @@@ Historical default.
+      $mode = variable_get('location_rss_'. $node->type, 'simple'); // #301540
       if ($mode == 'none') {
         return;
       }
       if (is_array($node->locations)) {
         foreach ($node->locations as $location) {
-          if (!is_null($location['lat']) && !is_null($location['lon'])) {
+          if (!is_null($location['latitude']) && !is_null($location['longitude'])) {
             switch ($mode) {
               // W3C Basic Geo Vocabulary
               case 'w3c':
                 $items[] = array(
                   'key'       => 'geo:Point',
-                  'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
+                  'namespace' => array('xmlns:geo' => 'http://www.w3.org/2003/01/geo/wgs84_pos#'),
                   'value'     => array(
-                    array('key' => 'geo:lat', 'value' => $location['lat']),
-                    array('key' => 'geo:long', 'value' => $location['lon']),
+                    array('key' => 'geo:lat', 'value' => $location['latitude']),
+                    array('key' => 'geo:long', 'value' => $location['longitude']),
                   ),
                 );
                 break;
@@ -1041,10 +1041,10 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
               case 'w3c_bugcompat':
                 $items[] = array(
                   'key'       => 'geo:Point',
-                  'namespace' => array('geo' => 'xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"'),
+                  'namespace' => array('xmlns:geo' => 'http://www.w3.org/2003/01/geo/wgs84_pos#'),
                   'value'     => array(
-                    array('key' => 'geo:lat', 'value' => $location['lat']),
-                    array('key' => 'geo:lon', 'value' => $location['lon']),
+                    array('key' => 'geo:lat', 'value' => $location['latitude']),
+                    array('key' => 'geo:lon', 'value' => $location['longitude']),
                   ),
                 );
                 break;
@@ -1052,8 +1052,8 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
               case 'simple':
                 $items[] = array(
                   'key'       => 'georss:point',
-                  'namespace' => array('georss' => 'xmlns:georss="http://www.georss.org/georss"'),
-                  'value'     => "$location[lat] $location[lon]",
+                  'namespace' => array('xmlns:georss' => 'http://www.georss.org/georss'),
+                  'value'     => "$location[latitude] $location[longitude]",
                 );
                 break;
               //
@@ -1061,12 +1061,12 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
                 $items[] = array(
                   'key' => 'georss:where',
                   'namespace' => array(
-                    'georss' => 'xmlns:georss="http://www.georss.org/georss"',
-                    'gml' => 'xmlns:gml="http://www.opengis.net/gml"',
+                    'xmlns:georss' => 'http://www.georss.org/georss',
+                    'xmlns:gml' => 'http://www.opengis.net/gml',
                   ),
                   'value' => array(
                     'gml:Point' => array(
-                      'gml:pos' => "$location[lat] $location[lon]",
+                      'gml:pos' => "$location[latitude] $location[longitude]",
                     ),
                   ),
                 );
