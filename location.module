@@ -211,7 +211,7 @@ function _location_expand_location($element) {
 
   $location_settings = $element['#location_settings'];
 
-  $fields = location_field_names();
+  $fields = location_field_names(TRUE);
   foreach ($fields as $field => $title) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
@@ -394,13 +394,27 @@ dpm($element);
   return theme('form_element', $element, $element['#children']);
 }
 
-function location_field_names() {
+function location_field_names($all = FALSE) {
   static $fields;
-  if (empty($fields)) {
-    $dummy = '';
-    $fields = location_invoke_locationapi($dummy, 'fields');
+  static $allfields;
+  if ($all) {
+    if (empty($allfields)) {
+      $dummy = array();
+      $allfields = location_invoke_locationapi($dummy, 'fields');
+    }
+    return $allfields;
   }
-  return $fields;
+  else {
+    if (empty($fields)) {
+      $dummy = '';
+      $fields = location_invoke_locationapi($dummy, 'fields');
+      $virtual = location_invoke_locationapi($dummy, 'virtual fields');
+      foreach ($virtual as $field) {
+        unset ($fields[$field]);
+      }
+    }
+    return $fields;
+  }
 }
 
 /**
@@ -410,6 +424,9 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {
     case 'fields':
       return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
+
+    case 'virtual fields':
+      return array('province_name', 'country_name');
 
     case 'collection default':
       return array('name' => 1, 'street' => 1, 'additional' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
@@ -1200,12 +1217,23 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a
  * @return The lid of the saved location, or FALSE if the location is considered "empty."
  */
 function location_save(&$location, $cow = TRUE) {
+  $inhibit_geocode = FALSE;
+
+  $dummy = array();
+  $virtual = location_invoke_locationapi($dummy, 'virtual fields');
+
+  // Remove the "virtual fields" from the location.
+  foreach ($virtual as $field) {
+    unset($location[$field]);
+  }
+
   $oldloc = array();
   if ($location['lid']) {
     $oldloc = (array)location_load_location($location['lid']);
-    // Remove the "virtual fields" that we provide for themers.
-    unset($oldloc['province_name']);
-    unset($oldloc['country_name']);
+    // Remove the "virtual fields" from the old location too.
+    foreach ($virtual as $field) {
+      unset($oldloc[$field]);
+    }
   }
 
   // @@@ This isn't the best place to do this...
@@ -1216,9 +1244,10 @@ function location_save(&$location, $cow = TRUE) {
   }
   // If the user location was set, convert it into lat / lon.
   if (!empty($location['locpick']['user_latitude']) && !empty($location['locpick']['user_longitude'])) {
+    $location['source'] = LOCATION_LATLON_USER_SUBMITTED;
     $location['latitude'] = $location['locpick']['user_latitude'];
     $location['longitude'] = $location['locpick']['user_longitude'];
-    //unset($location['locpick']);
+    $inhibit_geocode = TRUE;
   }
 
   // Pull in fields that hold data currently not editable directly by the user.
@@ -1312,7 +1341,7 @@ function location_save(&$location, $cow = TRUE) {
   }
 
   // Perform geocoding logic, coordinate normalization, etc.
-  _location_geo_logic($location, $changed, $filled);
+  _location_geo_logic($location, $changed, $filled, $inhibit_geocode);
 
   // If we are in COW mode, we need to make a new lid.
   if ($cow) {
@@ -1353,33 +1382,12 @@ function location_save(&$location, $cow = TRUE) {
 /**
  * Perform geocoding logic, etc., prior to storing in the database.
  */
-function _location_geo_logic(&$location, $changed, $filled) {
+function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = FALSE) {
 
-  // Check whether the user is specifying lat / lon.
-  if (empty($location['locpick']['user_latitude']) && empty($location['locpick']['user_longitude'])) {
-    if ($location['source'] == LOCATION_LATLON_USER_SUBMITTED) {
-      // Force the status to undefined in case it was previously user defined
-      // and was just unset on purpose, in which case we should switch back
-      // to geocoding.
-      $location['source'] = LOCATION_LATLON_UNDEFINED;
-      $location['latitude'] = 0;
-      $location['longitude'] = 0;
-    }
-  }
-  else {
-    // Note: Validation for this goes elsewhere. We assume here that if one is
-    // filled in, so is the other.
-    $location['source'] = LOCATION_LATLON_USER_SUBMITTED;
-//    $location['latitude'] = $location['locpick']['user_latitude'];
-//    $location['longitude'] = $location['locpick']['user_longitude'];
-  }
-
-  // If we're not working with a user submitted location , we should attempt
-  // geocoding if necessary.
-  if ($location['source'] != LOCATION_LATLON_USER_SUBMITTED) {
-
+  if (!$inhibit_geocode) {
     // Have any of the fields possibly affecting geocoding changed?
-    if ($changed['street'] || $changed['additional'] || $changed['city'] || $changed['province'] || $changed['country'] || $changed['postal_code']) {
+    // Or, was the location previously user submitted but is no longer?
+    if ($changed['street'] || $changed['additional'] || $changed['city'] || $changed['province'] || $changed['country'] || $changed['postal_code'] || $location['source'] == LOCATION_LATLON_USER_SUBMITTED) {
 
       // Attempt exact geocoding.
       if ($data = location_latlon_exact($location)) {
