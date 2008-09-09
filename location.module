@@ -987,12 +987,12 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'insert':
     case 'update':
       if (!empty($node->locations)) {
-        db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
         foreach (array_keys($node->locations) as $key) {
-          $lid = location_save($node->locations[$key], TRUE);
-          if ($lid) {
-            db_query('INSERT INTO {location_instance} (nid, vid, lid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $lid);
-          }
+          location_save($node->locations[$key], TRUE);
+        }
+        db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
+        foreach ($node->locations as $location) {
+          db_query('INSERT INTO {location_instance} (nid, vid, lid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $location['lid']);
         }
       }
       break;
@@ -1146,12 +1146,12 @@ function location_user($op, &$edit, &$account, $category = NULL) {
     case 'insert':
     case 'update':
       if (!empty($edit['locations'])) {
-        db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
         foreach (array_keys($edit['locations']) as $key) {
-          $lid = location_save($edit['locations'][$key], TRUE);
-          if ($lid) {
-            db_query('INSERT INTO {location_instance} (uid, lid) VALUES (%d, %d)', $account->uid, $lid);
-          }
+          location_save($edit['locations'][$key], TRUE);
+        }
+        db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
+        foreach ($edit['locations'] as $location) {
+          db_query('INSERT INTO {location_instance} (uid, lid) VALUES (%d, %d)', $account->uid, $location['lid']);
         }
       }
       unset($edit['locations']);
@@ -1411,9 +1411,14 @@ function location_save(&$location, $cow = TRUE) {
   // Perform geocoding logic, coordinate normalization, etc.
   _location_geo_logic($location, $changed, $filled, $inhibit_geocode);
 
-  // If we are in COW mode, we need to make a new lid.
+  // If we are in COW mode, we *probabaly* need to make a new lid.
   if ($cow) {
-    unset($location['lid']);
+    // However, if it appears one or less times (i.e. is not shared), it's safe to recycle the lid.
+    // Therefore, skip unsetting the prior lid if there are one or less rows in {location_instance} matching the lid.
+    // See #306171 for more information.
+    if (isset($location['lid']) && db_result(db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = %d', $location['lid'])) > 1) {
+      unset($location['lid']);
+    }
   }
 
   if (!empty($location['lid'])) {
