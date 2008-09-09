@@ -220,7 +220,7 @@ function _location_expand_location($element) {
       }
     }
   }
-
+  // @@@ Split into submit and view permissions?
   if (user_access('submit latitude/longitude')) {
     $element['locpick'] = array();
     $element['locpick']['user_latitude'] = array(
@@ -243,12 +243,17 @@ function _location_expand_location($element) {
       '#type' => 'markup',
       '#weight' => 1,
       '#prefix' => '<div class=\'description\'>',
-      '#value' => '<br><br>' . t('If you wish to supply your own latitude and longitude, you may enter them above.  If you leave these fields blank, the system will attempt to determine a latitude and longitude for you from the entered address.  To have the system recalculate your location from the address, for example if you change the address, delete the values for these fields.'),
+      '#value' => '<br /><br />' . t('If you wish to supply your own latitude and longitude, you may enter them above.  If you leave these fields blank, the system will attempt to determine a latitude and longitude for you from the entered address.  To have the system recalculate your location from the address, for example if you change the address, delete the values for these fields.'),
       '#suffix' => '</div>',
       );
     if (function_exists('gmap_get_auto_mapid') && variable_get('location_usegmap', FALSE)) {
       $mapid = gmap_get_auto_mapid();
       $map = gmap_parse_macro(variable_get('location_locpick_macro', '[gmap]'));
+      $map['id'] = $mapid;
+      $map['points'] = array();
+      $map['pointsOverlays'] = array();
+      $map['lines'] = array();
+
       $map['behavior']['locpick'] = TRUE;
       $map['behavior']['collapsehack'] = TRUE;
       $element['locpick']['user_latitude']['#map'] = $mapid;
@@ -257,9 +262,10 @@ function _location_expand_location($element) {
       gmap_widget_setup($element['locpick']['user_longitude'], 'locpick_longitude');
 
       $element['locpick']['map'] = array(
-        '#type' => 'markup',
+        '#type' => 'gmap',
         '#weight' => -1,
-        '#value' => theme('gmap', array('#map' => $mapid, '#settings' => $map)),
+        '#map' => $mapid,
+        '#settings' => $map,
       );
       $element['locpick']['map_instructions'] = array(
         '#type' => 'markup',
@@ -364,6 +370,22 @@ function _location_expand_location_settings($element) {
       '#tree'           => TRUE,
     );
   }
+
+  // Override country field.
+  $element['country'] = array(
+    '#type'           => 'radios',
+    '#title'          => t('Country names'),
+    '#description'    => t('When using "Force Default", the country field will be set to the value of the "Default country selection" dropdown on the <a href="@location_settings">location settings page</a> and hidden from the user.', array('@location_settings' => url('admin/settings/location'))),
+    '#default_value'  => $defaults['country'],
+    '#options'        => array(
+      1 => t('Use'),
+      2 => t('Require'),
+      3 => t('Force Default'),
+    ),
+  );
+
+  // @@@ Alter here?
+
   return $element;
 }
 
@@ -390,7 +412,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
       return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 
     case 'collection default':
-      return array('name' => 1, 'street' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
+      return array('name' => 1, 'street' => 1, 'additional' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
 
     case 'default values':
       return array(
@@ -492,21 +514,33 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#size' => 64,
             '#maxlength' => 64,
             '#description' => NULL,
+            // Used by province autocompletion js.
             '#attributes' => array('class' => 'location_auto_province'),
             '#required' => ($a4 == 2),
           );
 
         case 'country':
-          $options = array_merge(array('' => t('Please select'), 'xx' => 'NOT LISTED'), location_get_iso3166_list());
-          return array(
-            '#type'           => 'select',
-            '#title'          => t('Country'),
-            '#default_value'  => $obj,
-            '#options'        => $options,
-            '#description'    => NULL,
-            '#required'       => ($a4 == 2),
-            '#attributes'     => array('class' => 'location_auto_country'),
-          );
+          // Force default.
+          if ($a4 == 3) {
+            return array(
+              '#type' => 'value',
+              '#value' => variable_get('location_default_country', 'us'),
+            );
+          }
+          else {
+            $options = array_merge(array('' => t('Please select'), 'xx' => 'NOT LISTED'), location_get_iso3166_list());
+            return array(
+              '#type'           => 'select',
+              '#title'          => t('Country'),
+              '#default_value'  => $obj,
+              '#options'        => $options,
+              '#description'    => NULL,
+              '#required'       => ($a4 == 2),
+              // Used by province autocompletion js.
+              '#attributes'     => array('class' => 'location_auto_country'),
+            );
+          }
+          break;
 
         case 'postal_code':
           return array(
@@ -649,17 +683,6 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
   $form['location']['location_fields'] = array(
     '#type' => 'location_settings',
     '#default_value' => variable_get('location_fields_'. $type, array()),
-  );
-
-  $form['location']['location_fields']['location_country'] = array(
-    '#type'           => 'radios',
-    '#title'          => t('Country names'),
-    '#description'    => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
-    '#default_value'  => variable_get('location_country_'. $type, 1),
-    '#options'        => array(
-      1 => t('Use'),
-      2 => t('Require')
-    ),
   );
 
   $form['location']['rss'] = array(
@@ -832,19 +855,6 @@ function location_form_user_admin_settings_alter(&$form, &$form_state) {
     '#type' => 'location_settings',
     '#default_value' => variable_get('location_user_fields', array()),
   );
-
-/*
-  $form['location']['location_fields']['location_country'] = array(
-    '#type'           => 'radios',
-    '#title'          => t('Country names'),
-    '#description'    => t('The selection of a country can be hidden and/or forced to a default country selection by going to the <a href="@location_settings">location settings page</a> and checking the box marked "Hide country selection" and selecting a country from the drop down select labelled "Default country selection".', array('@location_settings' => url('admin/settings/location'))),
-    '#default_value'  => variable_get('location_country_'. $type, 1),
-    '#options'        => array(
-      1 => t('Use'),
-      2 => t('Require')
-    ),
-  );
- */
 }
 
 /**
