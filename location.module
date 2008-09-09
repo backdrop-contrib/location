@@ -201,12 +201,13 @@ function _location_expand_location($element) {
     $dummy = '';
     $element['#default_value'] = location_invoke_locationapi($dummy, 'default values');
   }
+  $dv =& $element['#default_value'];
 
   // Keep track of the LID.
   // @@@ For some reason, hidden seems to work best.
   $element['lid'] = array(
     '#type' => 'hidden',
-    '#value' => isset($element['#default_value']['lid']) ? $element['#default_value']['lid'] : FALSE,
+    '#value' => isset($dv['lid']) ? $dv['lid'] : FALSE,
   );
 
   $location_settings = $element['#location_settings'];
@@ -216,13 +217,47 @@ function _location_expand_location($element) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
       if ($location_settings[$field] != 0) {
-        $element[$field] = location_invoke_locationapi($element['#default_value'][$field], 'field_expand', $field, $location_settings[$field], $element['#default_value']);
+        $element[$field] = location_invoke_locationapi($dv[$field], 'field_expand', $field, $location_settings[$field], $dv);
       }
     }
   }
   // @@@ Split into submit and view permissions?
   if (user_access('submit latitude/longitude')) {
     $element['locpick'] = array();
+
+    if (!empty($dv['latitude']) || !empty($dv['longitude'])) {
+      $element['locpick']['current'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Current coordinates'),
+      );
+      $element['locpick']['current']['current_latitude'] = array(
+        '#type' => 'item',
+        '#title' => t('Latitude'),
+        '#value' => $dv['latitude'],
+      );
+      $element['locpick']['current']['current_longitude'] = array(
+        '#type' => 'item',
+        '#title' => t('Longitude'),
+        '#value' => $dv['longitude'],
+      );
+      $source = t('Unknown');
+      switch($dv['source']) {
+        case LOCATION_LATLON_USER_SUBMITTED:
+          $source = t('User-submitted');
+          break;
+        case LOCATION_LATLON_GEOCODED_APPROX:
+          $source = t('Geocoded (Postal code level)');
+          break;
+        case LOCATION_LATLON_GEOCODED_EXACT:
+          $source = t('Geocoded (Exact)');
+      }
+      $element['locpick']['current']['current_source'] = array(
+        '#type' => 'item',
+        '#title' => t('Source'),
+        '#value' => $source,
+      );
+    }
+
     $element['locpick']['user_latitude'] = array(
       '#type' => 'textfield',
       '#title' => t('Latitude'),
@@ -255,7 +290,23 @@ function _location_expand_location($element) {
       $map['lines'] = array();
 
       $map['behavior']['locpick'] = TRUE;
-      $map['behavior']['collapsehack'] = TRUE;
+      $map['behavior']['dynmarkers'] = TRUE;
+      //$map['behavior']['collapsehack'] = TRUE;
+      // Use previous coordinates to center the map.
+      if (!empty($dv['latitude']) || !empty($dv['longitude'])) {
+        $map['latitude'] = (float)$dv['latitude'];
+        $map['longitude'] = (float)$dv['longitude'];
+
+        $map['markers'][] = array(
+          'latitude' => $dv['latitude'],
+          'longitude' => $dv['longitude'],
+          'markername' => 'small gray', // @@@ Settable?
+          'offset' => 0,
+          'opts' => array(
+            'clickable' => FALSE,
+          ),
+        );
+      }
       $element['locpick']['user_latitude']['#map'] = $mapid;
       gmap_widget_setup($element['locpick']['user_latitude'], 'locpick_latitude');
       $element['locpick']['user_longitude']['#map'] = $mapid;
@@ -721,27 +772,44 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
     ),
     '#default_value' => variable_get('location_rss_'. $type, 'w3c'), // @@@ Historical default.
   );
-  $form['location']['display'] = array(
+
+  $defaults = variable_get("location_display_$type", array(
+    'teaser' => TRUE,
+    'full' => TRUE,
+    'weight' => 0,
+    'hide' => array(),
+  ));
+  $form['location']['location_display'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Settings'),
     '#description' => t('Here, you can change how locative data appears in nodes when viewed.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#tree' => TRUE,
   );
-  $form['location']['display']['location_display_teaser'] = array(
+  $form['location']['location_display']['teaser'] = array(
     '#type' => 'checkbox',
     '#title' => 'Display location in teaser view',
-    '#default_value' => variable_get('location_display_teaser_'. $type, TRUE),
+    '#default_value' => isset($defaults['teaser']) ? $defaults['teaser'] : TRUE,
   );
-  $form['location']['display']['location_display_full'] = array(
+  $form['location']['location_display']['full'] = array(
     '#type' => 'checkbox',
     '#title' => 'Display location in full view',
-    '#default_value' => variable_get('location_display_full_'. $type, TRUE),
+    '#default_value' => isset($defaults['full']) ? $defaults['full'] : TRUE,
   );
-  $form['location']['display']['location_display_weight'] = array(
+  $form['location']['location_display']['weight'] = array(
     '#type' => 'weight',
     '#title' => t('Display Weight'),
-    '#default_value' => variable_get('location_display_weight_'. $type, 0),
+    '#default_value' => isset($defaults['weight']) ? $defaults['weight'] : 0,
+  );
+
+  $fields = location_field_names();
+  $form['location']['location_display']['hide'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Hide fields from display'),
+    '#collapsed' => TRUE,
+    '#default_value' => isset($defaults['hide']) ? $defaults['hide'] : array(),
+    '#options' => $fields,
   );
 
 
@@ -775,8 +843,10 @@ function location_node_settings_validate($form, &$form_state) {
  */
 function _location_node_type_save_submit($form, &$form_state) {
   variable_set('location_fields_'. $form_state['values']['type'], $form_state['values']['location_fields']);
-  // Prevent the "normal" submit handler from stomping our variable.
+  variable_set('location_display_'. $form_state['values']['type'], $form_state['values']['location_display']);
+  // Prevent the "normal" submit handler from stomping our variables.
   unset($form_state['values']['location_fields']);
+  unset($form_state['values']['location_display']);
 }
 
 function _location_node_form_alter(&$form, &$form_state, $form_id) {
@@ -930,12 +1000,12 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
     case 'view':
       if (variable_get('location_display_location', 1)) {
-        if (($a3 && variable_get('location_display_teaser_'. $node->type, TRUE)) || (!$a3 && variable_get('location_display_full_'. $node->type, TRUE))) {
-          // Get the list of suppressed countries
-          $countries = variable_get('location_suppress_country', 0) ? array('country') : array();
+        $display = variable_get('location_display_'. $node->type, array('teaser' => TRUE, 'full' => TRUE, 'weight' => 0, 'hide' => array()));
 
+        if (($a3 && $display['teaser']) || (!$a3 && $display['full'])) {
+          $hide = array_keys(array_filter($display['hide']));
           // Show all locations
-          if ($output = theme('locations', $node->locations, $countries)) {
+          if ($output = theme('locations', $node->locations, $hide)) {
             $node->content['locations'] = array(
               '#type' => 'markup',
               '#value' => $output,

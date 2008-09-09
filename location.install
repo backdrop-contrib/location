@@ -537,6 +537,33 @@ function location_update_5302() {
 }
 
 /**
+ * Location 3.x update 4.
+ * Shuffle more variables around.
+ */
+function location_update_5303() {
+  $ret = array();
+
+  $types = array();
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_display_teaser_%'");
+  while ($row = db_fetch_object($result)) {
+    $type = substr($row->name, 24);
+    $types[$type]['teaser'] = variable_get('location_display_teaser_'. $type, TRUE);
+    $types[$type]['full'] = variable_get('location_display_full_'. $type, TRUE);
+    $types[$type]['weight'] = variable_get('location_display_weight_'. $type, 0);
+    // @@@ Combine location_suppress_country and country require settings to set this up?
+    $types[$type]['hide'] = array();
+  }
+  foreach ($types as $type => $value) {
+    variable_set("location_display_$type", $value);
+    variable_del("location_display_teaser_$type");
+    variable_del("location_display_full_$type");
+    variable_del("location_display_weight_$type");
+  }
+
+  return $ret;
+}
+
+/**
  * Location 3.x update 3.
  * 3.0 province renames.
  */
@@ -575,3 +602,4 @@ function location_update_5301() {
  */
 // @@@ Convert location.lid to serial.
 // @@@ variable_del('location_configured_countries');
+// @@@ Rerun 5303.
