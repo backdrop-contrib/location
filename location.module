@@ -290,8 +290,7 @@ function _location_expand_location($element) {
       $map['lines'] = array();
 
       $map['behavior']['locpick'] = TRUE;
-      $map['behavior']['dynmarkers'] = TRUE;
-      //$map['behavior']['collapsehack'] = TRUE;
+      $map['behavior']['collapsehack'] = TRUE;
       // Use previous coordinates to center the map.
       if (!empty($dv['latitude']) || !empty($dv['longitude'])) {
         $map['latitude'] = (float)$dv['latitude'];
