@@ -2,4 +2,5 @@
 name = Location Phone
 package = Location
 description = Allows you to add a phone number to a location.
-dependencies = location
+dependencies[] = location
+core = 6.x

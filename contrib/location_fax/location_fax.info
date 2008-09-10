@@ -2,4 +2,5 @@
 name = Location Fax
 package = Location
 description = Allows you to add a fax number to a location.
-dependencies = location
+dependencies[] = location
+core = 6.x

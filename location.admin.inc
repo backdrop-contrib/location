@@ -241,11 +241,11 @@ function location_geocoding_options_form() {
   return $form;
 }
 
-function location_geocoding_options_form_submit($form_id, $form_values) {
+function location_geocoding_options_form_submit($form, &$form_state) {
   $general_geocoders = location_get_general_geocoder_list();
   $general_geocoders_in_use = array();
 
-  foreach ($form_values as $key => $value) {
+  foreach ($form_state['values'] as $key => $value) {
     if (substr($key, 0, 17) == 'location_geocode_') {
       if (in_array($value, $general_geocoders)) {
         $general_geocoders_in_use[$value] = $value;

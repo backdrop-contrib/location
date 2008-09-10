@@ -7,42 +7,35 @@
  */
 
 /**
+ * Implementation of hook_schema().
+ */
+function location_fax_schema() {
+  $schema['location_fax'] = array(
+    'fields' => array(
+      'lid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'fax' => array('type' => 'varchar', 'length' => 31, 'default' => NULL),
+    ),
+    'primary key' => array('lid'),
+  );
+
+  return $schema;
+}
+
+/**
  * Implementation of hook_install().
  */
 function location_fax_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("
-      CREATE TABLE {location_fax} (
-        lid int(10) unsigned NOT NULL default '0',
-        fax varchar(31) default NULL,
-        PRIMARY KEY  (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
-      ");
-      break;
-
-    case 'pgsql':
-      db_query("
-        CREATE TABLE {location_fax} (
-          lid int NOT NULL default '0' CHECK (lid >= 0),
-          fax varchar(31) default NULL,
-          PRIMARY KEY  (lid)
-        )");
-      break;
-  }
+  drupal_install_schema('location_fax');
 
   // Change weight so we execute after location.
   db_query("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_fax', 'module');
-
-  drupal_set_message(t('Installed tables for module location_fax'));
 }
 
 /**
  * Implementation of hook_uninstall().
  */
 function location_fax_uninstall() {
-  db_query('DROP TABLE {location_fax}');
+  drupal_uninstall_schema('location_fax');
 }
 
 /**
@@ -51,16 +44,18 @@ function location_fax_uninstall() {
  */
 function location_fax_update_5300() {
   $ret = array();
-  if ($GLOBALS['db_type'] == 'pgsql') {
-    // If the table wasn't created (i.e. error from previous install)
-    if (!db_table_exists('location_fax')) {
-      $ret[] = update_sql("
-        CREATE TABLE {location_fax} (
-          lid int NOT NULL default '0' CHECK (lid >= 0),
-          fax varchar(31) default NULL,
-          PRIMARY KEY (lid)
-        )");
-    }
+
+  // Drupal 6 note: These should only affect postgresql, but are safe
+  // to run on mysql as well, so I don't bother checking db types.
+
+  if (!db_table_exists('location_fax')) {
+    db_create_table($ret, 'location_fax', array(
+      'fields' => array(
+        'lid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'fax' => array('type' => 'varchar', 'length' => 31, 'default' => NULL),
+      ),
+      'primary key' => array('lid'),
+    ));
   }
   return $ret;
 }
