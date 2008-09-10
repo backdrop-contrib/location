@@ -15,9 +15,30 @@ TODO:
 
 */
 
+/**
+ * Implementation of hook_views_handlers().
+ */
+function location_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'location') .'/handlers',
+    ),
+    'handlers' => array(
+      'location_views_handler_field_latitude' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'location_views_handler_field_longitude' => array(
+        'parent' => 'location_views_handler_field_latitude',
+      ),
+      'location_views_handler_field_coordinates' => array(
+        'parent' => 'location_views_handler_field_latitude',
+      ),
+    ),
+  );
+}
 
 /**
- * Implementatin of hook_views_data().
+ * Implementation of hook_views_data().
  */
 function location_views_data() {
   // ----------------------------------------------------------------
@@ -199,60 +220,4 @@ function location_views_data() {
   );
 
   return $data;
-}
-
-class location_views_handler_field_latitude extends views_handler_field {
-
-  function option_definition() {
-    $options = parent::option_definition();
-    $options['style'] = array('default' => 'dms');
-    return $options;
-  }
-
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['style'] = array(
-      '#title' => t('Display style'),
-      '#type' => 'select',
-      '#options' => array('dd' => t('Decimal degrees'), 'dms' => t('Degrees, minutes, seconds')),
-      '#default_value' => $this->options['style'],
-    );
-  }
-
-  function render($values) {
-    if ($this->options['style'] == 'dd') {
-      return check_plain($values->{$this->field_alias});
-    }
-    else {
-      return theme('location_latitude_dms', $values->{$this->field_alias});
-    }
-  }
-}
-
-class location_views_handler_field_longitude extends location_views_handler_field_latitude {
-
-  function render($values) {
-    if ($this->options['style'] == 'dms') {
-      return theme('location_longitude_dms', $values->{$this->field_alias});
-    }
-    return parent::render($values);
-  }
-}
-
-class location_views_handler_field_coordinates extends location_views_handler_field_latitude {
-
-  function construct() {
-    parent::construct();
-    $this->additional_fields['longitude'] = 'longitude';
-  }
-
-  function render($values) {
-    if ($this->options['style'] == 'dms') {
-      return theme('location_latitude_dms', $values->{$this->field_alias}) .', '. theme('location_longitude_dms', $values->{$this->aliases['longitude']});
-    }
-    else {
-      return check_plain($values->{$this->field_alias}) .', '. check_plain($values->{$this->aliases['longitude']});
-    }
-  }
-
 }

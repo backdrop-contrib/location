@@ -173,6 +173,16 @@ function location_simpletest() {
 }
 
 /**
+ * Implementation of hook_views_api().
+ */
+function location_views_api() {
+  return array(
+    'api' => 2,
+    //'path' => drupal_get_path('module', 'location') .'/includes',
+  );
+}
+
+/**
  * Implementation of hook_cron().
  */
 function location_cron() {
