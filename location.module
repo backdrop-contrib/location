@@ -872,7 +872,7 @@ function _location_node_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'fieldset',
       '#title' => format_plural($location_form_count, 'Location', 'Locations'),
       '#tree' => TRUE,
-      '#attributes' => array_merge(is_array($form['locations']['#attributes']) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
+      '#attributes' => array_merge((isset($form['locations']['#attributes']) && is_array($form['locations']['#attributes'])) ? $form['locations']['#attributes'] : array(), array('class' => 'locations')),
       '#weight' => variable_get('location_weight_'. $form['type']['#value'], 9),
       '#collapsible' => variable_get('location_collapsible_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
       '#collapsed' => variable_get('location_collapsed_'. $form['type']['#value'], 0) == 0 ? FALSE : TRUE,
@@ -987,13 +987,7 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'insert':
     case 'update':
       if (!empty($node->locations)) {
-        foreach (array_keys($node->locations) as $key) {
-          location_save($node->locations[$key], TRUE);
-        }
-        db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
-        foreach ($node->locations as $location) {
-          db_query('INSERT INTO {location_instance} (nid, vid, lid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $location['lid']);
-        }
+        location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
       }
       break;
 
@@ -1096,6 +1090,43 @@ function location_load_locations($id, $key = 'vid') {
 }
 
 /**
+ * Save associated locations.
+ *
+ * @param $id The identifier to store as. (An integer or string, depending on $key.)
+ * @param $criteria An array of instance criteria to save as. (Example: array('genid' => 'my_custom_1111'))
+ */
+function location_save_locations(&$locations, $criteria) {
+  if (!empty($locations) && !empty($criteria) && is_array($criteria)) {
+    foreach (array_keys($locations) as $key) {
+      location_save($locations[$key]);
+    }
+    $columns = array();
+    $placeholders = array();
+    $qfrags = array();
+    $args = array();
+    foreach (array('nid' => '%d', 'vid' => '%d', 'uid' => '%d', 'genid' => "'%s'") as $key => $placeholder) {
+      if (isset($criteria[$key])) {
+        $columns[] = $key;
+        $placeholders[] = $placeholder;
+        $args[] = $criteria[$key];
+        $qfrags[] = "$key = $placeholder";
+      }
+    }
+    $query = 'DELETE FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
+    db_query($query, $args);
+    // Tack on the lid.
+    $columns[] = 'lid';
+    $placeholders[] = '%d';
+
+    foreach ($locations as $location) {
+      $args[] = $location['lid'];
+      db_query('INSERT INTO {location_instance} ('. implode(', ', $columns) .') VALUES ('. implode(', ', $placeholders) .')', $args);
+      array_pop($args);
+    }
+  }
+}
+
+/**
  * Load a single location by lid.
  *
  * @param $lid Location ID to load.
@@ -1146,13 +1177,7 @@ function location_user($op, &$edit, &$account, $category = NULL) {
     case 'insert':
     case 'update':
       if (!empty($edit['locations'])) {
-        foreach (array_keys($edit['locations']) as $key) {
-          location_save($edit['locations'][$key], TRUE);
-        }
-        db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
-        foreach ($edit['locations'] as $location) {
-          db_query('INSERT INTO {location_instance} (uid, lid) VALUES (%d, %d)', $account->uid, $location['lid']);
-        }
+        location_save_locations($edit['locations'], array('uid' => $account->uid));
       }
       unset($edit['locations']);
       break;
