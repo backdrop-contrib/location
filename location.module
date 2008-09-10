@@ -1464,24 +1464,6 @@ function location_save(&$location, $cow = TRUE) {
   }
   drupal_write_record('location', $location);
 
-/*
-  db_query("INSERT INTO {location}
-    (lid, name, street, additional, city, province, postal_code, country, latitude, longitude, source)
-    VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', %d)",
-    $location['lid'],
-    $location['name'],
-    $location['street'],
-    $location['additional'],
-    $location['city'],
-    $location['province'],
-    $location['postal_code'],
-    $location['country'],
-    $location['latitude'],
-    $location['longitude'],
-    $location['source']
-  );
-*/
-
   location_invoke_locationapi($location, 'save');
   return $location['lid'];
 }
