@@ -33,6 +33,9 @@ function location_views_handlers() {
       'location_views_handler_field_coordinates' => array(
         'parent' => 'location_views_handler_field_latitude',
       ),
+      'location_handler_field_location_country' => array(
+        'parent' => 'views_handler_field',
+      ),
     ),
   );
 }
@@ -142,6 +145,14 @@ function location_views_data() {
     ),
   );
 
+  // @@@ 1.x Conversion -- 'country' => 'country', style 'name'; 'country_code' => 'country', style 'code'.
+  $data['location']['country'] = array(
+    'title' => t('Country'),
+    'field' => array(
+      'handler' => 'location_handler_field_location_country',
+      'click sortable' => TRUE,
+    ),
+  );
 
   $data['location']['latitude'] = array(
     'title' => t('Latitude'),
