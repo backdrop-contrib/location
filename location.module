@@ -979,7 +979,7 @@ function location_form_alter(&$form, &$form_state, $form_id) {
       if (!is_array($form['#submit'])) {
         $form['#submit'] = array('system_settings_form_submit' => array());
       }
-      array_unshift($form['#submit'], array('location_geocoding_options_form_submit' => array()));
+      array_unshift($form['#submit'], 'location_geocoding_options_form_submit');
       break;
 
   }
