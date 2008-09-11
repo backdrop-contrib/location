@@ -229,6 +229,11 @@ function _location_expand_location($element) {
       if ($location_settings[$field] != 0) {
         $element[$field] = location_invoke_locationapi($dv[$field], 'field_expand', $field, $location_settings[$field], $dv);
       }
+      
+      // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
+      if ($field == 'street' && $location_settings[$field]) {
+        $element['additional'] = location_invoke_locationapi($dv['additional'], 'field_expand', 'additional', 1, $dv);
+      }
     }
   }
   // @@@ Split into submit and view permissions?
@@ -444,6 +449,10 @@ function _location_expand_location_settings(&$element) {
       3 => t('Force Default'),
     ),
   );
+  
+  // 'Street Additional' field should depend on 'Street' setting.
+  // It should never be required and should only display when the street field is 'allowed' or 'required'
+  unset($element['additional']);
 
   // @@@ Alter here?
 
