@@ -36,6 +36,9 @@ function location_views_handlers() {
       'location_handler_field_location_country' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_views_handler_filter_proximity' => array(
+        'parent' => 'views_handler_filter',
+      ),
     ),
   );
 }
@@ -174,6 +177,9 @@ function location_views_data() {
       'field' => 'latitude', // The handler adds the longitude.
       'handler' => 'location_views_handler_field_coordinates',
       'click sortable' => FALSE,
+    ),
+    'filter' => array(
+      'handler' => 'location_views_handler_filter_proximity',
     ),
   );
 
