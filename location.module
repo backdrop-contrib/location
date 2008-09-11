@@ -904,13 +904,20 @@ function _location_node_form_alter(&$form, &$form_state, $form_id) {
     }
 
     $settings = variable_get('location_fields_'. $node->type, array());
+    // Enforce required fields for the first location only.  The rest should be optional.
+    if ($location_form_count > 1) {
+      $settings_sans_reqs = array();
+      foreach ($settings as $field => $setting) {
+        $settings_sans_reqs[$field] = $setting & 1;
+      }
+    }
 
     for ($i = 0; $i < $location_form_count; $i++) {
       $form['locations'][$i] = array(
         '#type' => 'location_element',
         '#title' => t('Location #%number', array('%number' => $i + 1)),
         '#default_value' => isset($node->locations[$i]) ? $node->locations[$i] : NULL,
-        '#location_settings' => $settings,
+        '#location_settings' => ($i > 0) ? $settings_sans_reqs : $settings
       );
     }
 
