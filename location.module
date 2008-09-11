@@ -395,8 +395,9 @@ function theme_location_elementzzz($element) {
 
 }
 
-function _location_expand_location_settings($element) {
-  $value = is_array($element['#value']) ? $element['#value'] : array();
+function _location_expand_location_settings(&$element) {
+  // looks like core sets $element['#value'] to an empty array even though $element['#type'] == 'fieldset'
+  unset($element['#value']);
   $element['#tree'] = TRUE;
   $element['#type'] = 'fieldset';
 
