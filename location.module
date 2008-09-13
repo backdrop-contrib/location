@@ -444,6 +444,7 @@ function _location_expand_location_settings(&$element) {
     '#description'    => t('When using "Force Default", the country field will be set to the value of the "Default country selection" dropdown on the <a href="@location_settings">location settings page</a> and hidden from the user.', array('@location_settings' => url('admin/settings/location'))),
     '#default_value'  => $defaults['country'],
     '#options'        => array(
+      // 0 is omitted so the behavior lines up properly with everything else.
       1 => t('Use'),
       2 => t('Require'),
       3 => t('Force Default'),
@@ -908,6 +909,8 @@ function _location_node_form_alter(&$form, &$form_state, $form_id) {
     if ($location_form_count > 1) {
       $settings_sans_reqs = array();
       foreach ($settings as $field => $setting) {
+        // Allow Allow (Use), Force Default settings through.
+        // Block 2 (Required).
         $settings_sans_reqs[$field] = $setting & 1;
       }
     }
@@ -917,6 +920,7 @@ function _location_node_form_alter(&$form, &$form_state, $form_id) {
         '#type' => 'location_element',
         '#title' => t('Location #%number', array('%number' => $i + 1)),
         '#default_value' => isset($node->locations[$i]) ? $node->locations[$i] : NULL,
+        // Use relaxed settings for all locations past the first one.
         '#location_settings' => ($i > 0) ? $settings_sans_reqs : $settings
       );
     }
