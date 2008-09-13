@@ -1,0 +1,77 @@
+GMap 1.x / Location 3.x Tester Checklist
+----------------------------------------
+
+Setup from scratch:
+
+[ ] Enable modules
+
+[ ] Visit admin/settings/gmap and configure API key.
+
+[ ] Visit admin/settings/filters and set up a GMap filter.
+
+[ ] Visit admin/content/types and (create if desired and) location-enable a content type.
+
+[ ] Visit admin/settings/location/geocoding and configure geocoding for a country.
+
+[ ] Visit admin/user/settings and configure the Location Fields section.
+
+[ ] Visit admin/build/block and enable the Author Map and Location Map blocks.
+
+[ ] Visit admin/build/block/configure/gmap_location/1 and enable the Author block for the content type you location-enabled.
+
+
+Tests 1 (GMap macros):
+
+[ ] Visit map/macro, play with the controls and ensure map responds, play with map and ensure controls respond.
+
+[ ] Doodle on the map, make sure drawing controls work as expected.
+
+[ ] Copy macro, open another window/tab.
+
+[ ] Create a node, set filter to GMap filter and paste macro.
+
+[ ] Save node, compare display of map to macro in other window/tab.
+
+
+Tests 2 (Location user):
+
+[ ] Edit your user account. Add your location.
+
+[ ] Ensure geocoding works.
+
+[ ] Ensure the data is not lost when going back to edit.
+
+
+Tests 3 (Location nodes):
+
+[ ] Create a node with locative information.
+
+[ ] Ensure Author Map and Location Map display as expected.
+
+
+----------------------------------------------------------------------
+Advanced section - Stuff involving special setup or advanced knowledge
+----------------------------------------------------------------------
+
+ADVANCED: Upgrade path:
+
+[ ] Create test site on Location 2.7.
+
+[ ] Perform tasks from "Setup from scratch" section.
+
+[ ] Create or import test data.
+
+[ ] Install Location 3
+
+[ ] Attempt to perform updates.
+
+[ ] Ensure in database that data was properly split off into location_instance.
+
+[ ] Ensure site settings are in a sane state (You should not get any misconfiguration-related warnings/errors)
+
+[ ] Visually inspect some locations on site.
+
+
+ADVANCED: Nonstandard usage:
+
+[ ] Disable gmap and create locative nodes. Ensure form continues to work in the absence of gmap.
