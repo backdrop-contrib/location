@@ -36,6 +36,9 @@ function location_views_handlers() {
       'location_handler_field_location_country' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_handler_field_location_province' => array(
+        'parent' => 'views_handler_field',
+      ),
       'location_views_handler_filter_proximity' => array(
         'parent' => 'views_handler_filter',
       ),
@@ -140,6 +143,14 @@ function location_views_data() {
     ),
   );
 
+  // @@@ 1.x Conversion -- 'province' => 'province', style 'name'; 'province_code' => 'province', style 'code'
+  $data['location']['province'] = array(
+    'title' => t('Province'),
+    'field' => array(
+      'handler' => 'location_handler_field_location_province',
+      'click sortable' => TRUE,
+    ),
+  );
 
   $data['location']['postal_code'] = array(
     'title' => t('Postal Code'),
