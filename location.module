@@ -229,7 +229,7 @@ function _location_expand_location($element) {
       if ($location_settings[$field] != 0) {
         $element[$field] = location_invoke_locationapi($dv[$field], 'field_expand', $field, $location_settings[$field], $dv);
       }
-      
+
       // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
       if ($field == 'street' && $location_settings[$field]) {
         $element['additional'] = location_invoke_locationapi($dv['additional'], 'field_expand', 'additional', 1, $dv);
@@ -338,6 +338,15 @@ function _location_expand_location($element) {
         '#prefix' => '<div class=\'description\'>',
         '#value' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'),
         '#suffix' => '</div>',
+      );
+    }
+
+    if (isset($dv['lid']) && $dv['lid'] !== FALSE) {
+      $element['delete_location'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Delete'),
+        '#default_value' => FALSE,
+        '#description' => t('Check this box to delete this location.'),
       );
     }
   }
@@ -450,7 +459,7 @@ function _location_expand_location_settings(&$element) {
       3 => t('Force Default'),
     ),
   );
-  
+
   // 'Street Additional' field should depend on 'Street' setting.
   // It should never be required and should only display when the street field is 'allowed' or 'required'
   unset($element['additional']);
@@ -1350,6 +1359,14 @@ function location_save(&$location, $cow = TRUE) {
 
   $dummy = array();
   $virtual = location_invoke_locationapi($dummy, 'virtual fields');
+
+  if (isset($location['delete_location']) && $location['delete_location']) {
+    // Location is being deleted.
+    // Stomp on it with the default values.
+    $dummy = array();
+    $location = location_invoke_locationapi($dummy, 'default values');
+  }
+  unset($location['delete_location']);
 
   // Remove the "virtual fields" from the location.
   foreach ($virtual as $field) {
