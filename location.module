@@ -1150,9 +1150,14 @@ function location_save_locations(&$locations, $criteria) {
     $placeholders[] = '%d';
 
     foreach ($locations as $location) {
-      $args[] = $location['lid'];
-      db_query('INSERT INTO {location_instance} ('. implode(', ', $columns) .') VALUES ('. implode(', ', $placeholders) .')', $args);
-      array_pop($args);
+      // Don't save "empty" locations.
+      // location_save() explicitly returns FALSE for empty locations,
+      // so it should be ok to rely on the data type.
+      if ($location['lid'] !== FALSE) {
+        $args[] = $location['lid'];
+        db_query('INSERT INTO {location_instance} ('. implode(', ', $columns) .') VALUES ('. implode(', ', $placeholders) .')', $args);
+        array_pop($args);
+      }
     }
   }
 }
