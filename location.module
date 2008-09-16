@@ -160,6 +160,7 @@ function location_theme() {
     'location_map_link_options' => array('arguments' => array('form')),
     'location_geocoding_options' => array('arguments' => array('form')),
     'location_element' => array('arguments' => array('element')),
+    'location_distance' => array('template' => 'location_distance', 'arguments' => array('distance' => 0, 'units' => 'km')),
   );
 }
 
@@ -1763,4 +1764,21 @@ function template_preprocess_location(&$variables) {
     // $location['country'] is normalized in the previous line.
     $variables['template_files'][] = 'location-'. $location['country'];
   }
+}
+
+/**
+ * Theme preprocess function for location_distance.
+ */
+function template_preprocess_location_distance(&$variables) {
+  $units = $variables['units'];
+  unset($variables['units']);
+  if ($units == 'km') {
+    $variables['shortunit'] = 'km';
+    $variables['longunit'] = 'kilometer(s)';
+  }
+  if ($units == 'mi') {
+    $variables['shortunit'] = 'mi';
+    $variables['longunit'] = 'mile(s)';
+  }
+  $variables['distance'] = (float)$variables['distance'];
 }

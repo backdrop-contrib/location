@@ -51,6 +51,9 @@ function location_views_handlers() {
       'location_views_handler_filter_proximity' => array(
         'parent' => 'views_handler_filter',
       ),
+      'location_handler_field_location_distance' => array(
+        'parent' => 'views_handler_field',
+      ),
     ),
   );
 }
@@ -151,7 +154,10 @@ function location_views_data() {
     'argument' => array(
       'handler' => 'views_handler_argument_string',
       'empty field name' => t('Unknown'),
-    )
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
   );
 
   // @@@ 1.x Conversion -- 'province' => 'province', style 'name'; 'province_code' => 'province', style 'code'
@@ -212,6 +218,21 @@ function location_views_data() {
       'handler' => 'location_views_handler_filter_proximity',
     ),
   );
+
+  $data['location']['distance'] = array(
+    'title' => t('Distance'),
+    'field' => array(
+      'field' => 'latitude', // The handler adds the longitude.
+      'handler' => 'location_handler_field_location_distance',
+      'click sortable' => FALSE,
+    ),
+//    'filter' => array(
+//      'handler' => 'location_views_handler_filter_proximity',
+//    ),
+  );
+
+
+
 
 /*
       'latitude' => array(
