@@ -118,7 +118,6 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     }
 
     if (!empty($this->options['expose']['identifier'])) {
-dpm($input);
       $value = $input[$this->options['expose']['identifier']];
 
       // Various ways to check for the absence of optional input.

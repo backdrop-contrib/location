@@ -36,7 +36,16 @@ function location_views_handlers() {
       'location_handler_field_location_country' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_handler_argument_location_country' => array(
+        'parent' => 'views_handler_argument',
+      ),
       'location_handler_field_location_province' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'location_handler_argument_location_province' => array(
+        'parent' => 'views_handler_argument',
+      ),
+      'location_handler_field_location_street' => array(
         'parent' => 'views_handler_field',
       ),
       'location_views_handler_filter_proximity' => array(
@@ -124,23 +133,25 @@ function location_views_data() {
       'click sortable' => TRUE,
     ),
   );
+
+  // @@@ 1.x Conversion -- 'additional' => 'street', style 'additional'
   $data['location']['street'] = array(
     'title' => t('Street'),
     'field' => array(
+      'handler' => 'location_handler_field_location_street',
       'click sortable' => TRUE,
     ),
   );
-  $data['location']['additional'] = array(
-    'title' => t('Additional'),
-    'field' => array(
-      'click sortable' => TRUE,
-    ),
-  );
+
   $data['location']['city'] = array(
     'title' => t('City'),
     'field' => array(
       'click sortable' => TRUE,
     ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+      'empty field name' => t('Unknown'),
+    )
   );
 
   // @@@ 1.x Conversion -- 'province' => 'province', style 'name'; 'province_code' => 'province', style 'code'
@@ -149,6 +160,10 @@ function location_views_data() {
     'field' => array(
       'handler' => 'location_handler_field_location_province',
       'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'location_handler_argument_location_province',
+      //'name field' => 'name',
     ),
   );
 
@@ -165,6 +180,10 @@ function location_views_data() {
     'field' => array(
       'handler' => 'location_handler_field_location_country',
       'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'location_handler_argument_location_country',
+      //'name field' => 'name',
     ),
   );
 

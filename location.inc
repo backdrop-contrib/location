@@ -418,6 +418,7 @@ function location_get_provinces($country = 'us') {
  * Get the translated name of a country code.
  */
 function location_country_name($country = 'us') {
+  location_standardize_country_code($country);
   $countries = location_get_iso3166_list();
   if (isset($countries[$country])) {
     return $countries[$country];
@@ -433,6 +434,7 @@ function location_country_name($country = 'us') {
  */
 function location_province_name($country = 'us', $province = 'xx') {
   $provinces = location_get_provinces($country);
+  $province = strtoupper($province);
   if (isset($provinces[$province])) {
     return $provinces[$province];
   }
