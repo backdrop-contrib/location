@@ -147,7 +147,13 @@ function theme_location_element($element) {
 function location_theme() {
   return array(
     'location_settings' => array('arguments' => array('element')),
-    'locations' => array('arguments' => array('locations', 'hide')),
+    'locations' => array(
+      'template' => 'locations',
+      'arguments' => array(
+        'locations' => NULL,
+        'hide' => array(),
+      ),
+    ),
     'location' => array(
       'template' => 'location',
       'arguments' => array(
@@ -1781,4 +1787,17 @@ function template_preprocess_location_distance(&$variables) {
     $variables['longunit'] = 'mile(s)';
   }
   $variables['distance'] = (float)$variables['distance'];
+}
+
+/**
+ * Theme preprocess function for theming a group of locations.
+ */
+function template_preprocess_locations(&$variables) {
+  $locs = $variables['locations'];
+  $variables['locations'] = array();
+  $variables['rawlocs'] = $locs;
+
+  foreach ($locs as $location) {
+    $variables['locations'][] = theme('location', $location, $variables['hide']);
+  }
 }

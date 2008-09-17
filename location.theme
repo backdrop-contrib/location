@@ -71,31 +71,3 @@ function theme_location_geocoding_options(&$form) {
 
   return $output;
 }
-
-/**
- * Generates HTML for the ALL passed locations.
- *
- * @param $location
- *   Array. A series of locations with the following fields:
- *      'street'       => A string representing the street location
- *      'additional'   => A string for any additional portion of the street location
- *      'city'         => A string for the city name
- *      'province'     => The standard postal abbreviation for the province
- *      'country'      => The two-letter ISO code for the country of the location (REQUIRED)
- *      'postal_code'  => The international postal code for the location
- * @param $hide
- *   Array. The values are the location fields to suppress in the themed display.
- * @ingroup themeable
- */
-function theme_locations($locations = array(), $hide = array()) {
-  $output = '';
-
-  if (count($locations)) {
-    $output .= '<h3>'. (count($locations) > 1 ? t('Locations') : t('Location')) .'</h3>';
-    foreach ($locations as $location) {
-      $output .= theme('location', $location, $hide);
-    }
-  }
-
-  return $output;
-}
