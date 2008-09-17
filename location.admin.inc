@@ -255,4 +255,4 @@ function location_geocoding_options_form_submit($form, &$form_state) {
   }
 
   variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
-};
+}
