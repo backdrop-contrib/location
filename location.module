@@ -137,6 +137,7 @@ function location_elements() {
 function theme_location_element($element) {
   // Prevent spurious "Array" from appearing.
   unset($element['#value']);
+  $element['#collapsible'] = FALSE;
   return theme('fieldset', $element);
 }
 
@@ -901,7 +902,7 @@ function _location_node_form_alter(&$form, &$form_state, $form_id) {
   }
 
   $numloc = isset($node->locations) ? count($node->locations) : 0;
-  $location_form_count = min(count($node->locations) + variable_get('location_defaultnum_'. $node->type, 1), variable_get('location_maxnum_'. $node->type, 1));
+  $location_form_count = min($numloc + variable_get('location_defaultnum_'. $node->type, 1), variable_get('location_maxnum_'. $node->type, 1));
 
   if ($location_form_count) {
 
