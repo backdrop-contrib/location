@@ -479,63 +479,6 @@ function location_load_geocoder($geocoder) {
   include_once drupal_get_path('module', 'location') .'/geocoding/'. $geocoder .'.inc';
 }
 
-
-// @@@ Kill this, it is no longer sane.
-/**
- * The array that is returned is a complete list of state/provinces
- * that belong to the countries enabled by the site's location system.
- *
- * @param $value
- *   A preselected value for the HTML select form item that is returned.
- *
- * @param $required
- *   A boolean for whether or not the field should be required.
- *
- * @param $country
- *   If you wish to only serve a state/province selection for a particular country while leaving out
- *   state/provinces by all other countries, pass the lower case of the country's two-letter ISO 3166
- *   code in this parameter.  If you wish to serve a province selection from all countries, pass NULL
- *   for this parameter.
- *
- *
- * @return
- *   An associative array where
- *     -> the keys are a contatenation of the countrycode and a three
- *        digit positive integer unique to each province within a
- *        country's provinces
- *     -> the values are the full name of the province
- *
- */
-function location_province_select_options($country = NULL) {
-  $options = array();
-  $obj = new stdClass();
-  $obj->option = array('' => t('NOT LISTED'));
-  $options[] = $obj;
-
-  if (isset($country)) {
-    $countries = array($country => TRUE);
-  }
-  else {
-    // @@@ Massive slowdown.
-    $countries = _location_supported_countries();
-  }
-  foreach ($countries as $cc => $name) {
-    $provinces = location_get_provinces($cc);
-    // If we're listing multiple countries, do a divider.
-    if (!$name === TRUE) {
-      $obj = new stdClass();
-      $obj->option = array('' => '[ ----- '. strtoupper($country_name) .' ----- ]');
-      $options[] = $obj;
-    }
-    foreach ($provinces as $province_code => $province_name) {
-      $obj = new stdClass();
-      $obj->option = array("$cc-$province_code" => $province_name);
-      $options[] = $obj;
-    }
-  }
-  return $options;
-}
-
 /**
  * Create a single line address.
  *
