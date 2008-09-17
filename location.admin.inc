@@ -256,3 +256,52 @@ function location_geocoding_options_form_submit($form, &$form_state) {
 
   variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
 }
+
+function theme_location_map_link_options(&$form) {
+  $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
+  $rows = array();
+  foreach (element_children($form['countries']) as $country_iso) {
+    $row = array();
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['label_'. $country_iso])
+    );
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_map_link_'. $country_iso])
+    );
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+  foreach (element_children($form) as $key) {
+    $output .= drupal_render($form[$key]);
+  }
+  $output .= drupal_render($form);
+  return $output;
+}
+
+function theme_location_geocoding_options(&$form) {
+  $header = array(
+    array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'),
+    array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'),
+    array('align' => 'center', 'data' => '<center>'. t('Configure') .'</center>')
+  );
+  $rows = array();
+  foreach (element_children($form['countries']) as $country_iso) {
+    $row = array();
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['label_'. $country_iso])
+    );
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_'. $country_iso])
+    );
+    $row[] = array(
+      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso])
+    );
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+  foreach (element_children($form) as $key) {
+    $output .= drupal_render($form[$key]);
+  }
+  $output .= drupal_render($form);
+  return $output;
+}

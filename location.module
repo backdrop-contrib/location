@@ -20,7 +20,6 @@ define('LOCATION_USER_DONT_COLLECT',      0);
 define('LOCATION_USER_COLLECT',           1);
 
 include_once LOCATION_PATH .'/location.inc';
-include_once LOCATION_PATH .'/location.theme';
 
 /**
  * Implementation of hook_menu().
