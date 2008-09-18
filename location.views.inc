@@ -90,13 +90,13 @@ function location_views_data() {
     ),
     // Location links to node_revisions through location_instance via lid.
     'node_revisions' => array(
-      'table' => 'location_instance',
+      'left_table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
     ),
     // Location links to users through location_instance via lid.
     'users' => array(
-      'table' => 'location_instance',
+      'left_table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
     ),
@@ -126,6 +126,7 @@ function location_views_data() {
     // Information for accepting a lid as a filter
     'filter' => array(
       'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
     ),
     // Information for sorting on a lid.
     'sort' => array(
@@ -285,17 +286,17 @@ function location_views_data() {
   $data['node']['table']['join']['location'] = array(
     'left_table' => 'location_instance',
     'left_field' => 'vid',
-    'right_field' => 'vid',
+    'field' => 'vid',
   );
   $data['node_revisions']['table']['join']['location'] = array(
     'left_table' => 'location_instance',
     'left_field' => 'vid',
-    'right_field' => 'vid',
+    'field' => 'vid',
   );
   $data['users']['table']['join']['location'] = array(
     'left_table' => 'location_instance',
-    'left_field' => 'vid',
-    'right_field' => 'vid',
+    'left_field' => 'uid',
+    'field' => 'uid',
   );
 
   return $data;
