@@ -45,6 +45,9 @@ function location_views_handlers() {
       'location_handler_argument_location_province' => array(
         'parent' => 'views_handler_argument',
       ),
+      'location_handler_field_location_address' => array(
+        'parent' => 'views_handler_field',
+      ),
       'location_handler_field_location_street' => array(
         'parent' => 'views_handler_field',
       ),
@@ -246,6 +249,14 @@ function location_views_data() {
 */
 
 
+  $data['location']['address'] = array(
+    'title' => t('Address'),
+    'help' => t('The entire address block for the location.'),
+    'field' => array(
+      'field' => 'lid',
+      'handler' => 'location_handler_field_location_address',
+    ),
+  );
 
 
   $data['location_instance']['table']['group']  = t('Location');
