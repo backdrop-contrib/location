@@ -22,7 +22,7 @@ function location_views_default_views() {
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'title' => array(
-      'label' => 'Title:',
+      'label' => 'Title',
       'link_to_node' => 1,
       'exclude' => 0,
       'id' => 'title',
@@ -34,7 +34,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'street' => array(
-      'label' => 'Street:',
+      'label' => 'Street',
       'style' => 'both',
       'exclude' => 0,
       'id' => 'street',
@@ -46,7 +46,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'city' => array(
-      'label' => 'City:',
+      'label' => 'City',
       'exclude' => 0,
       'id' => 'city',
       'table' => 'location',
@@ -57,7 +57,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'province' => array(
-      'label' => 'Province:',
+      'label' => 'Province',
       'style' => 'name',
       'exclude' => 0,
       'id' => 'province',
@@ -66,7 +66,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'postal_code' => array(
-      'label' => 'Postal Code:',
+      'label' => 'Postal Code',
       'exclude' => 0,
       'id' => 'postal_code',
       'table' => 'location',
@@ -77,7 +77,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'country' => array(
-      'label' => 'Country:',
+      'label' => 'Country',
       'style' => 'name',
       'exclude' => 0,
       'id' => 'country',
@@ -177,7 +177,7 @@ function location_views_default_views() {
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'title' => array(
-      'label' => 'Title:',
+      'label' => 'Title',
       'link_to_node' => 1,
       'exclude' => 0,
       'id' => 'title',
@@ -186,7 +186,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'street' => array(
-      'label' => 'Street:',
+      'label' => 'Street',
       'style' => 'both',
       'exclude' => 0,
       'id' => 'street',
@@ -195,7 +195,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'city' => array(
-      'label' => 'City:',
+      'label' => 'City',
       'exclude' => 0,
       'id' => 'city',
       'table' => 'location',
@@ -203,7 +203,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'province' => array(
-      'label' => 'Province:',
+      'label' => 'Province',
       'style' => 'name',
       'exclude' => 0,
       'id' => 'province',
@@ -212,7 +212,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'postal_code' => array(
-      'label' => 'Postal Code:',
+      'label' => 'Postal Code',
       'exclude' => 0,
       'id' => 'postal_code',
       'table' => 'location',
@@ -220,7 +220,7 @@ function location_views_default_views() {
       'relationship' => 'none',
     ),
     'country' => array(
-      'label' => 'Country:',
+      'label' => 'Country',
       'style' => 'name',
       'exclude' => 0,
       'id' => 'country',
@@ -400,6 +400,183 @@ function location_views_default_views() {
     'weight' => 0,
   ));
   $views[$view->name] = $view;
+
+
+  $view = new view;
+  $view->name = 'user_location_table';
+  $view->description = 'User location table.';
+  $view->tag = '';
+  $view->view_php = '';
+  $view->base_table = 'users';
+  $view->is_cacheable = FALSE;
+  $view->api_version = 2;
+  $view->disabled = TRUE;
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('fields', array(
+    'name' => array(
+      'label' => 'Name',
+      'link_to_user' => 1,
+      'exclude' => 0,
+      'id' => 'name',
+      'table' => 'users',
+      'field' => 'name',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+    'street' => array(
+      'label' => 'Street',
+      'style' => 'both',
+      'exclude' => 0,
+      'id' => 'street',
+      'table' => 'location',
+      'field' => 'street',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+    'city' => array(
+      'label' => 'City',
+      'exclude' => 0,
+      'id' => 'city',
+      'table' => 'location',
+      'field' => 'city',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+    'province' => array(
+      'label' => 'Province',
+      'style' => 'name',
+      'exclude' => 0,
+      'id' => 'province',
+      'table' => 'location',
+      'field' => 'province',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+    'postal_code' => array(
+      'label' => 'Postal Code',
+      'exclude' => 0,
+      'id' => 'postal_code',
+      'table' => 'location',
+      'field' => 'postal_code',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+    'country' => array(
+      'label' => 'Country',
+      'style' => 'name',
+      'exclude' => 0,
+      'id' => 'country',
+      'table' => 'location',
+      'field' => 'country',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'status' => array(
+      'operator' => '=',
+      'value' => 1,
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'status',
+      'table' => 'users',
+      'field' => 'status',
+      'relationship' => 'none',
+    ),
+    'lid' => array(
+      'operator' => 'not empty',
+      'value' => array(
+        'value' => '',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'lid',
+      'table' => 'location',
+      'field' => 'lid',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'none',
+  ));
+  $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'override' => 1,
+    'sticky' => 0,
+    'order' => 'asc',
+    'columns' => array(
+      'name' => 'name',
+      'street' => 'street',
+      'city' => 'city',
+      'province' => 'province',
+      'postal_code' => 'postal_code',
+      'country' => 'country',
+    ),
+    'info' => array(
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'street' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'city' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'province' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'postal_code' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'country' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+    ),
+    'default' => '-1',
+  ));
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->override_option('path', 'location/users');
+  $handler->override_option('menu', array(
+    'type' => 'normal',
+    'title' => 'User location table',
+    'weight' => '0',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'none',
+    'title' => '',
+    'weight' => 0,
+  ));
+  $views[$view->name] = $view;
+
 
   return $views;
 }
