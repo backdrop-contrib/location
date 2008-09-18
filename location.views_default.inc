@@ -104,6 +104,24 @@ function location_views_default_views() {
       ),
       'relationship' => 'none',
     ),
+    'lid' => array(
+      'operator' => 'not empty',
+      'value' => array(
+        'value' => '',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'lid',
+      'table' => 'location',
+      'field' => 'lid',
+      'relationship' => 'none',
+    ),
   ));
   $handler->override_option('access', array(
     'type' => 'none',
@@ -339,6 +357,24 @@ function location_views_default_views() {
       'id' => 'status_extra',
       'table' => 'node',
       'field' => 'status_extra',
+      'relationship' => 'none',
+    ),
+    'lid' => array(
+      'operator' => 'not empty',
+      'value' => array(
+        'value' => '',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'lid',
+      'table' => 'location',
+      'field' => 'lid',
       'relationship' => 'none',
     ),
   ));
