@@ -2,4 +2,6 @@
 name = Location Generate
 description = Bulk assign random latitude and longitudes to nodes.
 package = Development
-dependencies = location
+core = 6.x
+dependencies[] = devel_generate
+dependencies[] = location
