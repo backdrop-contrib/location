@@ -1462,24 +1462,24 @@ function location_save(&$location, $cow = TRUE) {
     if (!isset($oldloc[$k])) {
       // Field missing from old location, automatic save.
       $changed[$k] = TRUE;
+      continue;
     }
-    if ($oldloc[$k] == $v) {
+    else if ($oldloc[$k] == $v) {
       // Exact match, no change.
       continue;
     }
-    else {
-      // It wasn't equal, but perhaps it was equivilent?
-      $results = location_invoke_locationapi($location, 'isunchanged', $k, $oldloc[$k]);
-      $waschanged = TRUE; // First, assume changed.
-      foreach ($results as $r) {
-        if ($r) {
-          $waschanged = FALSE;
-        }
+
+    // It wasn't equal, but perhaps it was equivilent?
+    $results = location_invoke_locationapi($location, 'isunchanged', $k, $oldloc[$k]);
+    $waschanged = TRUE; // First, assume changed.
+    foreach ($results as $r) {
+      if ($r) {
+        $waschanged = FALSE;
       }
-      if ($waschanged) {
-        // Nobody okayed this difference.
-        $changed[$k] = TRUE;
-      }
+    }
+    if ($waschanged) {
+      // Nobody okayed this difference.
+      $changed[$k] = TRUE;
     }
   }
 
