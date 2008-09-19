@@ -417,8 +417,8 @@ function theme_location_elementzzz($element) {
 }
 
 function _location_expand_location_settings(&$element) {
-  // looks like core sets $element['#value'] to an empty array even though $element['#type'] == 'fieldset'
-  unset($element['#value']);
+  // Set a value for the fieldset that doesn't interfere with rendering and doesn't generate a warning.
+  $element['#value'] = '';
   $element['#tree'] = TRUE;
   $element['#type'] = 'fieldset';
 
@@ -719,7 +719,7 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
   array_unshift($form['#submit'], '_location_node_type_save_submit');
 
   $form['location'] = array_merge(
-    is_array($form['location']) ? $form['location'] : array(),
+    (isset($form['location']) && is_array($form['location'])) ? $form['location'] : array(),
     array(
       '#type'         => 'fieldset',
       '#title'        => t('Locative information'),
