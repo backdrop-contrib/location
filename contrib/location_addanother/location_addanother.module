@@ -95,4 +95,21 @@ function location_addanother_form_submit($form_id, &$form_values) {
   return 'node/'. $node->nid;
 }
 
-// @@@ @todo Type synchronization.
+/**
+ * Implementation of hook_node_type().
+ * Synchronize our settings.
+ */
+function location_addanother_node_type($op, $info) {
+  switch ($op) {
+    case 'delete':
+      variable_del('location_addanother_'. $info->type);
+      break;
+    case 'update':
+      if (!empty($info->old_type) && $info->old_type != $info->type) {
+        $setting = variable_get('location_addanother_'. $info->old_type, 0);
+        variable_del('location_addanother_'. $info->old_type);
+        variable_set('location_addanother_'. $info->type, $setting);
+      }
+      break;
+  }
+}
