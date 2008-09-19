@@ -133,6 +133,7 @@ function location_elements() {
 
 /**
  * Theme function to fixup location elements.
+ * @ingroup themable
  */
 function theme_location_element($element) {
   // Prevent spurious "Array" from appearing.
@@ -359,61 +360,6 @@ function _location_expand_location($element) {
   }
 
   return $element;
-}
-
-/**
- * Theme the location element.
- * @ingroup themable
- */
-function theme_location_elementzzz($element) {
-  drupal_add_css(drupal_get_path('module', 'location') .'/location.css');
-/*
-  // @@@ This *DEFINATELY* needs revisited.
-  foreach (element_children($element) as $field_name) {
-    $row = array();
-    if ($element[$field_name]['#type'] == 'markup') {
-      $row[] = array('data' => $element[$field_name]['#value'], 'colspan' => 2);
-    }
-    elseif ($element[$field_name]['#type'] != 'hidden') {
-      $required = !empty($element[$field_name]['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
-      $row[] = array('align' => 'right', 'data' => '<div class="form-item"><label'. ($element[$field_name]['#id'] ? ' for="'. $element[$field_name]['#id'] .'" ' : '') .'>'. filter_xss_admin($element[$field_name]['#title']) .": $required</label></div>");
-      unset($element[$field_name]['#title']);
-      $description = $element[$field_name]['#description'];
-      $row[] = array('align' => 'left', 'data' => drupal_render($element[$field_name]));
-      $rows[] = array(
-        'data' => $row,
-        'class' => 'odd'
-      );
-    }
-  }
-
-  $output = theme('table', NULL, $rows);
-  $output .= drupal_render($element);
-
-  return $output;*/
-
-  if ($element['#collapsible']) {
-    drupal_add_js('misc/collapse.js');
-
-    if (!isset($element['#attributes']['class'])) {
-      $element['#attributes']['class'] = '';
-    }
-
-    $element['#attributes']['class'] .= ' collapsible';
-    if ($element['#collapsed']) {
-      $element['#attributes']['class'] .= ' collapsed';
-    }
-  }
-
-  return '<fieldset'. drupal_attributes($element['#attributes']) .'>'. ($element['#title'] ? '<legend>'. $element['#title'] .'</legend>' : '') . ($element['#description'] ? '<div class="description">'. $element['#description'] .'</div>' : '') . $element['#children'] . $element['#value'] ."</fieldset>\n";
-/*
-  $element['#type'] = 'fieldset';
-  return theme('form_element', $element, $element['#children']);
-  return drupal_render($element);
-  return theme_fieldset($element);
-  return theme('fieldset', $element, $element['#children']);
- */
-
 }
 
 function _location_expand_location_settings(&$element) {
