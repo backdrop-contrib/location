@@ -943,17 +943,6 @@ function location_form_user_admin_settings_alter(&$form, &$form_state) {
  * Implementation of hook_form_alter().
  */
 function location_form_alter(&$form, &$form_state, $form_id) {
-  switch ($form_id) {
-    case 'location_geocoding_options_form':
-      // Fix the submit handler.
-      if (!is_array($form['#submit'])) {
-        $form['#submit'] = array('system_settings_form_submit' => array());
-      }
-      array_unshift($form['#submit'], 'location_geocoding_options_form_submit');
-      break;
-
-  }
-
   // Add the Location fields on the Node edit form
   if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('location_maxnum_'. $form['type']['#value'], 0)) {
     // @@@ This is a workaround for some bad interactions with usernode.
