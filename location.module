@@ -1532,32 +1532,6 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
 
 }
 
-
-/*
-
-Validation crap removed from nodeapi: move into the correct place.
-
-    case 'valiiiiiiiidate':
-      foreach ($node->locations as $index => $location) {
-        // For now, validation just makes sure that required fields have any value
-        // If syntax specific checks are implemented for locations in the future, they can be called as well.
-
-        foreach (location_field_names() as $field_name => $display_name) {
-          $workflow_setting = variable_get('location_'. $field_name .'_'. $node->type, $field_name == 'country' ? 1 : 0);
-          // We only enforce required fields on the first location if there are multiple locations
-          if ($index == 0) {
-            if (variable_get('location_'. $field_name .'_'. $node->type, 0) == 2) {
-              if (isset($node->locations[$index][$field_name]) && !strlen(trim($node->locations[$index][$field_name]))) {
-                form_set_error('locations]['. $index .']['. $field_name, t('The field %field is required.', array('%field' => $display_name)));
-              }
-            }
-          }
-          $node->locations[$index][$field_name] = trim($node->locations[$index][$field_name]);
-        }
-      }
-      break;
- */
-
 /**
  * Perform validation against a location fieldset.
  */
