@@ -1219,7 +1219,7 @@ function location_user($op, &$edit, &$account, $category = NULL) {
           );
           // @@@
           if (user_access('submit latitude/longitude')) {
-            if (!empty($account->location['latitude']) && !empty($user->location['longitude'])) {
+            if (!empty($account->location['latitude']) && !empty($account->location['longitude'])) {
               // @@@ Theme!
               $items[] = array(
                 'title' => t('Coordinates'),
