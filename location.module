@@ -212,12 +212,16 @@ function _location_expand_location($element) {
   }
   if (empty($element['#location_settings'])) {
     $element['#location_settings'] = array();
-    //@@@ Get some sort of sane default?
   }
   if (!isset($element['#default_value']) || $element['#default_value'] == 0) {
-    $dummy = '';
-    $element['#default_value'] = location_invoke_locationapi($dummy, 'default values');
+    $element['#default_value'] = array();
   }
+
+  // Merge defaults in.
+  $dummy = array();
+  $element['#location_settings'] = array_merge(location_invoke_locationapi($dummy, 'collection default'), $element['#location_settings']);
+  $element['#default_value'] = array_merge(location_invoke_locationapi($dummy, 'default values'), $element['#default_value']);
+
   $dv =& $element['#default_value'];
 
   // Keep track of the LID.
