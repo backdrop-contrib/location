@@ -775,12 +775,12 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
   );
   $form['location']['location_display']['teaser'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Display location in teaser view',
+    '#title' => t('Display location in teaser view'),
     '#default_value' => isset($defaults['teaser']) ? $defaults['teaser'] : TRUE,
   );
   $form['location']['location_display']['full'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Display location in full view',
+    '#title' => t('Display location in full view'),
     '#default_value' => isset($defaults['full']) ? $defaults['full'] : TRUE,
   );
   $form['location']['location_display']['weight'] = array(
