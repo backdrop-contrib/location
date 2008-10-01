@@ -77,7 +77,7 @@ function location_views_data() {
   $data['location']['table']['base'] = array(
     'field' => 'lid',
     'title' => t('Location'),
-    'help' => t("Locations are addresses and map coordinates."),
+    'help' => t('Locations are addresses and map coordinates.'),
     'weight' => -10,
   );
 
@@ -136,22 +136,37 @@ function location_views_data() {
 
   $data['location']['name'] = array(
     'title' => t('Name'),
+    'help' => t('The name of the selected location.'),
     'field' => array(
       'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
   // @@@ 1.x Conversion -- 'additional' => 'street', style 'additional'
   $data['location']['street'] = array(
     'title' => t('Street'),
+    'help' => t('The street address of the selected location.'),
     'field' => array(
       'handler' => 'location_handler_field_location_street',
       'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
   $data['location']['city'] = array(
     'title' => t('City'),
+    'help' => t('The city of the selected location.'),
     'field' => array(
       'click sortable' => TRUE,
     ),
@@ -162,11 +177,15 @@ function location_views_data() {
     'filter' => array(
       'handler' => 'views_handler_filter_string',
     ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
   );
 
   // @@@ 1.x Conversion -- 'province' => 'province', style 'name'; 'province_code' => 'province', style 'code'
   $data['location']['province'] = array(
     'title' => t('Province'),
+    'help' => t('The province of the selected location.'),
     'field' => array(
       'handler' => 'location_handler_field_location_province',
       'click sortable' => TRUE,
@@ -175,18 +194,34 @@ function location_views_data() {
       'handler' => 'location_handler_argument_location_province',
       //'name field' => 'name',
     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      // TODO: needs handler to filter by name, not code
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+      // TODO: needs handler to sort by name, not code
+    ),
   );
 
   $data['location']['postal_code'] = array(
     'title' => t('Postal Code'),
+    'help' => t('The postal code of the selected location.'),
     'field' => array(
       'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
   // @@@ 1.x Conversion -- 'country' => 'country', style 'name'; 'country_code' => 'country', style 'code'.
   $data['location']['country'] = array(
     'title' => t('Country'),
+    'help' => t('The country of the selected location.'),
     'field' => array(
       'handler' => 'location_handler_field_location_country',
       'click sortable' => TRUE,
@@ -195,24 +230,47 @@ function location_views_data() {
       'handler' => 'location_handler_argument_location_country',
       //'name field' => 'name',
     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      // TODO: should be drop down, and maybe country code entry
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+      // TODO: needs handler to sort by name, not code
+    ),
   );
 
   $data['location']['latitude'] = array(
     'title' => t('Latitude'),
+    'help' => t('The latitude of the selected location.'),
     'field' => array(
       'handler' => 'location_views_handler_field_latitude',
       'click sortable' => TRUE,
     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
   );
   $data['location']['longitude'] = array(
     'title' => t('Longitude'),
+    'help' => t('The longitude of the selected location.'),
     'field' => array(
       'handler' => 'location_views_handler_field_longitude',
       'click sortable' => TRUE,
     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
   );
   $data['location']['coordinates'] = array(
     'title' => t('Coordinates'),
+    'help' => t("The coordinates of the selected location in 'lat, long' format."),
     'field' => array(
       'field' => 'latitude', // The handler adds the longitude.
       'handler' => 'location_views_handler_field_coordinates',
@@ -225,11 +283,16 @@ function location_views_data() {
 
   $data['location']['distance'] = array(
     'title' => t('Distance'),
+    'help' => t("The distance from the selected location and either the current user or a specific location."),
     'field' => array(
       'field' => 'latitude', // The handler adds the longitude.
       'handler' => 'location_handler_field_location_distance',
-      'click sortable' => FALSE,
+      'click sortable' => TRUE,
     ),
+//    'sort' => array(
+//      'handler' => 'views_handler_sort',
+//      TODO: needs handler
+//    ),
 //    'filter' => array(
 //      'handler' => 'location_views_handler_filter_proximity',
 //    ),
