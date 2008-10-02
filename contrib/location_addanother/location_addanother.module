@@ -26,7 +26,7 @@ function location_addanother_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) 
 /**
  * Implementation of hook_form_alter().
  */
-function location_addanother_form_alter($form_id, &$form) {
+function location_addanother_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'node_type_form') {
     $type = $form['#node_type']->type;
 
@@ -80,8 +80,8 @@ function location_addanother_form_validate($form_id, &$form_values) {
 /**
  * Submission function for "add another location" form.
  */
-function location_addanother_form_submit($form_id, &$form_values) {
-  $location = $form_values['location'];
+function location_addanother_form_submit($form, &$form_state) {
+  $location = $form_state['values']['location'];
   $node = node_load($location['nid']);
   unset($location['nid']);
 
