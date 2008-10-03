@@ -11,9 +11,22 @@
  */
 function location_phone_schema() {
   $schema['location_phone'] = array(
+    'description' => 'location_phone.module {location} supplementary table.',
     'fields' => array(
-      'lid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'phone' => array('type' => 'varchar', 'length' => 31, 'default' => NULL),
+      'lid' => array(
+        'description' => '{location}.lid',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'phone' => array(
+        'description' => 'Phone number',
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => TRUE,
+        'default' => '',
+      ),
     ),
     'primary key' => array('lid'),
   );
@@ -72,7 +85,33 @@ function location_phone_update_5300() {
  */
 function location_phone_update_5301() {
   $ret = array();
+  // This update was moved to update 5302.
+  return $ret;
+}
+
+/**
+ * Location 3.0 update 2.
+ * Change weight of module.
+ */
+function location_phone_update_5302() {
+  $ret = array();
   // Change weight.
-  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_phone', 'module');
+  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'location_phone' AND type = 'module'");
+  return $ret;
+}
+
+/**
+ * Drupal 6 updates.
+ */
+function location_phone_update_6301() {
+  $ret = array();
+
+  db_change_field($ret, 'location_phone', 'phone', 'phone', array(
+    'type' => 'varchar',
+    'length' => 31,
+    'not null' => TRUE,
+    'default' => '',
+  ));
+
   return $ret;
 }

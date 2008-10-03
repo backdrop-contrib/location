@@ -13,7 +13,6 @@ function location_install() {
   drupal_install_schema('location');
 }
 
-
 /**
  * Implentation of hook_uninstall().
  */
@@ -35,34 +34,135 @@ function location_uninstall() {
  */
 function location_schema() {
   $schema['location'] = array(
+    'description' => 'Locational data managed by location.module.',
     'fields' => array(
-      // @@@ UPDATE NEEDED - convert to serial.
-      'lid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
-      // @@@ These do not conform to Drupal standards.
-      'name' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
-      'street' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
-      'additional' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
-      'city' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
-      'province' => array('type' => 'varchar', 'length' => 16, 'default' => NULL),
-      'postal_code' => array('type' => 'varchar', 'length' => 16, 'default' => NULL),
-      'country' => array('type' => 'char', 'length' => 2, 'default' => NULL),
-      // @@@ Sanity check on these?
-      'latitude' => array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'default' => NULL),
-      'longitude' => array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'default' => NULL),
-      // @@@ Default 0 but nulls allowed is wrong.
-      'source' => array('type' => 'int', 'size' => 'tiny', 'default' => 0),
+      'lid' => array(
+        'description' => 'Primary Key: Unique location ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Place Name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'street' => array(
+        'description' => 'Street address, line 1.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'additional' => array(
+        'description' => 'Street address, line 2.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'city' => array(
+        'description' => 'City.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'province' => array(
+        'description' => 'State / Province code.',
+        'type' => 'varchar',
+        'length' => 16,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'postal_code' => array(
+        'description' => 'Postal / ZIP code.',
+        'type' => 'varchar',
+        'length' => 16,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'country' => array(
+        'description' => 'Two letter ISO country code.',
+        'type' => 'char',
+        'length' => 2,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'latitude' => array(
+        'description' => 'Location latitude (decimal degrees).',
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 6, // @@@ Shouldn't these all be 7?
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      'longitude' => array(
+        'description' => 'Location longitude (decimal degrees).',
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 6,
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      'source' => array(
+        'description' => 'Source of the latitude and longitude data (Geocoder, user entered, invalid, etc.)',
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'not null' => TRUE,
+      ),
       // @@@ Historical civicrm field that isn't applicable to location, I think..
-      'is_primary' => array('type' => 'int', 'size' => 'tiny', 'default' => 0),
+      'is_primary' => array(
+        'description' => 'Is this the primary location of an object? (unused, civicrm legacy field?).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('lid'),
   );
   $schema['location_instance'] = array(
+    'description' => 'N:M join table to join locations to other tables.',
     'fields' => array(
-      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'default' => NULL),
-      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'default' => NULL),
-      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'default' => NULL),
-      'genid' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
-      'lid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'nid' => array(
+        'description' => 'Reference to {node}.nid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'Reference to {node_revisions}.vid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'Reference to {users}.uid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'genid' => array(
+        'description' => 'Generic reference key.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'lid' => array(
+        'description' => 'Reference to {location}.lid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'nid' => array('nid'),
@@ -73,18 +173,68 @@ function location_schema() {
     ),
   );
   $schema['zipcodes'] = array(
+    'description' => 'Location.module zipcode database.',
     'fields' => array(
-      // @@@ This default seems WRONG.
-      'zip' => array('type' => 'varchar', 'length' => 16, 'default' => '0'),
-      'city' => array('type' => 'varchar', 'length' => 30, 'not null' => TRUE, 'default' => ''),
-      'state' => array('type' => 'varchar', 'length' => 30, 'not null' => TRUE, 'default' => ''),
-      // @@@ Mismatched default in re: location table.
-      'latitude' => array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'default' => '0.000000'),
-      'longitude' => array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'default' => '0.000000'),
-      'timezone' => array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0),
-      'dst' => array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0),
-      // @@@ Should the default be '  ' here?
-      'country' => array('type' => 'char', 'length' => 2, 'default' => ''),
+      'zip' => array(
+        'description' => 'Postal / ZIP code.',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => '0', // @@@ Why?
+      ),
+      'city' => array(
+        'description' => 'City.',
+        'type' => 'varchar',
+        'length' => 30,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'state' => array(
+        'description' => 'Province / State.',
+        'type' => 'varchar',
+        'length' => 30,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'latitude' => array(
+        'description' => 'Location latitude (decimal degrees).',
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 6,
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      'longitude' => array(
+        'description' => 'Location longitude (decimal degrees).',
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 6,
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      // @@@ Not used, an artifact of the original data dump format.
+      'timezone' => array(
+        'description' => 'Timezone (unused).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      // @@@ Not used, an artifact of the original data dump format.
+      'dst' => array(
+        'description' => 'Daylight Savings Time (unused).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'country' => array(
+        'description' => 'Two letter ISO country code.',
+        'type' => 'char',
+        'length' => 2,
+        'not null' => TRUE,
+        'default' => '',
+      ),
     ),
     // @@@ This pk is invalid, see issue queue.
     //'primary key' => array('country', 'zip'),
@@ -603,3 +753,160 @@ function location_update_5301() {
 // @@@ Convert location.lid to serial.
 // @@@ variable_del('location_configured_countries');
 // @@@ Rerun 5303.
+
+
+/**
+ * Drupal 6 location 3.x update.
+ */
+function location_update_6301() {
+  $ret = array();
+
+  // Update cache table.
+  db_drop_table($ret, 'cache_location');
+
+  $schema['cache_location'] = array(
+    'description' => t('Generic cache table for caching things not separated out into their own tables. Contributed modules may also use this to store cached items.'),
+    'fields' => array(
+      'cid' => array(
+        'description' => t('Primary Key: Unique cache ID.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'data' => array(
+        'description' => t('A collection of data to cache.'),
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'expire' => array(
+        'description' => t('A Unix timestamp indicating when the cache entry should expire, or 0 for never.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'created' => array(
+        'description' => t('A Unix timestamp indicating when the cache entry was created.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'headers' => array(
+        'description' => t('Any custom HTTP headers to be added to cached data.'),
+        'type' => 'text',
+        'not null' => FALSE),
+      'serialized' => array(
+        'description' => t('A flag to indicate whether content is serialized (1) or not (0).'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0)
+      ),
+    'indexes' => array('expire' => array('expire')),
+    'primary key' => array('cid'),
+  );
+
+  db_create_table($ret, 'cache_location', $schema['cache_location']);
+
+  // LID 0 causes all sorts of issues, and will break our update routine
+  // unless we handle it beforehand.
+  // Since we're so nice, we're gonna renumber it for the user.
+  if (db_result(db_query('SELECT COUNT(*) FROM {location} WHERE lid = 0'))) {
+    $lid = 1 + db_result(db_query('SELECT MAX(lid) FROM {location}'));
+    drupal_set_message(t('Note: A location with lid 0 was found in your database. It has been moved to lid %lid. You may wish to verify it manually, as lid 0 is usually a corrupt entry.', array('%lid' => $lid)));
+    // $lid is safe to inject here.
+    $ret[] = update_sql("UPDATE {location} SET lid = $lid WHERE lid = 0");
+    $ret[] = update_sql("UPDATE {location_instance} SET lid = $lid WHERE lid = 0");
+  }
+
+  // Set defaults
+  $ret[] = update_sql('UPDATE {location} SET latitude = 0.0 WHERE latitude IS NULL');
+  $ret[] = update_sql('UPDATE {location} SET longitude = 0.0 WHERE longitude IS NULL');
+
+  // Field changes
+
+  // {location}
+
+  // {location}.lid -- Becomes a serial.
+  db_drop_primary_key($ret, 'location');
+  db_change_field($ret, 'location', 'lid', 'lid',
+    array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+    array('primary key' => array('lid')));
+
+  // {location}.name -- NOT NULL
+  db_change_field($ret, 'location', 'name', 'name', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.street -- NOT NULL
+  db_change_field($ret, 'location', 'street', 'street', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.additional -- NOT NULL
+  db_change_field($ret, 'location', 'additional', 'additional', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.city -- NOT NULL
+  db_change_field($ret, 'location', 'city', 'city', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.province -- NOT NULL
+  db_change_field($ret, 'location', 'province', 'province', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
+  // {location}.postal_code -- NOT NULL
+  db_change_field($ret, 'location', 'postal_code', 'postal_code', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
+  // {location}.country -- NOT NULL
+  db_change_field($ret, 'location', 'country', 'country', array('type' => 'char', 'length' => 2, 'not null' => TRUE, 'default' => ''));
+
+  // {location}.latitude
+  db_change_field($ret, 'location', 'latitude', 'latitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
+  // {location}.longitude
+  db_change_field($ret, 'location', 'longitude', 'longitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
+
+  // {location}.source
+  db_change_field($ret, 'location', 'source', 'source', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+
+  // Fix a mismatch between mysql and postgresql.
+  if ($GLOBALS['db_type'] == 'pgsql') {
+    $ret[] = update_sql('UPDATE {location} SET is_primary = 0 WHERE is_primary IS NULL');
+    db_change_field($ret, 'location', 'is_primary', 'is_primary', array('type' => 'int', 'size' => 'tiny', 'default' => 0, 'not null' => TRUE));
+  }
+
+  // {location_instance}
+
+  // Fix oddly named indexes -- Was using the postgresql method for both.
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_drop_index($ret, 'location_instance', '{location_instance}_nid_idx');
+      db_drop_index($ret, 'location_instance', '{location_instance}_vid_idx');
+      db_drop_index($ret, 'location_instance', '{location_instance}_uid_idx');
+      db_drop_index($ret, 'location_instance', '{location_instance}_genid_idx');
+      db_drop_index($ret, 'location_instance', '{location_instance}_lid_idx');
+      break;
+    case 'pgsql':
+      db_drop_index($ret, 'location_instance', 'nid');
+      db_drop_index($ret, 'location_instance', 'vid');
+      db_drop_index($ret, 'location_instance', 'uid');
+      db_drop_index($ret, 'location_instance', 'genid');
+      db_drop_index($ret, 'location_instance', 'lid');
+  }
+
+  // Fill in nulls.
+  $ret[] = update_sql('UPDATE {location_instance} SET nid = 0 WHERE nid IS NULL');
+  $ret[] = update_sql('UPDATE {location_instance} SET vid = 0 WHERE vid IS NULL');
+  $ret[] = update_sql('UPDATE {location_instance} SET uid = 0 WHERE uid IS NULL');
+  $ret[] = update_sql("UPDATE {location_instance} SET genid = '' WHERE genid IS NULL");
+
+  // {location_instance}.nid
+  db_change_field($ret, 'location_instance', 'nid', 'nid', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  // {location_instance}.vid
+  db_change_field($ret, 'location_instance', 'vid', 'vid', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  // {location_instance}.uid
+  db_change_field($ret, 'location_instance', 'uid', 'uid', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  // {location_instance}.genid
+  db_change_field($ret, 'location_instance', 'genid', 'genid', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+
+  // {location_instance}.lid
+  db_change_field($ret, 'location_instance', 'lid', 'lid', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+
+  // Readd indexes.
+  db_add_index($ret, 'location_instance', 'nid', array('nid'));
+  db_add_index($ret, 'location_instance', 'vid', array('vid'));
+  db_add_index($ret, 'location_instance', 'uid', array('uid'));
+  db_add_index($ret, 'location_instance', 'genid', array('genid'));
+  db_add_index($ret, 'location_instance', 'lid', array('lid'));
+
+  // {zipcodes}
+  // Drop primary key.
+  db_drop_primary_key($ret, 'zipcodes');
+
+  return $ret;
+}
