@@ -759,6 +759,9 @@ function location_update_5301() {
  * Drupal 6 location 3.x update.
  */
 function location_update_6301() {
+  $t = get_t();
+  drupal_set_message($t('Note: Location.module update 6301 will generate several warnings/failures regarding indexes and primary keys if you are upgrading from one of the 6.x test releases. These warnings can be safely disregarded in this case.'));
+
   $ret = array();
 
   // Update cache table.
@@ -816,10 +819,6 @@ function location_update_6301() {
     $ret[] = update_sql("UPDATE {location_instance} SET lid = $lid WHERE lid = 0");
   }
 
-  // Set defaults
-  $ret[] = update_sql('UPDATE {location} SET latitude = 0.0 WHERE latitude IS NULL');
-  $ret[] = update_sql('UPDATE {location} SET longitude = 0.0 WHERE longitude IS NULL');
-
   // Field changes
 
   // {location}
@@ -830,34 +829,7 @@ function location_update_6301() {
     array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
     array('primary key' => array('lid')));
 
-  // {location}.name -- NOT NULL
-  db_change_field($ret, 'location', 'name', 'name', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
-  // {location}.street -- NOT NULL
-  db_change_field($ret, 'location', 'street', 'street', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
-  // {location}.additional -- NOT NULL
-  db_change_field($ret, 'location', 'additional', 'additional', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
-  // {location}.city -- NOT NULL
-  db_change_field($ret, 'location', 'city', 'city', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
-  // {location}.province -- NOT NULL
-  db_change_field($ret, 'location', 'province', 'province', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
-  // {location}.postal_code -- NOT NULL
-  db_change_field($ret, 'location', 'postal_code', 'postal_code', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
-  // {location}.country -- NOT NULL
-  db_change_field($ret, 'location', 'country', 'country', array('type' => 'char', 'length' => 2, 'not null' => TRUE, 'default' => ''));
-
-  // {location}.latitude
-  db_change_field($ret, 'location', 'latitude', 'latitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
-  // {location}.longitude
-  db_change_field($ret, 'location', 'longitude', 'longitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
-
-  // {location}.source
-  db_change_field($ret, 'location', 'source', 'source', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
-
-  // Fix a mismatch between mysql and postgresql.
-  if ($GLOBALS['db_type'] == 'pgsql') {
-    $ret[] = update_sql('UPDATE {location} SET is_primary = 0 WHERE is_primary IS NULL');
-    db_change_field($ret, 'location', 'is_primary', 'is_primary', array('type' => 'int', 'size' => 'tiny', 'default' => 0, 'not null' => TRUE));
-  }
+  // (The rest of the changes to this table were moved to update 6302 due to a bug.)
 
   // {location_instance}
 
@@ -907,6 +879,83 @@ function location_update_6301() {
   // {zipcodes}
   // Drop primary key.
   db_drop_primary_key($ret, 'zipcodes');
+
+  return $ret;
+}
+
+/**
+ * Drupal 6 location 3.x update, part 2.
+ */
+function location_update_6302() {
+  $ret = array();
+
+  // OK, here's the update to fix the previous update which had a few problems
+  // when upgrading from pre-rc 6.x versions.
+
+  // The "mismatch between mysql and postgresql" was actually applicable to
+  // 6.x-3.0 pre-rc1 as well, but I didn't notice because I accidentally added
+  // the not null when reformatting the schema.
+  $ret[] = update_sql('UPDATE {location} SET is_primary = 0 WHERE is_primary IS NULL');
+  db_change_field($ret, 'location', 'is_primary', 'is_primary', array('type' => 'int', 'size' => 'tiny', 'default' => 0, 'not null' => TRUE));
+
+  // Fix zipcode mismatches caused by the same problem.
+
+  // There shouldn't be any rows like this, but it doesn't hurt to be sure.
+  $ret[] = update_sql('UPDATE {zipcodes} SET zip = 0 WHERE zip IS NULL');
+
+  // Set not null.
+  db_change_field($ret, 'zipcodes', 'zip', 'zip', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => '0'));
+
+  // Prepare latitude and longitude for the same.
+  $ret[] = update_sql('UPDATE {zipcodes} SET latitude = 0.0 WHERE latitude IS NULL');
+  $ret[] = update_sql('UPDATE {zipcodes} SET longitude = 0.0 WHERE longitude IS NULL');
+
+  // Set not null.
+  db_change_field($ret, 'zipcodes', 'latitude', 'latitude', array('type' => 'numeric', 'not null' => TRUE, 'default' => 0, 'precision' => 10, 'scale' => 6));
+  db_change_field($ret, 'zipcodes', 'longitude', 'longitude', array('type' => 'numeric', 'not null' => TRUE, 'default' => 0, 'precision' => 10, 'scale' => 6));
+
+  // Prepare country.
+  $ret[] = update_sql("UPDATE {zipcodes} SET country = '' WHERE country IS NULL");
+
+  // Set not null.
+  db_change_field($ret, 'zipcodes', 'country', 'country', array('type' => 'char', 'length' => 2, 'not null' => TRUE, 'default' => ''));
+
+  // Fix up possible {location} problems from previous update that could be caused if you had NULLed fields.
+
+  // Set defaults
+  $ret[] = update_sql("UPDATE {location} SET name = '' WHERE name IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET street = '' WHERE street IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET additional = '' WHERE additional IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET city = '' WHERE city IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET province = '' WHERE province IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET postal_code = '' WHERE postal_code IS NULL");
+  $ret[] = update_sql("UPDATE {location} SET country = '' WHERE country IS NULL");
+  $ret[] = update_sql('UPDATE {location} SET latitude = 0.0 WHERE latitude IS NULL');
+  $ret[] = update_sql('UPDATE {location} SET longitude = 0.0 WHERE longitude IS NULL');
+  $ret[] = update_sql('UPDATE {location} SET source = 0 WHERE source IS NULL');
+
+  // {location}.name -- NOT NULL
+  db_change_field($ret, 'location', 'name', 'name', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.street -- NOT NULL
+  db_change_field($ret, 'location', 'street', 'street', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.additional -- NOT NULL
+  db_change_field($ret, 'location', 'additional', 'additional', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.city -- NOT NULL
+  db_change_field($ret, 'location', 'city', 'city', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // {location}.province -- NOT NULL
+  db_change_field($ret, 'location', 'province', 'province', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
+  // {location}.postal_code -- NOT NULL
+  db_change_field($ret, 'location', 'postal_code', 'postal_code', array('type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'default' => ''));
+  // {location}.country -- NOT NULL
+  db_change_field($ret, 'location', 'country', 'country', array('type' => 'char', 'length' => 2, 'not null' => TRUE, 'default' => ''));
+
+  // {location}.latitude
+  db_change_field($ret, 'location', 'latitude', 'latitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
+  // {location}.longitude
+  db_change_field($ret, 'location', 'longitude', 'longitude', array('type' => 'numeric', 'precision' => 10, 'scale' => 6, 'not null' => TRUE, 'default' => 0.0));
+
+  // {location}.source
+  db_change_field($ret, 'location', 'source', 'source', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
 
   return $ret;
 }
