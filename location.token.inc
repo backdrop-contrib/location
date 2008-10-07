@@ -13,9 +13,12 @@
 function _location_token_values($type, $object = NULL) {
   if ($type == 'node' || $type == 'user') {
     if (!empty($object->locations)) {
+      // @@@ Strip virtual fields?
       foreach ($object->locations as $key => $location) {
         foreach ($location as $field => $value) {
-          $values["location-{$field}_{$key}"] = check_plain($value);
+          if (!is_array($value)) {
+            $values["location-{$field}_{$key}"] = check_plain($value);
+          }
         }
         // Backwards compatibility.
         $values["location-provincename_$key"] = $values["location-province_name_$key"];
