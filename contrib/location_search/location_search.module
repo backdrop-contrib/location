@@ -9,28 +9,35 @@
 /**
  * Implementation of hook_menu().
  */
-function location_search_menu($may_cache) {
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'admin/settings/location/search',
-      'title' => t('Search options'),
-      'description' => t('Settings for Location Search module'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('location_search_admin_settings'),
-      'access' => user_access('administer site configuration'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 5,
-    );
-    return $items;
-  }
+function location_search_menu() {
+  $items['admin/settings/location/search'] = array(
+    'title' => 'Search options',
+    'description' => 'Settings for Location Search module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('location_search_admin_settings'),
+    'file' => 'location_search.admin.inc',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+  );
+
+  return $items;
 }
 
 /**
- * Callback for admin settings form.
+ * Implementation of hook_theme().
  */
-function location_search_admin_settings() {
-  require_once(drupal_get_path('module', 'location_search') .'/location_search.admin.inc');
-  return _location_search_admin_settings();
+function location_search_theme() {
+  return array(
+    'search_results_location' => array(
+      'arguments' => array('results' => NULL, 'type' => NULL),
+      'template' => 'search-results-location',
+    ),
+    'search_result_location' => array(
+      'arguments' => array('result' => NULL, 'type' => NULL),
+      'template' => 'search-result-location',
+    ),
+  );
 }
 
 /**
@@ -125,7 +132,8 @@ function _location_search($op = 'search', $keys = null) {
           $add = ', '. earth_distance_sql($lon, $lat, 'l') .' AS distance';
         }
         $query = "SELECT l.lid$add FROM {location} l WHERE $conditions1";
-        $result = db_query($query, $arguments1);
+        $countquery = "SELECT COUNT(*) FROM {location} l WHERE $conditions1";
+        $result = pager_query($query, 10, 0, $countquery, $arguments1);
         while ($row = db_fetch_object($result)) {
           $lids[] = $row->lid;
         }
@@ -158,7 +166,7 @@ function _location_search($op = 'search', $keys = null) {
   }
 }
 
-function location_search_form_alter($form_id, &$form) {
+function location_search_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'search_form' && arg(1) == 'location' && user_access('use advanced search')) {
     // @@@ Cache this.
     $result = db_query('SELECT DISTINCT country FROM {location}');
@@ -263,32 +271,34 @@ function location_search_form_alter($form_id, &$form) {
       $form['advanced']['proximity']['map']['#value'] = gmap_set_location(variable_get('location_search_map_macro', '[gmap |behavior=+collapsehack]'), $form['advanced']['proximity'], $map_fields);
     }
 
-    $form['#validate']['location_search_validate'] = array();
+    $form['#validate'][] = 'location_search_validate';
   }
 }
 
-function location_search_validate($form_id, $form_values, $form) {
+function location_search_validate($form, &$form_state) {
+  $values = $form_state['values'];
+
   // Initialise using any existing basic search keywords.
-  $keys = $form_values['processed_keys'];
+  $keys = $values['processed_keys'];
 
-  if (!empty($form_values['country'])) {
-    $keys = search_query_insert($keys, 'country', $form_values['country']);
+  if (!empty($values['country'])) {
+    $keys = search_query_insert($keys, 'country', $values['country']);
 
-    if (!empty($form_values['province'])) {
-      $keys = search_query_insert($keys, 'province', location_province_code($form_values['country'], $form_values['province']));
+    if (!empty($values['province'])) {
+      $keys = search_query_insert($keys, 'province', location_province_code($values['country'], $values['province']));
     }
   }
 
-  if (!empty($form_values['city'])) {
-    $keys = search_query_insert($keys, 'city', $form_values['city']);
+  if (!empty($values['city'])) {
+    $keys = search_query_insert($keys, 'city', $values['city']);
   }
 
-  if (!empty($form_values['latitude']) && !empty($form_values['longitude']) && !empty($form_values['distance'])) {
-    $keys = search_query_insert($keys, 'from', $form_values['latitude'] .','. $form_values['longitude'] .','. $form_values['distance'] .','. $form_values['units']);
+  if (!empty($values['latitude']) && !empty($values['longitude']) && !empty($values['distance'])) {
+    $keys = search_query_insert($keys, 'from', $values['latitude'] .','. $values['longitude'] .','. $values['distance'] .','. $values['units']);
   }
 
   if (!empty($keys)) {
-    form_set_value($form['basic']['inline']['processed_keys'], trim($keys));
+    form_set_value($form['basic']['inline']['processed_keys'], trim($keys), $form_state);
   }
 }
 
@@ -349,11 +359,6 @@ function template_preprocess_search_result_location(&$variables) {
   $variables['template_files'][] = 'search-result-'. $variables['type'];
 }
 
-/////////////// Theme compatibility wrappers //////////////////
-// Needed due to the lack of the theme registry in Drupal 5. //
-///////////////////////////////////////////////////////////////
-
-// Compatibility preprocessor. Shouldn't be needed in 6.
 function template_preprocess_search_results_location(&$variables) {
   $variables['search_results'] = '';
   foreach ($variables['results'] as $result) {
@@ -362,14 +367,4 @@ function template_preprocess_search_results_location(&$variables) {
   $variables['pager'] = theme('pager', NULL, 10, 0);
   // Provide alternate search results template.
   $variables['template_files'][] = 'search-results-'. $variables['type'];
-}
-
-function theme_search_results_location($results, $type) {
-  $variables = array('results' => $results, 'type' => $type);
-  return _location_render('search_results_location', $variables);
-}
-
-function theme_search_result_location($result, $type) {
-  $variables = array('result' => $result, 'type' => $type);
-  return _location_render('search_result_location', $variables);
 }

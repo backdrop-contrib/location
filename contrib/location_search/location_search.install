@@ -7,27 +7,31 @@
  */
 
 /**
+ * Implementation of hook_schema().
+ */
+function location_search_schema() {
+  $schema['location_search_work'] = array(
+    'description' => 'List of lids to index.',
+    'fields' => array(
+      'lid' => array(
+        'description' => 'Primary Key: location ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('lid'),
+  );
+
+  return $schema;
+}
+
+/**
  * Implementation of hook_install().
  */
 function location_search_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("
-      CREATE TABLE {location_search_work} (
-        lid int UNSIGNED NOT NULL DEFAULT '0',
-        PRIMARY KEY (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */");
-      break;
-
-    case 'pgsql':
-      db_query("
-      CREATE TABLE {location_search_work} (
-        lid int NOT NULL DEFAULT '0' CHECK (lid >= 0),
-        PRIMARY KEY (lid)
-      )");
-      break;
-  }
+  drupal_install_schema('location_search');
 
   // Force reindexing.
   db_query('INSERT INTO {location_search_work} (SELECT lid FROM {location})');
@@ -37,7 +41,7 @@ function location_search_install() {
  * Implementation of hook_uninstall().
  */
 function location_search_uninstall() {
-  db_query('DROP TABLE {location_search_work}');
+  drupal_uninstall_schema('location_search');
   variable_del('location_search_map');
   variable_del('location_search_map_address');
   variable_del('location_search_map_macro');
@@ -50,24 +54,20 @@ function location_search_update_5300() {
   $ret = array();
 
   // Create our worklist table.
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      $ret[] = update_sql("
-      CREATE TABLE {location_search_work} (
-        lid int UNSIGNED NOT NULL DEFAULT '0',
-        PRIMARY KEY (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */");
-      break;
-
-    case 'pgsql':
-      $ret[] = update_sql("
-      CREATE TABLE {location_search_work} (
-        lid int NOT NULL DEFAULT '0' CHECK (lid >= 0),
-        PRIMARY KEY (lid)
-      )");
-      break;
-  }
+  $schema['location_search_work'] = array(
+    'description' => 'List of lids to index.',
+    'fields' => array(
+      'lid' => array(
+        'description' => 'Primary Key: location ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('lid'),
+  );
+  db_create_table($ret, 'location_search_work', $schema['location_search_work']);
 
   // Force reindexing.
   $ret[] = update_sql('INSERT INTO {location_search_work} (SELECT lid FROM {location})');

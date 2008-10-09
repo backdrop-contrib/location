@@ -11,7 +11,7 @@
  *
  * @ingroup form
  */
-function _location_search_admin_settings() {
+function location_search_admin_settings() {
   $form['location_search_map'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use map to pick search coordinates'),
