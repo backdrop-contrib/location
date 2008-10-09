@@ -4,7 +4,8 @@
 // France
 
 function location_province_list_fr() {
-  return array('A67' => "Bas-Rhin - Alsace",
+  return array(
+    'A67' => "Bas-Rhin - Alsace",
     'A68' => "Haut-Rhin - Alsace",
     'B24' => "Dordogne - Aquitaine",
     'B33' => "Gironde - Aquitaine",
@@ -48,10 +49,11 @@ function location_province_list_fr() {
     'J93' => "Seine-Saint-Denis - Ile-de-France",
     'J94' => "Val-de-Marne - Ile-de-France",
     'J95' => "Val-d'Oise - Ile-de-France",
-    'U04' => "Alpes-de-Haute-Provence",
-    'U05' => "Hautes-Alpes",
-    'U06' => "Alpes-Maritimes",
-    'U13' => "Bouches-du-Rhne",
-    'U83' => "Var",
-    'U84' => "Vaucluse");
+    'U04' => "Alpes-de-Haute-Provence - Provence-Alpes-Cote d'Azur",
+    'U05' => "Hautes-Alpes - Provence-Alpes-Cote d'Azur",
+    'U06' => "Alpes-Maritimes - Provence-Alpes-Cote d'Azur",
+    'U13' => "Bouches-du-Rhone - Provence-Alpes-Cote d'Azur",
+    'U83' => "Var - Provence-Alpes-Cote d'Azur",
+    'U84' => "Vaucluse - Provence-Alpes-Cote d'Azur",
+  );
 }
