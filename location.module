@@ -612,6 +612,22 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         }
       }
       break;
+
+    case 'instance_links':
+      foreach ($obj as $k => $v) {
+        if ($v['nid'] != 0) {
+          $node = node_load($v['nid']);
+          $obj[$k]['href'] = 'node/'. $v['nid'];
+          $obj[$k]['title'] = $node->title;
+        }
+        else if ($v['uid'] != 0) {
+          $account = user_load(array('uid' => $v['uid']));
+          $obj[$k]['href'] = 'user/'. $v['uid'];
+          $obj[$k]['title'] = $account->name;
+        }
+      }
+      break;
+
   }
 }
 
@@ -1615,6 +1631,19 @@ function location_token_list($type = 'all') {
   return _location_token_list($type);
 }
 
+/**
+ * Implementation of hook_search().
+ * Implemented on behalf of location_search.module to make the urls not suck.
+ */
+function location_search($op = 'search', $keys = null) {
+  if (module_exists('location_search')) {
+    return _location_search($op, $keys);
+  }
+  // When search.module asks for name, return FALSE to tell it that we're disabled.
+  if ($op == 'name') {
+    return FALSE;
+  }
+}
 /**
  * Theme preprocess function for a location.
  */

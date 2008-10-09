@@ -1,5 +1,5 @@
 ; $Id$
 name = Location Search
 package = Location
-description = A custom search page for locations.
+description = Advanced search page for locations.
 dependencies = location

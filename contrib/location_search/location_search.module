@@ -3,15 +3,8 @@
 
 /**
  * @file
- * Search interface. (The legacy 2.x one.)
+ * Location search interface.
  */
-
-/**
- * Implementation of hook_perm().
- */
-function location_search_perm() {
-  return array('search content by location');
-}
 
 /**
  * Implementation of hook_menu().
@@ -19,22 +12,14 @@ function location_search_perm() {
 function location_search_menu($may_cache) {
   if ($may_cache) {
     $items[] = array(
-      'path'                => 'search/location',
-      'title'               => t('By location'),
-      'callback'            => 'location_search_view',
-      'access'              => user_access('search content by location'),
-      'type'                => MENU_LOCAL_TASK,
-      'weight'              => 9,
-    );
-    $items[] = array(
-      'path'                => 'admin/settings/location/search',
-      'title'               => t('Search options'),
-      'description'         => t('Settings for Location Search module'),
-      'callback'            => 'drupal_get_form',
-      'callback arguments'  => array('location_search_admin_settings'),
-      'access'              => user_access('administer site configuration'),
-      'type'                => MENU_LOCAL_TASK,
-      'weight'              => 5,
+      'path' => 'admin/settings/location/search',
+      'title' => t('Search options'),
+      'description' => t('Settings for Location Search module'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('location_search_admin_settings'),
+      'access' => user_access('administer site configuration'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 5,
     );
     return $items;
   }
@@ -48,612 +33,343 @@ function location_search_admin_settings() {
   return _location_search_admin_settings();
 }
 
-function location_search_view() {
-  $location_params = array(
-    //'street' => $_GET['street'],
-    //'city' => $_GET['city'],
-    //'province' => $_GET['province'],
-    'postal_code' => $_GET['postal_code'],
-    'country' => $_GET['country'] ? $_GET['country'] : variable_get('location_default_country', 'us')
-  );
+/**
+ * Implementation of hook_search(). (forwarded from location.module)
+ */
+function _location_search($op = 'search', $keys = null) {
+  switch ($op) {
+    case 'name':
+      return t('Locations');
 
-  $proximity_params = array(
-    'distance' => $_GET['distance'],
-    'unit' => $_GET['unit'],
-  );
+    case 'reset':
+      db_query('DELETE FROM {location_search_work}');
+      db_query('INSERT INTO {location_search_work} (lid) (SELECT lid FROM {location})');
+      break;
 
-  $output .= drupal_get_form('location_search_form', $location_params, $proximity_params);
+    case 'status':
+      $total = db_result(db_query('SELECT COUNT(lid) FROM {location}'));
+      $remaining = db_result(db_query('SELECT COUNT(lid) FROM {location_search_work}'));
+      return array('remaining' => $remaining, 'total' => $total);
 
-  if ($_GET['postal_code'] && $_GET['country'] && $_GET['distance'] && $_GET['country']) {
-    $output .= location_search_results($location_params, $proximity_params);
+    case 'search':
+      $proximity = FALSE;
+
+      $arguments1 = array();
+      $conditions1 = '1 = 1';
+
+      // This gets rewritten for proximity searches.
+      $select2 = 'i.relevance AS score';
+      $join2 = '';
+      $sort_parameters = 'ORDER BY score DESC';
+
+      if ($country = search_query_extract($keys, 'country')) {
+        $countries = array();
+        foreach (explode(',', $country) as $c) {
+          $countries[] = "l.country = '%s'";
+          $arguments1[] = $c;
+        }
+        $conditions1 .= ' AND ('. implode(' OR ', $countries) .')';
+        $keys = search_query_insert($keys, 'country');
+      }
+
+      if ($province = search_query_extract($keys, 'province')) {
+        $provinces = array();
+        foreach (explode(',', $province) as $p) {
+          $provinces[] = "l.province = '%s'";
+          $arguments1[] = $p;
+        }
+        $conditions1 .= ' AND ('. implode(' OR ', $provinces) .')';
+        $keys = search_query_insert($keys, 'province');
+      }
+
+      if ($city = search_query_extract($keys, 'city')) {
+        $conditions1 .= " AND (l.city = '%s')";
+        $arguments1[] = $city;
+        $keys = search_query_insert($keys, 'city');
+      }
+
+      if ($from = search_query_extract($keys, 'from')) {
+        // Set up a proximity search.
+
+        $proximity = TRUE;
+        list($lat, $lon, $dist, $unit) = explode(',', $from);
+        $distance_meters = _location_convert_distance_to_meters($dist, $unit);
+
+        // MBR query to make it easier on the database.
+        $conditions1 .= " AND l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f";
+        $latrange = earth_latitude_range($lon, $lat, $distance_meters);
+        $lonrange = earth_longitude_range($lon, $lat, $distance_meters);
+        $arguments1[] = $latrange[0];
+        $arguments1[] = $latrange[1];
+        $arguments1[] = $lonrange[0];
+        $arguments1[] = $lonrange[1];
+
+        // Distance query to finish the job.
+        $conditions1 .= ' AND '. earth_distance_sql($lon, $lat) .' < %f';
+        $arguments1[] = $distance_meters;
+
+        // Override the scoring mechanism to use calculated distance
+        // as the scoring metric.
+        $join2 = 'INNER JOIN {location} l ON i.sid = l.lid';
+        $select2 = earth_distance_sql($lon, $lat, 'l') .' AS distance';
+        $sort_parameters = 'ORDER BY distance ASC';
+
+        $keys = search_query_insert($keys, 'from');
+      }
+
+      $lids = array();
+      if (empty($keys)) {
+        // Non-fulltext search. We will be skipping the built-in logic.
+        $add = '';
+        if ($proximity) {
+          $add = ', '. earth_distance_sql($lon, $lat, 'l') .' AS distance';
+        }
+        $query = "SELECT l.lid$add FROM {location} l WHERE $conditions1";
+        $result = db_query($query, $arguments1);
+        while ($row = db_fetch_object($result)) {
+          $lids[] = $row->lid;
+        }
+      }
+      else {
+        // Fuzzy search -- Use the fulltext routines against the indexed locations.
+        $find = do_search($keys, 'location', 'INNER JOIN {location} l ON l.lid = i.sid '. $join1, $conditions1 . (empty($where1) ? '' : ' AND '. $where1), $arguments1, $select2, $join2, array(), $sort_parameters);
+        foreach ($find as $item) {
+          $lids[] = $item->sid;
+        }
+      }
+
+      $results = array();
+      foreach ($lids as $lid) {
+        $loc = location_load_location($lid);
+
+        $result = db_query('SELECT nid, uid FROM {location_instance} WHERE lid = %d', $lid);
+        $instance_links = array();
+        while ($row = db_fetch_array($result)) {
+          $instance_links[] = $row;
+        }
+        location_invoke_locationapi($instance_links, 'instance_links');
+
+        $results[] = array(
+          'links' => $instance_links,
+          'location' => $loc,
+        );
+      }
+      return $results;
   }
-  return $output;
 }
 
-function location_search_form($location_params = array(), $proximity_params = array()) {
-  $form = array();
+function location_search_form_alter($form_id, &$form) {
+  if ($form_id == 'search_form' && arg(1) == 'location' && user_access('use advanced search')) {
+    // @@@ Cache this.
+    $result = db_query('SELECT DISTINCT country FROM {location}');
+    $countries = array('' => '');
+    while ($row = db_fetch_array($result)) {
+      if (!empty($row['country'])) {
+        $country = $row['country'];
+        location_standardize_country_code($country);
+        $countries[$country] = location_country_name($country);
+      }
+    }
+    ksort($countries);
 
-  $location_search_distance_unit_setting = variable_get('location_search_distance_unit', 0);
-  $proximity_suppressed_values = $location_search_distance_unit_setting ? array('unit' => $location_search_distance_unit_setting) : array();
-  $form['proximity'] = location_proximity_form($proximity_params, $proximity_suppressed_values);
+    drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
 
-  $location_suppressed_values = variable_get('location_suppress_country', 0) ? array('country' => variable_get('location_default_country', 'us')) : array();
+    // Keyword boxes:
+    $form['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced search'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#attributes' => array('class' => 'search-advanced'),
+    );
 
-  $form['location']['#theme'] = 'location_form';
+    $form['advanced']['country'] = array(
+      '#type' => 'select',
+      '#title' => t('Country'),
+      '#options' => $countries,
+      // Used by province autocompletion js.
+      '#attributes' => array('class' => 'location_auto_country'),
+    );
 
-  $form['location']['postal_code'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Postal code'),
-    '#default_value' => isset($location_params['postal_code']) ? $location_params['postal_code'] :  '',
-    '#size' => 16,
-    '#maxlength' => 16,
-    '#required' => TRUE,
-  );
+    $form['advanced']['province'] = array(
+      '#type' => 'textfield',
+      '#title' => t('State/Province'),
+      '#autocomplete_path' => 'location/autocomplete/'. variable_get('location_default_country', 'us'),
+      // Used by province autocompletion js.
+      '#attributes' => array('class' => 'location_auto_province'),
+    );
 
-  // Figure out which countries have postal data available.
-  $countries = array();
-  $result = db_query("SELECT DISTINCT country FROM {zipcodes}");
+    $form['advanced']['city'] = array(
+      '#type' => 'textfield',
+      '#title' => t('City'),
+    );
+
+    $form['advanced']['proximity'] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => t('Proximity'),
+    );
+
+    $form['advanced']['proximity']['map'] = array();
+
+    if (variable_get('location_search_map_address', 1)) {
+      $form['advanced']['proximity']['locpick_address'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Locate Address'),
+      );
+    }
+
+    $form['advanced']['proximity']['latitude'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Latitude'),
+    );
+    $form['advanced']['proximity']['longitude'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Longitude'),
+    );
+    $form['advanced']['proximity']['distance'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Distance'),
+    );
+    $form['advanced']['proximity']['distance']['distance'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#maxlength' => 5,
+    );
+    $form['advanced']['proximity']['distance']['units'] = array(
+      '#type' => 'select',
+      '#options' => array(
+        'mi' => t('mi'),
+        'km' => t('km'),
+      ),
+    );
+
+    $form['advanced']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Advanced search'),
+      '#prefix' => '<div class="action">',
+      '#suffix' => '</div>',
+    );
+
+    if (variable_get('location_search_map', 1)) {
+      $map_fields = array(
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+      );
+      if (variable_get('location_search_map_address', 1)) {
+        $map_fields['address'] = 'locpick_address';
+      }
+      $form['advanced']['proximity']['map']['#value'] = gmap_set_location(variable_get('location_search_map_macro', '[gmap |behavior=+collapsehack]'), $form['advanced']['proximity'], $map_fields);
+    }
+
+    $form['#validate']['location_search_validate'] = array();
+  }
+}
+
+function location_search_validate($form_id, $form_values, $form) {
+  // Initialise using any existing basic search keywords.
+  $keys = $form_values['processed_keys'];
+
+  if (!empty($form_values['country'])) {
+    $keys = search_query_insert($keys, 'country', $form_values['country']);
+
+    if (!empty($form_values['province'])) {
+      $keys = search_query_insert($keys, 'province', location_province_code($form_values['country'], $form_values['province']));
+    }
+  }
+
+  if (!empty($form_values['city'])) {
+    $keys = search_query_insert($keys, 'city', $form_values['city']);
+  }
+
+  if (!empty($form_values['latitude']) && !empty($form_values['longitude']) && !empty($form_values['distance'])) {
+    $keys = search_query_insert($keys, 'from', $form_values['latitude'] .','. $form_values['longitude'] .','. $form_values['distance'] .','. $form_values['units']);
+  }
+
+  if (!empty($keys)) {
+    form_set_value($form['basic']['inline']['processed_keys'], trim($keys));
+  }
+}
+
+/**
+ * Implementation of hook_update_index().
+ */
+function location_update_index() {
+  $limit = (int)variable_get('search_cron_limit', 100);
+
+  $result = db_query_range('SELECT lid FROM {location_search_work}', 0, $limit);
+
   while ($row = db_fetch_object($result)) {
-    $countries[$row->country] = location_country_name($row->country);
-  }
+    $loc = location_load_location($row->lid);
+    $text = theme('location', $loc, array()); // @@@ hide?
 
-  if (empty($countries)) {
-    drupal_set_message(t('Error: Zipcodes table is empty -- Search will not operate.'));
-    return;
-  }
-
-  $form['location']['country'] = array(
-    '#type' => 'select',
-    '#title' => t('Country'),
-    '#options' => $countries,
-    '#default_value' => isset($location_params['country']) ? $location_params['country'] : variable_get('location_default_country', 'us'),
-    '#required' => TRUE,
-  );
-
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Search')
-  );
-
-  $form['#submit'] = array_merge(
-    $form['#submit'] ? $form['#submit'] : array(),
-    array('location_search_form_submit' => array())
-  );
-
-
-  return $form;
-}
-
-/**
- * This function generates a form for doing proximity searches within a certain distance
- * of a specified point.
- *
- * Depending on the context within which this function is called, the search-point can either
- * be user-supplied via the location form that is passed (if one is available) or done within
- * a search-point extracted from a contact table or some other location source specified by
- * the programmer calling this function.
- *
- * @param $prefilled_values
- *   An associative array for prefilled values for the proximity search parameters, where
- *     'distance' => is the prefilled int value to be selected for the distance scalar
- *     'distance_unit' => is 'km' or 'mile'
- *
- * @param $suppressed_values
- *   An associative array for values you wish to force the selection of rather than pre-fill as a default.
- *   The value will be passed as a hidden form input.  The passed values will be taken in as an associative
- *   array where
- *     'distance' => a preselected positive integer for the distance
- *     'distance_unit' => a preselected unit for the distance, one of either 'km' or 'mile'
- *
- * @return
- *   An HTML form (generated by Drupal form functions) that lets users specify proximity search parameters that include distance,
- *   the unit of distance, and a search-point if the optional $location_form parameter is passed.  If one is not passed,
- *   the caller of this function will be assumed to already have one.
- *
- */
-function location_proximity_form($prefilled_values = array(), $suppressed_values = array()) {
-  $form = array();
-
-  if (in_array('distance', array_keys($suppressed_values))) {
-    $form['distance'] = array(
-      '#type' => 'hidden',
-      '#value' => $suppressed_values['distance']
-    );
-  }
-  else {
-    $form['distance'] = array(
-      '#type' => 'select',
-      '#default_value' => (isset($prefilled_values['distance']) ? $prefilled_values['distance'] : 25),
-      '#options' => drupal_map_assoc(array(5, 10, 25, 50, 100, 250)),
-    );
-  }
-
-  if (in_array('unit', array_keys($suppressed_values))) {
-    $form['unit'] = array(
-      '#type' => 'hidden',
-      '#value' => $suppressed_values['unit']
-    );
-  }
-  else {
-    $form['unit'] = array(
-      '#type' => 'select',
-      '#default_value' => (isset($prefilled_values['unit']) ? $prefilled_values['unit'] : 'mile'),
-      '#options' => array('mile' => 'miles', 'km' => 'km'),
-    );
-  }
-
-  $form['#theme'] = 'location_proximity_form';
-
-  return $form;
-}
-
-function location_search_form_validate($form_id, &$form_values) {
-  // TODO: Need to offer ability to configure which fields are included in the search form
-  // TODO: And need to adjust how fields are validated
-  // For now, just require postal code
-  if (!$form_values['postal_code']) {
-    //form_set_error('postal_code', t('You must include a postal code in your search.'));
-  }
-
-  if (!$form_values['country']) {
-    //form_set_error('country', t('You much include a country in your search.'));
-  }
-}
-
-function location_search_form_submit($form_id, &$form_values) {
-  /*
-  $location_fields = array('street', 'additional', 'province', 'postal_code', 'country');
-  foreach ($locations_fields as $field_name) {
-    if ($form_values[$field_name]) {
-      if ($query_string) {
-        $query_string .= '&'. $field_name .'='. $form_values[$field_name];
-      }
-      else {
-        $query_string = $field_name .'='. $form_values[$field_name];
-      }
-    }
-  }
-
-  $query_string = '&distance='. $form_values['distance'] .'&unit='. $unit;
-  */
-  return array('search/location', 'postal_code='. $form_values['postal_code'] .'&country='. $form_values['country'] .'&distance='. $form_values['distance'] .'&unit='. $form_values['unit']);
-}
-
-function theme_location_proximity_form(&$form) {
-  $row = array();
-
-  $row[] = array(
-    'data' => t('Search within') .' '
-  );
-
-  $row[] = array(
-    'data' => drupal_render($form['distance']),
-    'cellspacing' => 0,
-    'cellpadding' => 0
-  );
-
-  if ($form['unit']['#type'] == 'select') {
-    $row[] = array(
-      'data' => drupal_render($form['unit']),
-      'cellspacing' => 0,
-      'cellpadding' => 0
-    );
-
-    $row[] = array(
-      'data' => ' '. t('of:'),
-      'cellspacing' => 0,
-      'cellpadding' => 0
-    );
-  }
-  else {
-    $row[] = array(
-      'data' => ($form['unit']['#value'] == 'km' ? t('km') : t('miles')) .' '. t('of:') . drupal_render($form['unit']),
-      'cellspacing' => 0,
-      'cellpadding' => 0
-    );
-  }
-
-  $output = theme('table', NULL, array($row));
-  $output .= drupal_render($form);
-
-  return $output;
-}
-
-// @@@ FIX THIS. It doesn't look very efficient...
-function location_search_results($location_params, $proximity_params) {
-  // First things first: find lat/lon for submitted postal_code
-  // TODO: will need to replace be able to get lat/lon of search point for more than just postal_code
-  $latlon = location_latlon_rough($location_params);
-
-  if (!$latlon['lat'] || !$latlon['lon']) {
-    drupal_set_message(t('No search results; could not determine the location of the submitted postal code.'));
-    return '';
-  }
-
-  // If the distance parameters did not make sense, return an empty search result set.
-  $distance_float = _location_convert_distance_to_meters($proximity_params['distance'], $proximity_params['unit']);
-
-  // Find the pairs of lats and lons that define the corners of a square that is $distance X $distance and centered on $latlon
-  $latrange = earth_latitude_range($latlon['lon'], $latlon['lat'], $distance_float);
-  $lonrange = earth_longitude_range($latlon['lon'], $latlon['lat'], $distance_float);
-
-  $count_query = 'SELECT COUNT(n.nid) AS count FROM {node} n INNER JOIN {location_instance} i ON n.vid = i.vid INNER JOIN {location} l ON i.lid = l.lid WHERE l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f';
-
-  $query = 'SELECT n.nid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' as distance FROM {node} n INNER JOIN {location_instance} i ON n.vid = i.vid INNER JOIN {location} l ON i.lid = l.lid WHERE l.latitude > %f AND l.latitude < %f AND l.longitude > %f AND l.longitude < %f AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < %f GROUP BY n.nid ORDER by distance';
-
-  $query_args = array(
-    $latrange[0],
-    $latrange[1],
-    $lonrange[0],
-    $lonrange[1],
-    $distance_float
-  );
-
-  $pager_count_query = 'SELECT COUNT(DISTINCT nid) AS count FROM {node} n INNER JOIN {location_instance} i ON n.vid = i.vid INNER JOIN {location} l ON i.lid = l.lid WHERE l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float;
-
-  $pager_query = 'SELECT n.nid, n.vid, l.*, '. earth_distance_sql($latlon['lon'], $latlon['lat'], 'l') .' AS distance FROM {node} n INNER JOIN {location_instance} i ON n.vid = i.vid INNER JOIN {location} l ON i.lid = l.lid WHERE l.latitude > '. $latrange[0] .' AND l.latitude < '. $latrange[1] .' AND l.longitude > '. $lonrange[0] .' AND l.longitude < '. $lonrange[1] .' AND '. earth_distance_sql($latlon['lon'], $latlon['lat']) .' < '. $distance_float .' GROUP BY n.nid ORDER by distance';
-
-  $result = pager_query(db_rewrite_sql($query), 10, 0, db_rewrite_sql($count_query), $query_args);
-
-  $result_count = db_result(db_query(db_rewrite_sql($count_query), $query_args));
-
-  if (!$result_count) {
-    $output = theme('box', t('Your search yielded no results.'), '');
-  }
-  else {
-    $results_offset = isset($_GET['from']) ? $_GET['from'] : 0;
-
-    $page_count = db_num_rows($result);
-
-    $output = '<p>'. t('Displaying results %a - %b of %count for search on %c', array('%a' => $results_offset + 1, '%b' => $results_offset + $page_count, '%count' => $result_count, '%c' => filter_xss($_GET['postal_code']))) .'</p>';
-
-    while ($row = db_fetch_object($result)) {
-
-      $extra = array();
-      unset($location_line);
-      if ($row->postal_code || $row->city) {
-        $location_line = t('Local to ');
-        if ($row->postal_code && $row->city) {
-          if ($row->postal_code) {
-            $location_line .= $row->postal_code;
-          }
-
-          if ($row->postal_code && $row->city) {
-            $location_line .= ' ('. $row->city;
-            $location_line .= $row->province ? ', '. $row->province : '';
-            $location_line .= ')';
-          }
-          elseif ($row->city) {
-            $location_line .= $row->city . ($row->province ? ', '. $row->province : '');
-          }
-        }
-      }
-
-      if ($location_line) {
-        $extra['location'] = $location_line;
-      }
-
-      if (($row->postal_code == $location_params['postal_code'] && $row->country == $location_params['country']) ||
-          ($row->distance < 10)) {
-        $extra['distance'] = t('Result is <strong>also from %postal_code</strong>', array('%postal_code' => $location_params['postal_code']));
-      }
-      else {
-        $adjusted_distance = round($row->distance / (($proximity_params['unit'] == 'km') ? 1000.0 : 1609.347), 1);
-
-        if ($adjusted_distance != 1) {
-          $distance_unit = ($proximity_params['unit'] == 'km') ? t('km') : t('miles');
-        }
-        else {
-          $distance_unit = ($proximity_params['unit'] == 'km') ? t('km') : t('mile');
-        }
-        $extra['distance'] = t('Approximately %distance %distanceunit from <strong>%location</strong> ', array('%distance' => round($adjusted_distance, 1), '%distanceunit' => $distance_unit, '%location' => $location_params['postal_code']));
-      }
-
-      $node = node_load($row->nid);
-
-      $output .= theme(
-        'search_item',
-        array(
-          'link' => url('node/'. $row->nid),
-          'title' => $node->title,
-          'type' => $node->type,
-          'user' => db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $node->uid)),
-          'date' => $node->created,
-          'snippet' => $row->teaser,
-          'extra' => $extra
-        ),
-        'node'
-      );
-
-    }
-    $output .= theme('pager');
-  }
-  return $output;
-}
-
-function theme_location_search_form(&$form) {
-  $row = array();
-
-  $row[] = array(
-    'data' => drupal_render($form['proximity'])
-  );
-
-  $row[] = array(
-    'data' => drupal_render($form['location'])
-  );
-
-  $output = theme('table', NULL, array($row), array('class' => 'location-search-form-table'));
-  $output .= drupal_render($form);
-
-  return $output;
-}
-
-function theme_location_form(&$form) {
-  foreach (element_children($form) as $field_name) {
-    $row = array();
-    if ($form[$field_name]['#type'] == 'markup') {
-      $row[] = array('data' => $form[$field_name]['#value'], 'colspan' => 2);
-    }
-    elseif ($form[$field_name]['#type'] != 'hidden') {
-      $required = !empty($form[$field_name]['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
-      $row[] = array('align' => 'right', 'data' => '<div class="form-item"><label'. ($form[$field_name]['#id'] ? ' for="'. $form[$field_name]['#id'] .'" ' : '') .'>'. filter_xss_admin($form[$field_name]['#title']) .": $required</label></div>");
-      unset($form[$field_name]['#title']);
-      $description = $form[$field_name]['#description'];
-      $row[] = array('align' => 'left', 'data' => drupal_render($form[$field_name]));
-      $rows[] = array(
-        'data' => $row,
-        'class' => 'odd'
-      );
-    }
-  }
-
-  $output = theme('table', NULL, $rows);
-  $output .= drupal_render($form);
-
-  return $output;
-}
-
-
-/**
- * Takes an location and a distance and returns an array of all postal-codes (from all countries that are supported)
- * within the specified distance of the specified location.
- *
- * @param $location
- *   An associative array where
- *     'street'       => the street location
- *     'additional'   => extra street location or building name or hall or something like that.\
- *     'city'         => a city name
- *     'province'     => province code as defined by the country specific include file
- *     'country'      => lower-cased two-letter ISO 3166 code (REQUIRED)
- *     'postal_code'  => the postal_code
- *
- * @param $distance
- *   The number portion of the distance; it is forced to an integer ceiling
- *
- * @param $distance_unit
- *   The unit of distance being used for the distance being submitted.
- *   Valid arguments for $distance_unit are 'mile' and 'km'.  If something other than one of
- *   these unit types is submitted for this argument, it is forced to 'km'.
- *
- * @return
- *   An array where
- *     -> the keys are a postive integer ranking of the search result's closeness to the parameter $postal_code
- *        with 1 being assigned to the nearest postal code
- *     -> the values are an associative array where
- *          'postal_code'   => A postal code that fell within the search-radius given by $distance and $distance_unit.
- *          'country'       => The two-letter ISO code for the home-country of this particular postal_code search result.
- *          'city'          => The city to which this postal code belongs.
- *          'province'      => The province to which this postal code belongs.
- *          'lon'           => The longitude coordinate of the approximate center of the area covered by 'postal_code'
- *          'lat'           => The latitude coordinate of the approximate center of the area covered by 'postal_code'
- *          'distance'      => The number of 'km's or 'mile's that are between the approximate center of the area of
- *                             the $postal_code parameter and that of the 'postal_code' in this subarray
- *          'distance_unit' => The unit of distance specified by 'scalar'
- */
-function location_nearby_postalcodes_bylocation($location, $distance, $distance_unit = 'km') {
-  $latlon = location_latlon_rough($location);
-
-  // If we could not get lat/lon coordinates for the given location, return an empty search result set.
-  if (!isset($latlon['lat']) || !isset($latlon['lon'])) {
-    return array();
-  }
-
-  // If the distance parameters did not make sense, return an empty search result set.
-  if (!($distance_float = _location_convert_distance_to_meters($distance, $distance_unit))) {
-    return array();
-  }
-
-  $search_results = _location_nearby_postalcodes($latlon['lon'], $latlon['lat'], $distance_float);
-  _location_format_search_result_distances($search_results, $distance_unit);
-  return $search_results;
-}
-
-/**
- * Helper function: This function EXPECTS an array that has been returned by
- *                  _location_sort_proximity_search_results()
- *
- * @param $results_array
- *   An array of proximity search results where
- *      -> the keys are integer rankings starting from 1 for the closest postal_code search result
- *      -> the values are associative arrays where
- *           'postal_code' => is the postal code of the search result
- *           'country'     => is the two-letter ISO of the country
- *           'lon'         => is the longitude coordinate of approximate center of the postal code
- *           'lat'         => is the latitude coordinate of the approximate center of the postal code
- *           'distance'    => is the distance of the approximate center of the result-postal_code from the
- *                            approximate center of the postal_code about which the search was executed.
- *                            This distance is in meters.
- *
- * @param $distance_unit
- *   A string abbreviation of a unit of distance.  This must be either 'mile' or 'km'.  If the argument is
- *   neither, it is forced to take the value of 'km'
- *
- * @return
- *   Returns nothing.
- *   Modifies parameter $results_array so that 'distance' (mentioned above) now points to a string representation
- *   of distance that goes to 1 decimal place, AFTER it has been converted
- *   from the original meters to the distance unit specified by $distance_unit.
- *   Also adds a key 'distance_unit' => 'mile' or 'km' which reflects the $distance_unit parameter.
- *
- */
-function _location_format_search_result_distances(&$results_array, $distance_unit = 'km') {
-  if ($distance_unit != 'km' && $distance_unit != 'mile') {
-    $distance_unit = 'km';
-  }
-
-  // $conversion_factor = number to divide by to convert meters to $distance_unit
-  // At this point, $distance_unit == 'km' or 'mile' and nothing else
-  $conversion_factor = ($distance_unit == 'km') ? 1000.0 : 1609.347;
-
-  foreach ($results_array as $index => $single_result) {
-    $results_array[$index]['distance'] = round($single_result['distance']/$conversion_factor, 1);
+    search_index($row->lid, 'location', $text);
+    db_query('DELETE FROM {location_search_work} WHERE lid = %d', $row->lid);
   }
 }
 
 /**
- * This is the main logic-level function for performing proximity postal-code searches.
- * It calls a number of helper functions for finding postal_code results in each country,
- * narrowing down results, formatting the returned array, and sorting the returned array.
- * Finally, it implements a caching mechanism that will return a subset (proper or not)
- * of a previous search's results on the same search-point.
- *
- * @param $lon
- *   A floating point of the longitude coordinate about which the search is being executed
- *
- * @param $lat
- *   A floating point of the latitude coordinate about which the search is being executed
- *
- * @param $distance
- *   A floating point of the distance in meters; it is forced to an integer ceiling, but
- *   kept as a float
- *
- * @return
- *   An array where
- *     -> the keys are a concatenation of the lower-case two-letter ISO country code and the postal code
- *        For example, 94063 in the United States would be 'us94063'
- *     -> the values are an associative array where
- *          'postal_code' => A postal code that fell within the search-radius given by $distance and $distance_unit.
- *          'country'     => The two-letter ISO code for the home-country of this particular postal_code search result.
- *          'lon'         => The longitude coordinate of the approximate center of the area covered by 'postal_code'
- *          'lat'         => The latitude coordinate of the approximate center of the area covered by 'postal_code'
- *          'distance'    => The floating point distance of the approximate center of this 'postal_code' from the
- *                           parameter lat/lon point in meters
- *
+ * Implementation of hook_locationapi().
  */
-function _location_nearby_postalcodes($lon, $lat, $distance) {
-  $search_results = _location_search_results_from_cache($lon, $lat, $distance);
-
-  // If there were usable cached search_results then return those and go no further... awwwww yeah.
-  if (count($search_results)) {
-    return $search_results;
+function location_search_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
+  if ($op == 'save') {
+    // Ensure the changed location is in our work list.
+    db_query('DELETE FROM {location_search_work} WHERE lid = %d', $obj['lid']);
+    db_query('INSERT INTO {location_search_work} (lid) VALUES (%d)', $obj['lid']);
   }
-  //------------------------------------------------------------------------------------------
-  // Pulling from the cache takes place right here.
-  // The cache id ("cid", to be inserted into the {cache_location} table) will be a concatenation of
-  //   -> "location_prox_search:".
-  //   -> round($lon, 3) . ':'.
-  //   -> round($lat, 3) . ":".
-  //   -> $distance
-  // The value of the cached item will be a serialize($result_array)
-  //
-  // The cache will be cleared of proximity searches when there is a change in countries that have
-  // been configured into the system.
-  //------------------------------------------------------------------------------------------
-
-  $search_results = array();
-
-  $latrange = earth_latitude_range($lon, $lat, $distance);
-  $lonrange = earth_longitude_range($lon, $lat, $distance);
-
-  $result = db_query('SELECT zip, city, state, country, '. earth_distance_sql($lon, $lat) .' as distance  FROM {zipcodes} WHERE latitude > %f AND latitude < %f AND longitude > %f AND longitude < %f AND '. earth_distance_sql($lon, $lat) .' < %f ORDER by distance', $latrange[0], $latrange[1], $lonrange[0], $lonrange[1], $distance);
-
-  while ($result_row = db_fetch_object($result)) {
-    $search_results[$result_row->country . $result_row->zip] = array('city' => $result_row->city, 'province' => $result_row->state, 'distance' => $result_row->distance);
+  if ($op == 'delete') {
+    search_wipe($obj['lid'], 'location');
   }
-
-  cache_set('location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':'. $distance, 'cache_location', serialize($search_results));
-
-  return $search_results;
 }
 
 /**
- * Helper function: this function is intended ONLY for use by _location_nearby_postalcodes().
- * It checks the cache for search-results on a given point and returns the appropriate subset
- * if one exists.
- *
- * @param $lon
- *   A floating point of the longitude coordinate of the search point
- *
- * @param $lat
- *   A floating point of the latitude coordinate of the search point
- *
- * @param $distance
- *   A floating point of the number of meters of the search radius
- *
- * @return
- *   An array of previous search results.
- *   If a previous search result on the same point was for the same search-radius, that result is returned.
- *   If a previous search result on the same point was for a longer search-radius, a subset of that result is returned.
- *   If a previous search result on the same point was for a shorter search-radius, the cached search-result is thrown out
- *   and an empty array is returned.
- *   If no previous search-result on the same point is in the cache, an empty array.
+ * Implementation of hook_search_page().
+ * (It's named location_search_page because the $type is 'location'.)
  */
-function _location_search_results_from_cache($lon, $lat, $distance) {
-  $cache_id_prefix = 'location_prox_search:'. round($lon, 3) .':'. round($lat, 3) .':';
+function location_search_page($rows) {
+  return theme('search_results_location', $rows, 'location');
+}
 
-  $result = db_query("SELECT cid FROM {cache_location} WHERE cid LIKE '%s%%'", $cache_id_prefix);
+function template_preprocess_search_result_location(&$variables) {
+  $result = $variables['result'];
 
-  if ($result_row = db_fetch_object($result)) {
-    // A previous search has been done on the same search point, possibily with the an equal or different
-    // search radius.
-    $cached_key_fields = explode(':', $result_row->cid);
-    $previous_search_radius = $cached_key_fields[3];
-
-    // If the search-radius is less than or equal to the previous search-radius, then just use
-    // the appropriate subset of the previous search result.
-    // This is very convenient since previous search results are sorted in ascending order
-    // by their distance from the search point.
-    if ($distance <= $previous_search_radius) {
-
-      $cached_search_results = cache_get($result_row->cid, 'cache_location');
-      $cached_search_results = unserialize($cached_search_results->data);
-      // If the cached-search had the exact same search-radius, just return the entire search result's
-      // array from before,
-      // otherwise, go through the distance-sorted search results and pick them out until the distances
-      // of each search result start being something greater than the current search-radius
-      if ($distance == $previous_search_radius) {
-        return $cached_search_results;
-      }
-      else {
-        $current_search_results = array();
-        foreach ($cached_search_results as $key => $cached_result) {
-          if ($cached_result['distance'] <= $distance) {
-            $current_search_results[$key] = $cached_result;
-          }
-          else {
-            break;
-          }
-        }
-        return $current_search_results;
-      }
+  $variables['links_raw'] = array();
+  foreach ($result['links'] as $link) {
+    if (isset($link['title']) && isset($link['href'])) {
+      $variables['links_raw'][] = $link;
     }
-    else {
-      // If the previous search-radius on the same point is smaller than the current search-radius,
-      // then delete the previous search from the cache to make way in the cache for the results of
-      // the current, more comprehensive search being done on the same point, but on a larger radius.
-      // Return an empty array to let the calling function know that it will have to do a new search.
-
-      cache_clear_all($result_row->cid, 'cache_location');
-      return array();
-    }
-
   }
-  else {
-    // This else-clause ties back to the first if-clause in this function.
-    // It executes if no search has been done on this point.
-    // If the {cache_location} table did not contain any useful cache id's, return the empty array.
-    // This will let the calling function know that it has to do an original search.
-    return array();
+  $variables['location_raw'] = $result['location'];
+
+  $variables['location'] = theme('location', $result['location'], array()); // @@@ hide?
+  $variables['links'] = theme('links', $variables['links_raw']);
+
+  // Provide alternate search result template.
+  $variables['template_files'][] = 'search-result-'. $variables['type'];
+}
+
+/////////////// Theme compatibility wrappers //////////////////
+// Needed due to the lack of the theme registry in Drupal 5. //
+///////////////////////////////////////////////////////////////
+
+// Compatibility preprocessor. Shouldn't be needed in 6.
+function template_preprocess_search_results_location(&$variables) {
+  $variables['search_results'] = '';
+  foreach ($variables['results'] as $result) {
+    $variables['search_results'] .= theme('search_result_location', $result, $variables['type']);
   }
+  $variables['pager'] = theme('pager', NULL, 10, 0);
+  // Provide alternate search results template.
+  $variables['template_files'][] = 'search-results-'. $variables['type'];
+}
+
+function theme_search_results_location($results, $type) {
+  $variables = array('results' => $results, 'type' => $type);
+  return _location_render('search_results_location', $variables);
+}
+
+function theme_search_result_location($result, $type) {
+  $variables = array('result' => $result, 'type' => $type);
+  return _location_render('search_result_location', $variables);
 }

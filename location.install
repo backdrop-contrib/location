@@ -22,8 +22,6 @@ function location_uninstall() {
   // Delete variables.
   variable_del('location_default_country');
   variable_del('location_display_location');
-  variable_del('location_search_distance_unit');
-  variable_del('location_suppress_country');
   variable_del('location_usegmap');
 }
 
