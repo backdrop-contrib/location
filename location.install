@@ -20,13 +20,11 @@ function location_uninstall() {
   drupal_uninstall_schema('location');
 
   // Delete variables.
-  variable_del('location_configured_countries');
   variable_del('location_default_country');
   variable_del('location_display_location');
   variable_del('location_search_distance_unit');
   variable_del('location_suppress_country');
   variable_del('location_usegmap');
-  variable_del('location_garbagecollect');
 }
 
 /**
@@ -713,47 +711,7 @@ function location_update_5303() {
   return $ret;
 }
 
-/**
- * Location 3.x update 3.
- * 3.0 province renames.
- */
-/* (temporarily disabled so we can run all of these updates at once)
-function location_update_5302() {
-  // Italy/Forlì-Cesena
-  // FO -> FC
-  // Italy/Pesaro e Urbino
-  // PS -> PU
-}
- */
-
-/**
- * Location 3.x update 1.
- * Add index on eid column.
- *
- * @note Following the new code standards for D6, all update
- * functions will be composed by: XYZZ pattern, where:
- * X  is the main Drupal version
- * Y  is the main Location module version
- * ZZ is the 2-digit unique update ID
- */
-/*
-function location_update_5301() {
-  $ret = array();
-  // @todo before 3.0 release:
-  // Verify that this works across databases.
-  $ret[] = update_sql("CREATE INDEX {location}_eid ON {location} (eid)");
-  return $ret;
-}
- */
-
-
-/**
- * Drupal 6 update 1.
- */
-// @@@ Convert location.lid to serial.
-// @@@ variable_del('location_configured_countries');
-// @@@ Rerun 5303.
-
+// @@@ Does 5303 need rerun in some circumstances?
 
 /**
  * Drupal 6 location 3.x update.
@@ -957,5 +915,40 @@ function location_update_6302() {
   // {location}.source
   db_change_field($ret, 'location', 'source', 'source', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
 
+  return $ret;
+}
+
+/**
+ * Drupal 6 location 3.x update, part 3.
+ */
+function location_update_6303() {
+  $ret = array();
+  if (!variable_get('location_update_5304_done', FALSE)) {
+    // Do the same updates as 5304.
+
+    // Delete unused variables.
+    variable_del('location_configured_countries');
+    variable_del('location_garbagecollect');
+
+    // Update province code for Italy/Forlì-Cesena.
+    $ret[] = update_sql("UPDATE {location} SET province = 'FC' WHERE country = 'it' AND province = 'FO'");
+    // Update province code for Italy/Pesaro e Urbino.
+    $ret[] = update_sql("UPDATE {location} SET province = 'PU' WHERE country = 'it' AND province = 'PS'");
+
+    // Do one final garbage collection by hand.
+    $ret[] = update_sql('DELETE FROM {location} WHERE lid NOT IN (SELECT lid FROM {location_instance})');
+
+    // Garbage collect {location_phone} by hand.
+    if (db_table_exists('location_phone')) {
+      $ret[] = update_sql('DELETE FROM {location_phone} WHERE lid NOT IN (SELECT lid FROM {location})');
+    }
+
+    // Garbage collect {location_fax} by hand.
+    if (db_table_exists('location_fax')) {
+      $ret[] = update_sql('DELETE FROM {location_fax} WHERE lid NOT IN (SELECT lid FROM {location})');
+    }
+
+    variable_del('location_update_5304_done');
+  }
   return $ret;
 }

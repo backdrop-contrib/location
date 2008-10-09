@@ -445,6 +445,21 @@ function location_province_name($country = 'us', $province = 'xx') {
 
 // @@@ New in 3.x, document.
 /**
+ * Get a province code from a code or full name and a country.
+ */
+function location_province_code($country = 'us', $province = 'xx') {
+  $provinces = location_get_provinces($country);
+  $p = strtoupper($province);
+  foreach ($provinces as $k => $v) {
+    if ($p == strtoupper($k) || $p == strtoupper($v)) {
+      return $k;
+    }
+  }
+  return '';
+}
+
+// @@@ New in 3.x, document.
+/**
  * Canonicalize a country code.
  */
 function location_standardize_country_code(&$country) {

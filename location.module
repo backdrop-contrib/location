@@ -190,16 +190,6 @@ function location_views_api() {
 }
 
 /**
- * Implementation of hook_cron().
- */
-function location_cron() {
-  if (variable_get('location_garbagecollect', TRUE)) {
-    // Perform garbage collection on locations.
-    db_query('DELETE FROM {location} WHERE lid NOT IN (SELECT lid FROM {location_instance})');
-  }
-}
-
-/**
  * Process a location element.
  */
 function _location_expand_location($element) {
@@ -960,10 +950,12 @@ function location_form_alter(&$form, &$form_state, $form_id) {
 function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'delete revision':
-      db_query('DELETE FROM {location_instance} WHERE vid = %d', $node->vid);
+      $locations = array();
+      location_save_locations($locations, array('vid' => $node->vid));
       break;
     case 'delete':
-      db_query('DELETE FROM {location_instance} WHERE nid = %d', $node->nid);
+      $locations = array();
+      location_save_locations($locations, array('nid' => $node->nid));
       break;
     case 'load':
       $locations = location_load_locations($node->vid);
@@ -1078,11 +1070,16 @@ function location_load_locations($id, $key = 'vid') {
 /**
  * Save associated locations.
  *
- * @param $id The identifier to store as. (An integer or string, depending on $key.)
- * @param $criteria An array of instance criteria to save as. (Example: array('genid' => 'my_custom_1111'))
+ * @param $locations The associated locations.
+ *   You can pass an empty array to remove all location references associated
+ *   with the given criteria. This is useful if you are about to delete an object,
+ *   and need Location to clean up any locations that are no longer referenced.
+ *
+ * @param $criteria An array of instance criteria to save as.
+ *   Example: array('genid' => 'my_custom_1111')
  */
 function location_save_locations(&$locations, $criteria) {
-  if (!empty($locations) && !empty($criteria) && is_array($criteria)) {
+  if (isset($locations) && is_array($locations) && !empty($criteria) && is_array($criteria)) {
     foreach (array_keys($locations) as $key) {
       location_save($locations[$key]);
     }
@@ -1098,7 +1095,18 @@ function location_save_locations(&$locations, $criteria) {
         $qfrags[] = "$key = $placeholder";
       }
     }
-    $query = 'DELETE FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
+    $querybase = 'FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
+
+    $oldlids = array();
+    $newlids = array();
+    // Find affected lids.
+    $query = "SELECT lid $querybase";
+    $result = db_query($query, $args);
+    while ($t = db_fetch_object($result)) {
+      $oldlids[] = $t->lid;
+    }
+
+    $query = "DELETE $querybase";
     db_query($query, $args);
     // Tack on the lid.
     $columns[] = 'lid';
@@ -1110,8 +1118,21 @@ function location_save_locations(&$locations, $criteria) {
       // so it should be ok to rely on the data type.
       if ($location['lid'] !== FALSE) {
         $args[] = $location['lid'];
+        $newlids[] = $location['lid'];
         db_query('INSERT INTO {location_instance} ('. implode(', ', $columns) .') VALUES ('. implode(', ', $placeholders) .')', $args);
         array_pop($args);
+      }
+    }
+
+    // Check anything that dropped a reference during this operation.
+    foreach (array_diff($oldlids, $newlids) as $check) {
+      // An instance may have been deleted. Check reference count.
+      $count = db_result(db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = %d', $check));
+      if ($count !== FALSE && $count == 0) {
+        watchdog('location', t('Deleting unreferenced location with LID %lid.', array('%lid' => $check)));
+        $location = array('lid' => $check);
+        location_invoke_locationapi($location, 'delete');
+        db_query('DELETE FROM {location} WHERE lid = %d', $location['lid']);
       }
     }
   }
@@ -1174,7 +1195,8 @@ function location_user($op, &$edit, &$account, $category = NULL) {
       break;
 
     case 'delete':
-      db_query('DELETE FROM {location_instance} WHERE uid = %d', $account->uid);
+      $locations = array();
+      location_save_locations($locations, array('uid' => $account->uid));
       break;
 
     case 'form':
@@ -1518,14 +1540,7 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
   // Note: Validation is performed elsewhere. We assume that the province
   // specified matches either the short or long form of a province.
   if (!empty($location['province']) && !empty($location['country'])) {
-    $provinces = location_get_provinces($location['country']);
-    $p = strtoupper($location['province']);
-    foreach ($provinces as $k => $v) {
-      if ($p == strtoupper($k) || $p == strtoupper($v)) {
-        $location['province'] = $k;
-        break;
-      }
-    }
+    $location['province'] = location_province_code($location['country'], $location['province']);
   }
 
   // @@@ Now would be a GREAT time to hook.

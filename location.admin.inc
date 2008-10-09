@@ -57,13 +57,6 @@ function location_admin_settings() {
     '#description' => t('If you would like to change the macro used to generate the location chooser map, you can do so here. Note: Behaviors <em>locpick</em> and <em>collapsehack</em> are forced to be enabled and cannot be changed.'),
   );
 
-  $form['location_garbagecollect'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable garbage collection of unused locations'),
-    '#default_value' => variable_get('location_garbagecollect', TRUE),
-    '#description' => t('If checked, the system can automatically garbage collect locations that are no longer referenced anywhere. It is recommended that you leave this checked.'),
-  );
-
   $form['countries'] = array(
     '#collapsible'    => TRUE,
     '#collapsed'      => TRUE,
