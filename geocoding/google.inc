@@ -55,7 +55,7 @@ function google_geocode_country_list() {
     'pl',
     'pt',
     'ro',
-    'ro',
+    'ru',
     'rs',
     'se',
     'sg',
