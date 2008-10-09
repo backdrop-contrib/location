@@ -140,7 +140,7 @@ function _location_search($op = 'search', $keys = null) {
       }
       else {
         // Fuzzy search -- Use the fulltext routines against the indexed locations.
-        $find = do_search($keys, 'location', 'INNER JOIN {location} l ON l.lid = i.sid '. $join1, $conditions1 . (empty($where1) ? '' : ' AND '. $where1), $arguments1, $select2, $join2, array(), $sort_parameters);
+        $find = do_search($keys, 'location', 'INNER JOIN {location} l ON l.lid = i.sid ', $conditions1 . (empty($where1) ? '' : ' AND '. $where1), $arguments1, $select2, $join2, array(), $sort_parameters);
         foreach ($find as $item) {
           $lids[] = $item->sid;
         }
