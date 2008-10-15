@@ -241,7 +241,7 @@ function _location_expand_location($element) {
   if (user_access('submit latitude/longitude')) {
     $element['locpick'] = array();
 
-    if (!empty($dv['latitude']) || !empty($dv['longitude'])) {
+    if (location_has_coordinates($dv, FALSE)) {
       $element['locpick']['current'] = array(
         '#type' => 'fieldset',
         '#title' => t('Current coordinates'),
@@ -308,7 +308,7 @@ function _location_expand_location($element) {
       $map['behavior']['locpick'] = TRUE;
       $map['behavior']['collapsehack'] = TRUE;
       // Use previous coordinates to center the map.
-      if (!empty($dv['latitude']) || !empty($dv['longitude'])) {
+      if (location_has_coordinates($dv, FALSE)) {
         $map['latitude'] = (float)$dv['latitude'];
         $map['longitude'] = (float)$dv['longitude'];
 
@@ -1249,7 +1249,7 @@ function location_user($op, &$edit, &$account, $category = NULL) {
           );
           // @@@
           if (user_access('submit latitude/longitude')) {
-            if (!empty($account->location['latitude']) && !empty($account->location['longitude'])) {
+            if (location_has_coordinates($account->location, TRUE)) {
               // @@@ Theme!
               $items[] = array(
                 'title' => t('Coordinates'),
@@ -1306,6 +1306,35 @@ function _location_floats_are_equal($x, $y) {
   $y = floatval($y);
   return (abs(max($x, $y) - min($x, $y)) < pow(10, -6));
 }
+
+/**
+ * Check whether a location has coordinates or not.
+ *
+ * @param $location The location to check.
+ * @param $canonical Is this a location that is fully saved?
+ *   If set to TRUE, only the source will be checked.
+ */
+function location_has_coordinates($location, $canonical = FALSE) {
+  // Locations that have been fully saved have an up to date source.
+  if ($canonical) {
+    return ($location['source'] != LOCATION_LATLON_UNDEFINED);
+  }
+
+  // Otherwise, we need to do the full checks.
+
+  // If latitude or longitude are empty / missing
+  if (empty($location['latitude']) || empty($location['longitude'])) {
+    return FALSE;
+  }
+
+  // If the latitude or longitude are zeroed (Although it could be a good idea to relax this slightly sometimes)
+  if (_location_floats_are_equal($location['latitude'], 0.0) || _location_floats_are_equal($location['longitude'], 0.0)) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 
 /**
  * Invoke a hook_locationapi() operation on all modules.
