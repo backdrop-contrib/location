@@ -996,7 +996,7 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $node->content['locations'] = array(
               '#type' => 'markup',
               '#value' => $output,
-              '#weight' => variable_get('location_display_weight_'. $node->type, 0),
+              '#weight' => $display['weight'],
             );
           }
         }
