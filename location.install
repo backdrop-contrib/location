@@ -23,6 +23,32 @@ function location_uninstall() {
   variable_del('location_default_country');
   variable_del('location_display_location');
   variable_del('location_usegmap');
+  variable_del('location_locpick_macro');
+
+  // Delete user settings.
+  variable_del('location_settings_user');
+
+  // Delete node settings.
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_settings_node_%");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
+
+  // Delete geocoder settings.
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
+
+  // Delete compatibility variables.
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_maxnum_%");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_defaultnum_%");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
 }
 
 /**
@@ -948,5 +974,98 @@ function location_update_6303() {
 
     variable_del('location_update_5304_done');
   }
+  return $ret;
+}
+
+/**
+ * Upgrade all of the settings variables to the new unified system.
+ */
+function location_update_6304() {
+  $ret = array();
+
+  $variables = array();
+  $todelete = array();
+
+  $base = array(
+    'multiple' => array(
+      'min' => 0,
+      'max' => 0,
+      'add' => 3,
+    ),
+    'form' => array(
+      'weight' => 0,
+      'collapsible' => TRUE,
+      'collapsed' => TRUE,
+      'fields' => array(),
+    ),
+    'display' => array(
+      'weight' => 0,
+      'hide' => array(),
+    ),
+  );
+
+  // Pull in user settings.
+  $variables['location_settings_user'] = $base;
+  $tmp = &$variables['location_settings_user'];
+  // Users previously could not have multiple locations, initialize with those
+  // settings.
+  $tmp['multiple'] = array(
+    'min' => 0,
+    'max' => 1,
+    'add' => 3,
+  );
+  $tmp['form']['weight'] = variable_get('location_user_weight', 9);
+  $tmp['form']['collapsible'] = variable_get('location_user_collapsible', TRUE);
+  $tmp['form']['collapased'] = variable_get('location_user_collapsed', TRUE);
+  $tmp['form']['fields'] = variable_get('location_user_fields', array());
+
+
+  // Pull in node settings.
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_maxnum_%'");
+  while ($row = db_fetch_object($result)) {
+    $type = substr($row->name, 16);
+    $todelete[] = $type;
+
+    $variables["location_settings_node_$type"] = $base;
+    $tmp = &$variables["location_settings_node_$type"];
+
+    $tmp['multiple']['min'] = 1; // Old behavior was to have the first one be required.
+    $tmp['multiple']['max'] = variable_get("location_maxnum_$type", 0);
+    $tmp['multiple']['add'] = variable_get("location_defaultnum_$type", 3);
+    $tmp['form']['weight'] = variable_get("location_weight_$type", 9);
+    $tmp['form']['collapsible'] = variable_get("location_collapsible_$type", TRUE);
+    $tmp['form']['collapsed'] = variable_get("location_collapsed_$type", TRUE);
+    $tmp['form']['fields'] = variable_get("location_fields_$type", array());
+    $tmp['rss']['mode'] = variable_get("location_rss_$type", 'simple');
+    $tmp['display'] = variable_get("location_display_$type", array(
+      'teaser' => TRUE,
+      'full' => TRUE,
+      'weight' => 0,
+      'hide' => array(),
+    ));
+  }
+
+  foreach ($variables as $name => $value) {
+    variable_set($name, $value);
+  }
+
+  // Delete old node variables.
+  foreach ($todelete as $key) {
+//    variable_del("location_maxnum_$key");
+//    variable_del("location_defaultnum_$key");
+    variable_del("location_weight_$key");
+    variable_del("location_collapsible_$key");
+    variable_del("location_collapsed_$key");
+    variable_del("location_fields_$key");
+    variable_del("location_rss_$key");
+    variable_del("location_display_$key");
+  }
+
+  // Delete old user variables.
+  variable_del('location_user_weight');
+  variable_del('location_user_collapsible');
+  variable_del('location_user_collapsed');
+  variable_del('location_user_fields');
+
   return $ret;
 }
