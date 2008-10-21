@@ -661,199 +661,6 @@ function location_geocoding_parameters_form(&$form_state, $country_iso, $service
 }
 
 /**
- * Get a form element for configuring location for an object.
- */
-function location_settings($old = FALSE) {
-  if (empty($old)) {
-    $old = array();
-  }
-
-  $form = array(
-    '#type' => 'fieldset',
-    '#title' => t('Locative information'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#tree' => TRUE,
-  );
-
-  $form['multiple'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Number of locations'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#tree' => TRUE,
-    '#weight' => 2,
-  );
-  $form['multiple']['min'] = array(
-    '#type' => 'select',
-    '#title' => t('Minimum number of locations'),
-    '#options' => drupal_map_assoc(range(0, 100)),
-    '#default_value' => isset($old['multiple']['min']) ? $old['multiple']['min'] : 0,
-    '#description' => t('The number of locations that are required to be filled in.'),
-  );
-  $form['multiple']['max'] = array(
-    '#type' => 'select',
-    '#title' => t('Maximum number of locations'),
-    '#options' => drupal_map_assoc(range(0, 100)),
-    '#default_value' => isset($old['multiple']['max']) ? $old['multiple']['max'] : 0,
-    '#description' => t('The maximum number of locations that can be associated.'),
-  );
-  // @@@ Dynamic location adding via ahah?
-  $form['multiple']['add'] = array(
-    '#type' => 'select',
-    '#title' => t('Number of locations that can be added at once'),
-    '#options' => drupal_map_assoc(range(0, 100)),
-    '#default_value' => isset($old['multiple']['add']) ? $old['multiple']['add'] : 3,
-    '#description' => t('The number of empty location forms to show when editing.'),
-  );
-  // Thought: What about prefilled names and fixed locations that way?
-  // Then again, CCK would be cleaner.
-
-  $form['form'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Collection settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#tree' => TRUE,
-    '#weight' => 4,
-  );
-
-  $form['form']['weight'] = array(
-    '#type' => 'weight',
-    '#title' => t('Location form weight'),
-    '#default_value' => isset($old['form']['weight']) ? $old['form']['weight'] : 0,
-    '#description' => t('Weight of the location box in the add / edit form. Lower values will be displayed higher in the form.'),
-  );
-  $form['form']['collapsible'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Collapsible'),
-    '#default_value' => isset($old['form']['collapsible']) ? $old['form']['collapsible'] : TRUE,
-    '#description' => t('Make the location box collapsible.'),
-  );
-
-  $form['form']['collapsed'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Collapsed'),
-    '#default_value' => isset($old['form']['collapsed']) ? $old['form']['collapsed'] : TRUE,
-    '#description' => t('Display the location box collapsed.'),
-  );
-
-  $form['form']['fields'] = array(
-    '#type' => 'location_settings',
-    '#default_value' => isset($old['form']['fields']) ? $old['form']['fields'] : array(),
-  );
-
-  $form['display'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Display Settings'),
-//    '#description' => t('Here, you can change how locative data appears in nodes when viewed.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#tree' => TRUE,
-    '#weight' => 6,
-  );
-
-  $form['display']['weight'] = array(
-    '#type' => 'weight',
-    '#title' => t('Display Weight'),
-    '#default_value' => isset($old['display']['weight']) ? $old['display']['weight'] : 0,
-  );
-
-  $fields = location_field_names(TRUE);
-  $form['display']['hide'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Hide fields from display'),
-    '#collapsed' => TRUE,
-    '#default_value' => isset($old['display']['hide']) ? $old['display']['hide'] : array(),
-    '#options' => $fields,
-  );
-
-  return $form;
-}
-
-/**
- * Get form elements for editing locations on an object.
- */
-function location_form($settings, $locations) {
-  if (!isset($settings['multiple']['max']) || $settings['multiple']['max'] == 0) {
-    // Location not enabled for this object type.
-    // Bail out early.
-    return array();
-  }
-
-  // Generate location fieldsets.
-  $numloc = count($locations);
-
-  // Show up to 'add' number of additional forms, in addition to the preexisting
-  // locations. (Less if we'll hit 'max' first.)
-  $numforms = min($numloc + $settings['multiple']['add'], $settings['multiple']['max']);
-
-  $form = array(
-    '#type' => 'fieldset',
-    '#title' => format_plural($numforms, 'Location', 'Locations'),
-    '#tree' => TRUE,
-    '#attributes' => array('class' => 'locations'),
-    '#weight' => $settings['form']['weight'],
-    '#collapsible' => $settings['form']['collapsible'],
-    '#collapsed' => $settings['form']['collapsed'],
-  );
-
-  // If there is only one form, hide the outer fieldset.
-  if ($settings['multiple']['max'] == 1) {
-    $form['#type'] = 'markup';
-  }
-
-  // For non-required locations, we relax the settings.
-  $fields = $settings['form']['fields'];
-
-  // For required locations, we use strict settings.
-  $fields_req = $settings['form']['fields'];
-
-  // Relax non-required settings.
-  foreach ($fields as $k => $v) {
-    // Allow Allow (Use), Force Default settings through.
-    // Block 2 (Required).
-    $fields[$k] = $v & 1;
-  }
-
-  for ($i = 0; $i < $numforms; $i++) {
-    $tmp = $fields;
-    // If this one is required, use the strict settings...
-    if ($i < $settings['multiple']['min']) {
-      $tmp = $fields_req;
-    }
-    $form[$i] = array(
-      '#type' => 'location_element',
-      '#title' => t('Location #%number', array('%number' => $i + 1)),
-      '#default_value' => isset($locations[$i]) ? $locations[$i] : NULL,
-      // Use relaxed settings for all locations past the first one.
-      '#location_settings' => $tmp,
-    );
-  }
-
-  // Tidy up the form in the single location case.
-  if ($numforms == 1) {
-    $form[0]['#title'] = t('Location');
-    // If the user had configured the form for a single location, inherit
-    // the collapsible / collapsed settings.
-    $form[0]['#collapsible'] = $form['#collapsible'];
-    $form[0]['#collapsed'] = $form['#collapsed'];
-  }
-
-  return $form;
-}
-
-function location_display($settings, $locations) {
-  $hide = array_keys(array_filter($settings['display']['hide']));
-  // Show all locations
-  return array(
-    '#type' => 'markup',
-    '#value' => theme('locations', $locations, $hide),
-    '#weight' => $settings['display']['weight'],
-  );
-}
-
-/**
  * Alter the node_type_form form.
  */
 function location_form_node_type_form_alter(&$form, &$form_state) {
@@ -912,27 +719,6 @@ function location_form_node_type_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Validation function for node settings form.
- * Logically, the default number of locations per node cannot
- * be bigger than the max locations.
- *
- * @ingroup $form
- */
-function location_node_settings_validate($form, &$form_state) {
- // @@@ Fix validation again.
-/*
-  if (!empty($form_state['values']['location_maxnum']) && empty($form_state['values']['location_defaultnum'])) {
-    form_set_error('location_defaultnum',
-      t("You must have at least 1 default location-form enabled if you are going to allow locations to be submitted for nodes of this type. If you don't intend to allow locations to be submitted for nodes of this type, set the maximum number of locations allowed for this type to 0."));
-  }
-  elseif ($form_state['values']['location_defaultnum'] > $form_state['values']['location_maxnum']) {
-    form_set_error('location_defaultnum',
-      t("Your default number of location-forms that show up can't be greater than the maximum number of locations allowed for this node type."));
-  }
-*/
-}
-
-/**
  * Custom submit function to save location settings properly.
  */
 function _location_node_type_save_submit($form, &$form_state) {
@@ -974,6 +760,27 @@ function location_form_alter(&$form, &$form_state, $form_id) {
       $form['locations'] = location_form($settings, $node->locations);
     }
   }
+}
+
+/**
+ * Validation function for node settings form.
+ * Logically, the default number of locations per node cannot
+ * be bigger than the max locations.
+ *
+ * @ingroup $form
+ */
+function location_node_settings_validate($form, &$form_state) {
+ // @@@ Fix validation again.
+/*
+  if (!empty($form_state['values']['location_maxnum']) && empty($form_state['values']['location_defaultnum'])) {
+    form_set_error('location_defaultnum',
+      t("You must have at least 1 default location-form enabled if you are going to allow locations to be submitted for nodes of this type. If you don't intend to allow locations to be submitted for nodes of this type, set the maximum number of locations allowed for this type to 0."));
+  }
+  elseif ($form_state['values']['location_defaultnum'] > $form_state['values']['location_maxnum']) {
+    form_set_error('location_defaultnum',
+      t("Your default number of location-forms that show up can't be greater than the maximum number of locations allowed for this node type."));
+  }
+*/
 }
 
 /**
@@ -1733,3 +1540,197 @@ function template_preprocess_locations(&$variables) {
     $variables['locations'][] = theme('location', $location, $variables['hide']);
   }
 }
+
+/**
+ * Get a form element for configuring location for an object.
+ */
+function location_settings($old = FALSE) {
+  if (empty($old)) {
+    $old = array();
+  }
+
+  $form = array(
+    '#type' => 'fieldset',
+    '#title' => t('Locative information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+  );
+
+  $form['multiple'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Number of locations'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#weight' => 2,
+  );
+  $form['multiple']['min'] = array(
+    '#type' => 'select',
+    '#title' => t('Minimum number of locations'),
+    '#options' => drupal_map_assoc(range(0, 100)),
+    '#default_value' => isset($old['multiple']['min']) ? $old['multiple']['min'] : 0,
+    '#description' => t('The number of locations that are required to be filled in.'),
+  );
+  $form['multiple']['max'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum number of locations'),
+    '#options' => drupal_map_assoc(range(0, 100)),
+    '#default_value' => isset($old['multiple']['max']) ? $old['multiple']['max'] : 0,
+    '#description' => t('The maximum number of locations that can be associated.'),
+  );
+  // @@@ Dynamic location adding via ahah?
+  $form['multiple']['add'] = array(
+    '#type' => 'select',
+    '#title' => t('Number of locations that can be added at once'),
+    '#options' => drupal_map_assoc(range(0, 100)),
+    '#default_value' => isset($old['multiple']['add']) ? $old['multiple']['add'] : 3,
+    '#description' => t('The number of empty location forms to show when editing.'),
+  );
+  // Thought: What about prefilled names and fixed locations that way?
+  // Then again, CCK would be cleaner.
+
+  $form['form'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Collection settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#weight' => 4,
+  );
+
+  $form['form']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Location form weight'),
+    '#default_value' => isset($old['form']['weight']) ? $old['form']['weight'] : 0,
+    '#description' => t('Weight of the location box in the add / edit form. Lower values will be displayed higher in the form.'),
+  );
+  $form['form']['collapsible'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Collapsible'),
+    '#default_value' => isset($old['form']['collapsible']) ? $old['form']['collapsible'] : TRUE,
+    '#description' => t('Make the location box collapsible.'),
+  );
+
+  $form['form']['collapsed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Collapsed'),
+    '#default_value' => isset($old['form']['collapsed']) ? $old['form']['collapsed'] : TRUE,
+    '#description' => t('Display the location box collapsed.'),
+  );
+
+  $form['form']['fields'] = array(
+    '#type' => 'location_settings',
+    '#default_value' => isset($old['form']['fields']) ? $old['form']['fields'] : array(),
+  );
+
+  $form['display'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Display Settings'),
+//    '#description' => t('Here, you can change how locative data appears in nodes when viewed.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#weight' => 6,
+  );
+
+  $form['display']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Display Weight'),
+    '#default_value' => isset($old['display']['weight']) ? $old['display']['weight'] : 0,
+  );
+
+  $fields = location_field_names(TRUE);
+  $form['display']['hide'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Hide fields from display'),
+    '#collapsed' => TRUE,
+    '#default_value' => isset($old['display']['hide']) ? $old['display']['hide'] : array(),
+    '#options' => $fields,
+  );
+
+  return $form;
+}
+
+/**
+ * Get form elements for editing locations on an object.
+ */
+function location_form($settings, $locations) {
+  if (!isset($settings['multiple']['max']) || $settings['multiple']['max'] == 0) {
+    // Location not enabled for this object type.
+    // Bail out early.
+    return array();
+  }
+
+  // Generate location fieldsets.
+  $numloc = count($locations);
+
+  // Show up to 'add' number of additional forms, in addition to the preexisting
+  // locations. (Less if we'll hit 'max' first.)
+  $numforms = min($numloc + $settings['multiple']['add'], $settings['multiple']['max']);
+
+  $form = array(
+    '#type' => 'fieldset',
+    '#title' => format_plural($numforms, 'Location', 'Locations'),
+    '#tree' => TRUE,
+    '#attributes' => array('class' => 'locations'),
+    '#weight' => $settings['form']['weight'],
+    '#collapsible' => $settings['form']['collapsible'],
+    '#collapsed' => $settings['form']['collapsed'],
+  );
+
+  // If there is only one form, hide the outer fieldset.
+  if ($settings['multiple']['max'] == 1) {
+    $form['#type'] = 'markup';
+  }
+
+  // For non-required locations, we relax the settings.
+  $fields = $settings['form']['fields'];
+
+  // For required locations, we use strict settings.
+  $fields_req = $settings['form']['fields'];
+
+  // Relax non-required settings.
+  foreach ($fields as $k => $v) {
+    // Allow Allow (Use), Force Default settings through.
+    // Block 2 (Required).
+    $fields[$k] = $v & 1;
+  }
+
+  for ($i = 0; $i < $numforms; $i++) {
+    $tmp = $fields;
+    // If this one is required, use the strict settings...
+    if ($i < $settings['multiple']['min']) {
+      $tmp = $fields_req;
+    }
+    $form[$i] = array(
+      '#type' => 'location_element',
+      '#title' => t('Location #%number', array('%number' => $i + 1)),
+      '#default_value' => isset($locations[$i]) ? $locations[$i] : NULL,
+      // Use relaxed settings for all locations past the first one.
+      '#location_settings' => $tmp,
+    );
+  }
+
+  // Tidy up the form in the single location case.
+  if ($numforms == 1) {
+    $form[0]['#title'] = t('Location');
+    // If the user had configured the form for a single location, inherit
+    // the collapsible / collapsed settings.
+    $form[0]['#collapsible'] = $form['#collapsible'];
+    $form[0]['#collapsed'] = $form['#collapsed'];
+  }
+
+  return $form;
+}
+
+function location_display($settings, $locations) {
+  $hide = array_keys(array_filter($settings['display']['hide']));
+  // Show all locations
+  return array(
+    '#type' => 'markup',
+    '#value' => theme('locations', $locations, $hide),
+    '#weight' => $settings['display']['weight'],
+  );
+}
+
