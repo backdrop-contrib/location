@@ -288,7 +288,7 @@ function location_views_default_views() {
       ),
       'wildcard' => 'all',
       'wildcard_substitution' => 'All',
-      'title' => '%2, %1',
+      'title' => '%2',
       'default_argument_type' => 'fixed',
       'default_argument' => '',
       'validate_type' => 'none',
@@ -424,6 +424,7 @@ function location_views_default_views() {
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->override_option('title', 'Locations');
   $handler->override_option('path', 'location/directory');
   $handler->override_option('menu', array(
     'type' => 'normal',
