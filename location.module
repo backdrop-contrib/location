@@ -1228,48 +1228,9 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
   // Pull in fields that hold data currently not editable directly by the user.
   $location = array_merge($oldloc, $location);
 
-  $dummy = array();
-  $emptyloc = location_invoke_locationapi($dummy, 'default values');
-
-  // Effective location for determining "emptiness"
-  $shadow = $location;
-  unset($shadow['lid']);
-
-  // Determine what fields were filled in.
   $filled = array();
-  foreach ($shadow as $k => $v) {
-    if ($k == 'locpick') {
-      // The locpick element is "special".
-      continue;
-    }
-    if (!isset($emptyloc[$k])) {
-      // @@@ This is an error condition, a module is declaring a field without
-      // a corresponding "empty" default!
-      watchdog('Location', 'Module declared field without empty default!', array(), WATCHDOG_ERROR);
-      continue;
-    }
-    if ($emptyloc[$k] == $v) {
-      // Exact match, no change.
-      continue;
-    }
-    else {
-      // It wasn't equal, but perhaps it was equivilent?
-      $results = location_invoke_locationapi($shadow, 'isunchanged', $k, $emptyloc[$k]);
-      $changed = TRUE; // First, assume changed.
-      foreach ($results as $r) {
-        if ($r) {
-          $changed = FALSE;
-        }
-      }
-      if ($changed) {
-        // Nobody answered affirmative, it must be different.
-        $filled[$k] = TRUE;
-      }
-    }
-  }
-
-  if (empty($filled)) {
-    // This location was empty.
+  if (location_is_empty($location, $filled)) {
+    // This location was empty, we don't need to continue.
     $location['lid'] = FALSE;
     return FALSE;
   }
@@ -1365,6 +1326,53 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
 
   location_invoke_locationapi($location, 'save');
   return $location['lid'];
+}
+
+/**
+ * Checks if a location is empty, and sets up an array of filled fields.
+ * @param $location The location to check.
+ * @param $filled An array (Will contain the list of filled fields upon return.)
+ *
+ * @return TRUE if the location is empty, FALSE otherwise.
+ */
+function location_is_empty($location, &$filled) {
+  $dummy = array();
+  $emptyloc = location_invoke_locationapi($dummy, 'default values');
+
+  if (isset($location['delete_location']) && $location['delete_location']) {
+    // Although this doesn't occur in location.module, it is used in other places.
+    return TRUE;
+  }
+
+  // Determine what fields were filled in.
+  foreach ($location as $k => $v) {
+    if (!isset($emptyloc[$k])) {
+      // No default value -- This isn't a field location cares about.
+      continue;
+    }
+    if ($emptyloc[$k] == $v) {
+      // Exact match, no change.
+      continue;
+    }
+    else {
+      // It wasn't equal, but perhaps it was equivilent?
+      $results = location_invoke_locationapi($shadow, 'isunchanged', $k, $emptyloc[$k]);
+      $changed = TRUE; // First, assume changed.
+      foreach ($results as $r) {
+        if ($r) {
+          $changed = FALSE;
+        }
+      }
+      if ($changed) {
+        // Nobody answered affirmative, it must be different.
+        $filled[$k] = TRUE;
+      }
+    }
+  }
+  if (empty($filled)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
