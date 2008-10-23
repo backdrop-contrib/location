@@ -1,0 +1,7 @@
+; $Id$
+name = Location CCK
+description = Bla bla location cck stuff
+dependencies = location content
+package = CCK
+
+
