@@ -117,6 +117,7 @@ function location_elements() {
       '#process' => array('_location_expand_location'),
       '#tree' => TRUE,
       '#location_settings' => array(),
+      '#required' => FALSE,
       '#attributes' => array('class' => 'location'),
       // Element level validation.
       '#validate' => array('location_element_validate' => array()),
@@ -222,6 +223,15 @@ function _location_expand_location($element) {
   );
 
   $location_settings = $element['#location_settings'];
+
+  if (!$element['#required']) {
+    // Relax non-required settings.
+    foreach ($location_settings as $k => $v) {
+      // Allow Allow (Use), Force Default settings through.
+      // Block 2 (Required).
+      $location_settings[$k] = $v & 1;
+    }
+  }
 
   $fields = location_field_names();
   foreach ($fields as $field => $title) {
@@ -1705,31 +1715,18 @@ function location_form($settings, $locations) {
     $form['#type'] = 'markup';
   }
 
-  // For non-required locations, we relax the settings.
-  $fields = $settings['form']['fields'];
-
-  // For required locations, we use strict settings.
-  $fields_req = $settings['form']['fields'];
-
-  // Relax non-required settings.
-  foreach ($fields as $k => $v) {
-    // Allow Allow (Use), Force Default settings through.
-    // Block 2 (Required).
-    $fields[$k] = $v & 1;
-  }
-
   for ($i = 0; $i < $numforms; $i++) {
-    $tmp = $fields;
-    // If this one is required, use the strict settings...
+    $required = FALSE;
+    // Check if this is a required location.
     if ($i < $settings['multiple']['min']) {
-      $tmp = $fields_req;
+      $required = TRUE;
     }
     $form[$i] = array(
       '#type' => 'location_element',
       '#title' => t('Location #%number', array('%number' => $i + 1)),
       '#default_value' => isset($locations[$i]) ? $locations[$i] : NULL,
-      // Use relaxed settings for all locations past the first one.
-      '#location_settings' => $tmp,
+      '#location_settings' => $settings['form']['fields'],
+      '#required' => $required,
     );
   }
 
