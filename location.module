@@ -1547,7 +1547,13 @@ function template_preprocess_location_distance(&$variables) {
  * Theme preprocess function for theming a group of locations.
  */
 function template_preprocess_locations(&$variables) {
-  $locs = $variables['locations'];
+  if (isset($variables['locations']) && is_array($variables['locations'])) {
+    $locs = $variables['locations'];
+  }
+  else {
+    // The locations weren't valid -- Use an empty array instead to avoid warnings.
+    $locs = array();
+  }
   $variables['locations'] = array();
   $variables['rawlocs'] = $locs;
 
@@ -1740,6 +1746,10 @@ function location_form($settings, $locations) {
 }
 
 function location_display($settings, $locations) {
+  if (!isset($settings['display']['hide'])) {
+    // We weren't configured properly, bail.
+    return array();
+  }
   $hide = array_keys(array_filter($settings['display']['hide']));
   // Show all locations
   return array(
