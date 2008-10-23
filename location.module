@@ -931,7 +931,7 @@ function location_load_locations($id, $key = 'vid') {
 function location_save_locations(&$locations, $criteria) {
   if (isset($locations) && is_array($locations) && !empty($criteria) && is_array($criteria)) {
     foreach (array_keys($locations) as $key) {
-      location_save($locations[$key]);
+      location_save($locations[$key], TRUE, $criteria);
     }
     $columns = array();
     $placeholders = array();
@@ -1177,9 +1177,12 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a
  * This is the central function for saving a location.
  * @param $location Location array to save.
  * @param $cow Copy-on-write, i.e. whether or not to assign a new lid if something changes.
+ * @param $criteria Instance criteria. If the only instances known by location match
+ *   the criteria, the lid will be reused, regardless of $cow status. If no criteria
+ *   is provided, there will be no attempt to reuse lids.
  * @return The lid of the saved location, or FALSE if the location is considered "empty."
  */
-function location_save(&$location, $cow = TRUE) {
+function location_save(&$location, $cow = TRUE, $criteria = array()) {
   $inhibit_geocode = FALSE;
 
   $dummy = array();
@@ -1316,11 +1319,36 @@ function location_save(&$location, $cow = TRUE) {
 
   // If we are in COW mode, we *probabaly* need to make a new lid.
   if ($cow) {
-    // However, if it appears one or less times (i.e. is not shared), it's safe to recycle the lid.
-    // Therefore, skip unsetting the prior lid if there are one or less rows in {location_instance} matching the lid.
-    // See #306171 for more information.
-    if (isset($location['lid']) && db_result(db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = %d', $location['lid'])) > 1) {
-      unset($location['lid']);
+    if (isset($location['lid']) && $location['lid']) {
+      if (!empty($criteria)) {
+        // Check for other instances.
+        // See #306171 for more information.
+        $columns = array();
+        $placeholders = array();
+        $qfrags = array();
+        $args = array();
+        foreach (array('nid' => '%d', 'vid' => '%d', 'uid' => '%d', 'genid' => "'%s'") as $key => $placeholder) {
+          if (isset($criteria[$key])) {
+            $columns[] = $key;
+            $placeholders[] = $placeholder;
+            $args[] = $criteria[$key];
+            $qfrags[] = "$key = $placeholder";
+          }
+        }
+        $querybase = 'FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
+
+        $associated = db_result(db_query("SELECT COUNT(*) $querybase"));
+        $all = db_result(db_query("SELECT COUNT(*) FROM {location_instance} WHERE lid = %d", $location['lid']));
+        if ($associated != $all) {
+          // If there were a different number of instances than instances matching the criteria,
+          // we need a new LID.
+          unset($location['lid']);
+        }
+      }
+      else {
+        // Criteria was not provided, we need a new LID.
+        unset($location['lid']);
+      }
     }
   }
 
