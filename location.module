@@ -774,7 +774,8 @@ function location_form_alter(&$form, &$form_state, $form_id) {
     $node = $form['#node'];
     $settings = variable_get('location_settings_node_'. $node->type, array());
     if (isset($settings['multiple']['max']) && $settings['multiple']['max'] > 0) {
-      $form['locations'] = location_form($settings, $node->locations);
+      $locations = isset($node->locations) ? $node->locations : array();
+      $form['locations'] = location_form($settings, $locations);
     }
   }
 }
@@ -1269,6 +1270,7 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
 
   if (empty($filled)) {
     // This location was empty.
+    $location['lid'] = FALSE;
     return FALSE;
   }
 
@@ -1310,6 +1312,7 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
     }
     else {
       // Unfilled location (@@@ Then how did we get here?)
+      $location['lid'] = FALSE;
       return FALSE;
     }
   }
