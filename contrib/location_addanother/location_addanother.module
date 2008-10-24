@@ -42,14 +42,14 @@ function location_addanother_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Form to display directly on a node view for "quick location add" functionality.
  */
-function location_addanother_form(&$node) {
-  $settings = variable_get('location_fields_'. $node->type, array());
+function location_addanother_form(&$form_state, &$node) {
+  $settings = variable_get('location_settings_node_'. $node->type, array());
 
   $form['location'] = array(
     '#type' => 'location_element',
     '#title' => t('Add another location'),
     '#default_value' => NULL,
-    '#location_settings' => $settings,
+    '#location_settings' => $settings['form']['fields'],
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -68,8 +68,8 @@ function location_addanother_form(&$node) {
 /**
  * Validation function for "add another location" form.
  */
-function location_addanother_form_validate($form_id, &$form_values) {
-  $location = $form_values['location'];
+function location_addanother_form_validate($form, &$form_state, $form_id) {
+  $location = $form_state['values']['location'];
   $node = node_load($location['nid']);
   unset($location['nid']);
   if (!(variable_get('location_addanother_'. $node->type, 0) && count($node->locations) < variable_get('location_maxnum_'. $node->type, 0) && node_access('update', $node))) {
@@ -83,14 +83,11 @@ function location_addanother_form_validate($form_id, &$form_values) {
 function location_addanother_form_submit($form, &$form_state) {
   $location = $form_state['values']['location'];
   $node = node_load($location['nid']);
+  $locations = $node->locations;
   unset($location['nid']);
+  $locations[] = $location;
 
-  // As this is always a new location, no need to delete anything first...
-  $lid = location_save($location, TRUE);
-  if ($lid) {
-    db_query('INSERT INTO {location_instance} (nid, vid, lid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $lid);
-    drupal_set_message(t('Your new location has been added. (See below)'));
-  }
+  location_save_locations($locations, array('nid' => $node->nid, 'vid' => $node->vid));
 
   return 'node/'. $node->nid;
 }
