@@ -465,7 +465,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
       return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
 
     case 'virtual fields':
-      return array('province_name' => t('Province name'), 'country_name' => t('Country name'), 'map_link' => t('Map link'));
+      return array('province_name' => t('Province name'), 'country_name' => t('Country name'), 'map_link' => t('Map link'), 'coords' => t('Coordinates'));
 
     case 'collection default':
       return array('name' => 1, 'street' => 1, 'additional' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
@@ -1536,6 +1536,11 @@ function template_preprocess_location(&$variables) {
   $location = $variables['location'];
   foreach($variables['hide'] as $key) {
     unset($location[$key]);
+    // Special case for coords.
+    if ($key == 'coords') {
+      unset($location['latitude']);
+      unset($location['longitude']);
+    }
   }
 
   $fields = location_field_names(TRUE);
