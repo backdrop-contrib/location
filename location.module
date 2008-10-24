@@ -227,6 +227,11 @@ function _location_expand_location($element) {
   if (!$element['#required']) {
     // Relax non-required settings.
     foreach ($location_settings as $k => $v) {
+      // @@@ Todo: Change force default to 4 so we can use smarter logic?
+      if ($v == 3) {
+        continue;
+      }
+
       // Allow Allow (Use), Force Default settings through.
       // Block 2 (Required).
       $location_settings[$k] = $v & 1;
