@@ -7,11 +7,29 @@
  */
 
 /**
+ * Implementation of hook_theme().
+ */
+function location_cck_theme() {
+  return array(
+    'location_cck_formatter_default' => array(
+      'arguments' => array('element'),
+    ),
+  );
+}
+
+/**
  * Implementation of hook_field_info().
  */
 function location_cck_field_info() {
   return array(
-    'location' => array('label' => t('Location')),
+    'location' => array(
+      'label' => t('Location'),
+      'description' => t('Store a location.module location.'),
+      'callbacks' => array(
+        'tables' => CONTENT_CALLBACK_DEFAULT, // @@@ Needs to be custom -- views support
+        'arguments' => CONTENT_CALLBACK_DEFAULT, // @@@ Needs to be custom -- views support
+      ),
+    ),
   );
 }
 
@@ -22,20 +40,23 @@ function location_cck_field_settings($op, $field) {
   switch ($op) {
     case 'form':
       $form = array();
+      $settings = isset($field['location_settings']) ? $field['location_settings'] : FALSE;
+      $form['location_settings'] = location_settings($settings);
 
-      $form['location_fields'] = array(
-        '#type' => 'location_settings',
-        '#default_value' => isset($field['location_fields']) ? $field['location_fields'] : array(),
-      );
-
+      // Multiple is handled by CCK.
+      unset ($form['location_settings']['multiple']);
       return $form;
 
     case 'save':
-      return array('location_fields');
+      return array('location_settings');
 
     case 'database columns':
       return array(
-        'lid' => array('type' => 'int', 'not null' => TRUE, 'default' => '0'),
+        'lid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => FALSE,
+        ),
       );
 
     case 'arguments':
@@ -137,15 +158,36 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'insert':
     case 'update':
-      $cid = 'cck:'. $field['field_name'] .':'. $node->vid; //@@@
+      // Store instances of locations by field name and vid.
+      $genid = 'cck:'. $field['field_name'] .':'. $node->vid;
+      location_save_locations($items, array('genid' => $genid));
+      // CCK automatically picks up the new lids and stores them in its own tables.
+      break;
 
-      foreach ($items as $offset => $item) {
-        location_save($items[$offset]);
+/*
+    case 'load':
+      foreach ($items as $k => $v) {
+        if ($v['lid']) {
+          $items[$k] = location_load_location($v['lid']);
+        }
       }
-      db_query("DELETE FROM {location_instance} WHERE genid = '%s'", $cid);
-      foreach ($items as $location) {
-        db_query("INSERT INTO {location_instance} (genid, lid) VALUES ('%s', %d)", $cid, $lid);
+      break;
+*/
+
+    case 'delete':
+      // Run through the revisions and clean up all applicable references.
+      $result = db_query('SELECT vid FROM {node_revisions} WHERE nid = %d', $node->nid);
+      while ($row = db_fetch_object($result)) {
+        $genid = 'cck:'. $field['field_name'] .':'. $row->vid;
+        $locs = array();
+        location_save_locations($locs, array('genid' => $genid));
       }
+      break;
+
+    case 'delete revision':
+      $genid = 'cck:'. $field['field_name'] .':'. $node->vid;
+      $locs = array();
+      location_save_locations($locs, array('genid' => $genid));
       break;
   }
 }
@@ -185,6 +227,9 @@ function location_cck_widget_info() {
     'location' => array(
       'label' => t('Location Field'),
       'field types' => array('location'),
+      'callbacks' => array(
+//        'default value' => CONTENT_CALLBACK_CUSTOM,
+      ),
     ),
   );
 }
@@ -193,93 +238,52 @@ function location_cck_widget_info() {
  * Implementation of hook_widget_settings().
  */
 function location_cck_widget_settings($op, $widget) {
-  switch ($op) {
-    case 'form':
-      $form = array();
-      $form['rows'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Rows'),
-        '#default_value' => $widget['rows'] ? $widget['rows'] : 1,
-        '#required' => TRUE,
-      );
-      return $form;
 
-    case 'validate':
-      if (!is_numeric($widget['rows']) || intval($widget['rows']) != $widget['rows'] || $widget['rows'] <= 0) {
-        form_set_error('rows', t('"Rows" must be a positive integer.'));
-      }
-      break;
-
-    case 'save':
-      return array('rows');
-  }
 }
 
 /**
  * Implementation of hook_widget().
  */
-function location_cck_widget($op, &$node, $field, &$items) {
-  switch ($op) {
-    case 'form':
-      $form = array();
+function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  if ($field['widget']['type'] == 'location') {
+    $settings = $field['location_settings'];
 
-      $form[$field['field_name']] = array('#tree' => TRUE);
-      if ($field['multiple']) {
-        $form[$field['field_name']]['#type'] = 'fieldset';
-        $form[$field['field_name']]['#description'] = t($field['widget']['description']);
-        $delta = 0;
-        foreach ($items as $data) {
-          if ($data['lid']) {
-            $form[$field['field_name']][$delta] = array(
-              '#type' => 'location_element',
-              '#title' => ($delta == 0) ? t($field['widget']['label']) : '',
-              '#default_value' => $data,
-              '#required' => ($delta == 0) ? $field['required'] : FALSE,
-              '#maxlength' => $field['max_length'] ? $field['max_length'] : NULL,
-              '#location_settings' => $field['location_fields'],
-              '#weight' => $field['widget']['weight'],
-            );
-            $delta++;
-          }
-        }
-        foreach (range($delta, $delta + 2) as $delta) {
-          $form[$field['field_name']][$delta] = array(
-            '#type' => 'location_element',
-            '#title' => ($delta == 0) ? t($field['widget']['label']) : '',
-            '#default_value' => array(),
-            '#required' => ($delta == 0) ? $field['required'] : FALSE,
-            '#weight' => $field['widget']['weight'],
-            '#location_settings' => $field['location_fields'],
-          );
-        }
-      }
-      else {
-        $form[$field['field_name']][0] = array(
-          '#type' => 'location_element',
-          '#title' => t($field['widget']['label']),
-          '#default_value' => isset($items[0]) ? $items[0] : array(),
-          '#required' => $field['required'],
-          '#description' => t($field['widget']['description']),
-          '#weight' => $field['widget']['weight'],
-          '#location_settings' => $field['location_fields'],
-        );
-      }
-      return $form;
+    // Load location data for existing locations.
+    if (isset($items[$delta]['lid']) && $items[$delta]['lid']) {
+      $location = location_load_location($items[$delta]['lid']);
+    }
+    else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
+      // User has set default value in the field settings. Go with the flow. *shrug*
+      $location = $items[$delta];
+    }
+    else {
+      $location = array();
+    }
 
-    case 'process form values':
-      // Don't save empty fields except the first value
-      foreach ($items as $delta => $item) {
-//        if ($item['value'] == '' && $delta > 0) {
-  //        unset($items[$delta]);
-    //    }
-      }
-      break;
-
-    case 'prepare form values':
-      // Load locations for use in edit form.
-      foreach ($items as $k => $item) {
-        $items[$k] = location_load_location($item['lid']);
-      }
-      break;
+    $element = array(
+      '#type' => 'location_element',
+      '#title' => t($field['widget']['label']),
+      '#description' => t($field['widget']['description']),
+      '#required' => $field['required'],
+      '#location_settings' => $settings['form']['fields'],
+      '#default_value' => $location,
+    );
+    return $element;
   }
+}
+
+/**
+ * CCK Emptiness check.
+ */
+function location_cck_content_is_empty($item, $field) {
+  $filled = array();
+  if (location_is_empty($item, $filled)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+function theme_location_cck_formatter_default($element) {
+  $location = location_load_location($element['#item']['lid']);
+  return theme('location', $location);
 }

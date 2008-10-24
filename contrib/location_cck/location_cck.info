@@ -1,7 +1,7 @@
 ; $Id$
 name = Location CCK
 description = Bla bla location cck stuff
-dependencies = location content
+core = 6.x
 package = CCK
-
-
+dependencies[] = location
+dependencies[] = content
