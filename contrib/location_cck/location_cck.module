@@ -265,7 +265,7 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       '#title' => t($field['widget']['label']),
       '#description' => t($field['widget']['description']),
       '#required' => $field['required'],
-      '#location_settings' => $settings['form']['fields'],
+      '#location_settings' => isset($settings['form']['fields']) ? $settings['form']['fields'] : array(),
       '#default_value' => $location,
     );
     return $element;
