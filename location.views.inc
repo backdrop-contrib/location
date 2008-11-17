@@ -36,6 +36,9 @@ function location_views_handlers() {
       'location_handler_field_location_country' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_handler_filter_location_country' => array(
+        'parent' => 'views_handler_filter',
+      ),
       'location_handler_argument_location_country' => array(
         'parent' => 'views_handler_argument',
       ),
@@ -231,8 +234,7 @@ function location_views_data() {
       //'name field' => 'name',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
-      // TODO: should be drop down, and maybe country code entry
+      'handler' => 'location_handler_filter_location_country',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
