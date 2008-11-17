@@ -915,7 +915,12 @@ function location_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * @return An array of loaded locations.
  */
 function location_load_locations($id, $key = 'vid') {
-  $result = db_query('SELECT lid FROM {location_instance} WHERE '. db_escape_table($key) .' = %d', $id);
+  if ($key == 'genid') {
+    $result = db_query('SELECT lid FROM {location_instance} WHERE '. db_escape_table($key) ." = '%s'", $id);
+  }
+  else {
+    $result = db_query('SELECT lid FROM {location_instance} WHERE '. db_escape_table($key) .' = %d', $id);
+  }
   $locations = array();
   while ($lid = db_fetch_object($result)) {
     $locations[] = location_load_location($lid->lid);
