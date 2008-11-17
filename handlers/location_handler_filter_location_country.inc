@@ -77,10 +77,10 @@ class location_handler_filter_location_country extends views_handler_filter {
     $value = $this->value;
     if (is_array($value)) {
       $value = array_keys($value);
-    }
-    if (count($value) == 1) {
-      // If multiple is allowed but only one was chosen, use a string instead.
-      $value = reset($value);
+      if (count($value) == 1) {
+        // If multiple is allowed but only one was chosen, use a string instead.
+        $value = reset($value);
+      }
     }
 
     if (is_array($value)) {
