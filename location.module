@@ -213,20 +213,20 @@ function _location_expand_location($element) {
   $element['#location_settings'] = array_merge(location_invoke_locationapi($dummy, 'collection default'), $element['#location_settings']);
   $element['#default_value'] = array_merge(location_invoke_locationapi($dummy, 'default values'), $element['#default_value']);
 
-  $dv =& $element['#default_value'];
+  $defaults =& $element['#default_value'];
 
   // Keep track of the LID.
   // @@@ For some reason, hidden seems to work best.
   $element['lid'] = array(
     '#type' => 'hidden',
-    '#value' => isset($dv['lid']) ? $dv['lid'] : FALSE,
+    '#value' => isset($defaults['lid']) ? $defaults['lid'] : FALSE,
   );
 
-  $location_settings = $element['#location_settings'];
+  $settings = $element['#location_settings'];
 
   if (!$element['#required']) {
     // Relax non-required settings.
-    foreach ($location_settings as $k => $v) {
+    foreach ($settings as $k => $v) {
       // @@@ Todo: Change force default to 4 so we can use smarter logic?
       if ($v == 3) {
         continue;
@@ -234,7 +234,7 @@ function _location_expand_location($element) {
 
       // Allow Allow (Use), Force Default settings through.
       // Block 2 (Required).
-      $location_settings[$k] = $v & 1;
+      $settings[$k] = $v & 1;
     }
   }
 
@@ -242,13 +242,13 @@ function _location_expand_location($element) {
   foreach ($fields as $field => $title) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
-      if ($location_settings[$field] != 0) {
-        $element[$field] = location_invoke_locationapi($dv[$field], 'field_expand', $field, $location_settings[$field], $dv);
+      if ($settings[$field] != 0) {
+        $element[$field] = location_invoke_locationapi($defaults[$field], 'field_expand', $field, $settings[$field], $defaults);
       }
 
       // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
-      if ($field == 'street' && $location_settings[$field]) {
-        $element['additional'] = location_invoke_locationapi($dv['additional'], 'field_expand', 'additional', 1, $dv);
+      if ($field == 'street' && $settings[$field]) {
+        $element['additional'] = location_invoke_locationapi($defaults['additional'], 'field_expand', 'additional', 1, $defaults);
       }
     }
   }
@@ -256,7 +256,7 @@ function _location_expand_location($element) {
   if (user_access('submit latitude/longitude')) {
     $element['locpick'] = array();
 
-    if (location_has_coordinates($dv, FALSE)) {
+    if (location_has_coordinates($defaults, FALSE)) {
       $element['locpick']['current'] = array(
         '#type' => 'fieldset',
         '#title' => t('Current coordinates'),
@@ -264,15 +264,15 @@ function _location_expand_location($element) {
       $element['locpick']['current']['current_latitude'] = array(
         '#type' => 'item',
         '#title' => t('Latitude'),
-        '#value' => $dv['latitude'],
+        '#value' => $defaults['latitude'],
       );
       $element['locpick']['current']['current_longitude'] = array(
         '#type' => 'item',
         '#title' => t('Longitude'),
-        '#value' => $dv['longitude'],
+        '#value' => $defaults['longitude'],
       );
       $source = t('Unknown');
-      switch($dv['source']) {
+      switch($defaults['source']) {
         case LOCATION_LATLON_USER_SUBMITTED:
           $source = t('User-submitted');
           break;
@@ -323,13 +323,13 @@ function _location_expand_location($element) {
       $map['behavior']['locpick'] = TRUE;
       $map['behavior']['collapsehack'] = TRUE;
       // Use previous coordinates to center the map.
-      if (location_has_coordinates($dv, FALSE)) {
-        $map['latitude'] = (float)$dv['latitude'];
-        $map['longitude'] = (float)$dv['longitude'];
+      if (location_has_coordinates($defaults, FALSE)) {
+        $map['latitude'] = (float)$defaults['latitude'];
+        $map['longitude'] = (float)$defaults['longitude'];
 
         $map['markers'][] = array(
-          'latitude' => $dv['latitude'],
-          'longitude' => $dv['longitude'],
+          'latitude' => $defaults['latitude'],
+          'longitude' => $defaults['longitude'],
           'markername' => 'small gray', // @@@ Settable?
           'offset' => 0,
           'opts' => array(
@@ -357,7 +357,7 @@ function _location_expand_location($element) {
       );
     }
 
-    if (isset($dv['lid']) && $dv['lid'] !== FALSE) {
+    if (isset($defaults['lid']) && $defaults['lid'] !== FALSE) {
       $element['delete_location'] = array(
         '#type' => 'checkbox',
         '#title' => t('Delete'),
