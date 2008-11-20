@@ -255,6 +255,13 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
     else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
       // User has set default value in the field settings. Go with the flow. *shrug*
       $location = $items[$delta];
+      // Also, override the field defaults so the location is only saved if the user
+      // changes something.
+      unset($location['location_settings']);
+      unset($location['locpick']);
+      foreach ($location as $k => $v) {
+        $settings['form']['fields'][$k]['default'] = $v;
+      }
     }
     else {
       $location = array();
@@ -265,7 +272,7 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       '#title' => t($field['widget']['label']),
       '#description' => t($field['widget']['description']),
       '#required' => $field['required'],
-      '#location_settings' => isset($settings['form']['fields']) ? $settings['form']['fields'] : array(),
+      '#location_settings' => $settings,
       '#default_value' => $location,
     );
     return $element;

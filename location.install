@@ -1069,3 +1069,26 @@ function location_update_6304() {
 
   return $ret;
 }
+
+/**
+ * Add per-location-field weights and defaults.
+ */
+function location_update_6305() {
+  $ret = array();
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_settings_%'");
+  while ($row = db_fetch_object($result)) {
+    $var = variable_get($result->name, array());
+    $collect = $var['form']['fields'];
+    $var['form']['fields'] = array();
+    foreach ($collect as $k => $v) {
+      $var['form']['fields'][$k]['collect'] = $v;
+    }
+    // Country 3 has changed to 4 to make requirements code easier.
+    if (isset($var['form']['fields']['country']) && $var['form']['fields']['country'] == 3) {
+      $var['form']['fields']['country'] = 4;
+    }
+    // Weight and default values don't need to get set for now.
+    variable_set($result->name, $var);
+  }
+  return $ret;
+}

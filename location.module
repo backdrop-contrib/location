@@ -74,6 +74,13 @@ function location_menu() {
 }
 
 /**
+ *
+ */
+function location_api_variant() {
+  return 1;
+}
+
+/**
  * Implementation of hook_perm().
  */
 function location_perm() {
@@ -195,7 +202,6 @@ function location_views_api() {
  */
 function _location_expand_location($element) {
   drupal_add_css(drupal_get_path('module', 'location') .'/location.css');
-  $value = is_array($element['#value']) ? $element['#value'] : array();
   $element['#tree'] = TRUE;
 
   if (!isset($element['#title'])) {
@@ -208,46 +214,48 @@ function _location_expand_location($element) {
     $element['#default_value'] = array();
   }
 
-  // Merge defaults in.
-  $dummy = array();
-  $element['#location_settings'] = array_merge(location_invoke_locationapi($dummy, 'collection default'), $element['#location_settings']);
-  $element['#default_value'] = array_merge(location_invoke_locationapi($dummy, 'default values'), $element['#default_value']);
-
-  $defaults =& $element['#default_value'];
-
-  // Keep track of the LID.
-  // @@@ For some reason, hidden seems to work best.
-  $element['lid'] = array(
-    '#type' => 'hidden',
-    '#value' => isset($defaults['lid']) ? $defaults['lid'] : FALSE,
+  $element['location_settings'] = array(
+    '#type' => 'value',
+    '#value' => $element['#location_settings'],
   );
 
-  $settings = $element['#location_settings'];
+  // Ensure this isn't accidentally used later.
+  unset($element['#location_settings']);
 
-  if (!$element['#required']) {
-    // Relax non-required settings.
-    foreach ($settings as $k => $v) {
-      // @@@ Todo: Change force default to 4 so we can use smarter logic?
-      if ($v == 3) {
-        continue;
-      }
+  // Make a reference to the settings.
+  $settings =& $element['location_settings']['#value'];
 
-      // Allow Allow (Use), Force Default settings through.
-      // Block 2 (Required).
-      $settings[$k] = $v & 1;
-    }
+  if (isset($element['#default_value']['lid']) && $element['#default_value']['lid']) {
+    // Keep track of the old LID.
+    $element['lid'] = array(
+      '#type' => 'value',
+      '#value' => $element['#default_value']['lid'],
+    );
   }
+
+  // Fill in missing defaults, etc.
+  location_normalize_settings($settings, $element['#required']);
+
+  $defaults = location_empty_location($settings);
+
+  if (isset($element['lid']['#value']) && $element['lid']['#value']) {
+    $defaults = location_load_location($element['lid']['#value']);
+  }
+
+  $fsettings =& $settings['form']['fields'];
+
+  // $settings -> $settings['form']['fields']
 
   $fields = location_field_names();
   foreach ($fields as $field => $title) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
-      if ($settings[$field] != 0) {
-        $element[$field] = location_invoke_locationapi($defaults[$field], 'field_expand', $field, $settings[$field], $defaults);
+      if ($fsettings[$field]['collect'] != 0) {
+        $element[$field] = location_invoke_locationapi($defaults[$field], 'field_expand', $field, $fsettings[$field]['collect'], $defaults);
       }
 
       // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
-      if ($field == 'street' && $settings[$field]) {
+      if ($field == 'street' && $fsettings[$field]['collect']) {
         $element['additional'] = location_invoke_locationapi($defaults['additional'], 'field_expand', 'additional', 1, $defaults);
       }
     }
@@ -357,7 +365,7 @@ function _location_expand_location($element) {
       );
     }
 
-    if (isset($defaults['lid']) && $defaults['lid'] !== FALSE) {
+    if (isset($defaults['lid']) && !empty($defaults['lid'])) {
       $element['delete_location'] = array(
         '#type' => 'checkbox',
         '#title' => t('Delete'),
@@ -373,9 +381,8 @@ function _location_expand_location($element) {
 
 function _location_expand_location_settings(&$element) {
   // Set a value for the fieldset that doesn't interfere with rendering and doesn't generate a warning.
-  $element['#value'] = '';
   $element['#tree'] = TRUE;
-  $element['#type'] = 'fieldset';
+  $element['#theme'] = 'location_settings';
 
   if (!isset($element['#title'])) {
     $element['#title'] = t('Location Fields');
@@ -387,29 +394,57 @@ function _location_expand_location_settings(&$element) {
   // Force #tree on.
   $element['#tree'] = TRUE;
 
-  $defaults = location_invoke_locationapi($element, 'collection default');
-  $defaults = array_merge($defaults, $element['#default_value']);
+  $defaults = $element['#default_value'];
+  if (!isset($defaults) || !is_array($defaults)) {
+    $defaults = array();
+  }
+  $temp = location_invoke_locationapi($element, 'defaults');
+  foreach ($temp as $k => $v) {
+    if (!isset($defaults[$k])) {
+      $defaults[$k] = array();
+    }
+    $defaults[$k] = array_merge($v, $defaults[$k]);
+  }
+
 
   $fields = location_field_names();
 
   // Options for fields.
   $options = array(
-    t('Do not collect'),
-    t('Allow'),
-    t('Require'),
+    0 => t('Do not collect'),
+    1 => t('Allow'),
+    2 => t('Require'),
+    4 => t('Force Default'), // Need to consider the new "defaults" when saving.
   );
+
   foreach ($fields as $field => $title) {
     $element[$field] = array(
-      '#type'           => 'radios',
-      '#title'          => $title,
-      '#default_value'  => $defaults[$field],
-      '#options'        => $options,
-      '#tree'           => TRUE,
+      '#type' => 'fieldset',
+      '#tree' => TRUE,
+    );
+    $element[$field]['name'] = array(
+      '#type' => 'item',
+      '#value' => $title,
+    );
+    $element[$field]['collect'] = array(
+      '#type' => 'select',
+      '#default_value' => $defaults[$field]['collect'],
+      '#options' => $options,
+    );
+
+    $temp = $defaults[$field]['default'];
+    $element[$field]['default'] = location_invoke_locationapi($temp, 'field_expand', $field, 1, $defaults);
+    $defaults[$field]['default'] = $temp;
+
+    $element[$field]['weight'] = array(
+      '#type' => 'weight',
+      '#delta' => 100,
+      '#default_value' => $defaults[$field]['weight'],
     );
   }
 
   // Override country field.
-  $element['country'] = array(
+/*  $element['country'] = array(
     '#type'           => 'radios',
     '#title'          => t('Country names'),
     '#description'    => t('When using "Force Default", the country field will be set to the value of the "Default country selection" dropdown on the <a href="@location_settings">location settings page</a> and hidden from the user.', array('@location_settings' => url('admin/settings/location'))),
@@ -421,10 +456,11 @@ function _location_expand_location_settings(&$element) {
       3 => t('Force Default'),
     ),
   );
+*/
 
   // 'Street Additional' field should depend on 'Street' setting.
   // It should never be required and should only display when the street field is 'allowed' or 'required'
-  unset($element['additional']);
+//  unset($element['additional']);
 
   // @@@ Alter here?
 
@@ -432,7 +468,39 @@ function _location_expand_location_settings(&$element) {
 }
 
 function theme_location_settings($element) {
-  return theme('form_element', $element, $element['#children']);
+  $rows = array();
+  $header = array(
+    array(
+      'data' => t('Name'),
+      'colspan' => 2,
+    ),
+    t('Collect'), t('Default'), t('Weight'));
+
+  // Force country required.
+  $element['country']['default']['#required'] = TRUE;
+  unset($element['country']['collect']['#options'][0]);
+
+  foreach (element_children($element) as $key) {
+    $element[$key]['weight']['#attributes']['class'] = 'location-settings-weight';
+    unset($element[$key]['default']['#title']);
+    $row = array();
+    $row[] = array('data' => '', 'class' => 'location-settings-drag');
+    $row[] = drupal_render($element[$key]['name']);
+    $row[] = drupal_render($element[$key]['collect']);
+    $row[] = drupal_render($element[$key]['default']);
+    $row[] = array('data' => drupal_render($element[$key]['weight']), 'class' => 'delta-order');
+
+    $rows[] = array(
+      'data' => $row,
+      'class' => 'draggable',
+    );
+  }
+
+  drupal_add_tabledrag('location-settings-table', 'order', 'sibling', 'location-settings-weight');
+
+  $output = theme('table', $header, $rows, array('id' => 'location-settings-table'));
+  //return theme('form_element', $element, $element['#children']);
+  return $output;
 }
 
 function location_field_names($all = FALSE) {
@@ -467,22 +535,20 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
     case 'virtual fields':
       return array('province_name' => t('Province name'), 'country_name' => t('Country name'), 'map_link' => t('Map link'), 'coords' => t('Coordinates'));
 
-    case 'collection default':
-      return array('name' => 1, 'street' => 1, 'additional' => 1, 'city' => 0, 'province' => 0, 'postal_code' => 0, 'country' => 1);
-
-    case 'default values':
+    case 'defaults':
       return array(
-        'name' => '',
-        'street' => '',
-        'additional' => '',
-        'city' => '',
-        'province' => '',
-        'postal_code' => '',
-        'country' => variable_get('location_default_country', 'us'),
-        'latitude' => 0,
-        'longitude' => 0,
-        'source' => LOCATION_LATLON_UNDEFINED,
-        'is_primary' => 0, // @@@
+        'lid'         => array('default' => FALSE),
+        'name'        => array('default' => '', 'collect' => 1, 'weight' => 2),
+        'street'      => array('default' => '', 'collect' => 1, 'weight' => 4),
+        'additional'  => array('default' => '', 'collect' => 1, 'weight' => 6),
+        'city'        => array('default' => '', 'collect' => 0, 'weight' => 8),
+        'province'    => array('default' => '', 'collect' => 0, 'weight' => 10),
+        'postal_code' => array('default' => '', 'collect' => 0, 'weight' => 12),
+        'country'     => array('default' => variable_get('location_default_country', 'us'), 'collect' => 1, 'weight' => 14), // @@@ Fix weight?
+        'latitude'    => array('default' => 0),
+        'longitude'   => array('default' => 0),
+        'source'      => array('default' => LOCATION_LATLON_UNDEFINED),
+        'is_primary'  => array('default' => 0), // @@@
       );
 
     case 'validate':
@@ -563,10 +629,11 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
         case 'province':
           drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
+          $country = $a5['country'] ? $a5['country'] : variable_get('location_default_country', 'us');
           return array(
             '#type' => 'textfield',
             '#title' => t('State/Province'),
-            '#autocomplete_path' => 'location/autocomplete/'. $a5['country'],
+            '#autocomplete_path' => 'location/autocomplete/'. $country,
             '#default_value' => $obj,
             '#size' => 64,
             '#maxlength' => 64,
@@ -578,7 +645,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
         case 'country':
           // Force default.
-          if ($a4 == 3) {
+          if ($a4 == 4) {
             return array(
               '#type' => 'value',
               '#value' => variable_get('location_default_country', 'us'),
@@ -612,17 +679,34 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
       break;
 
     case 'isunchanged':
-      if ($a3 == 'latitude' || $a3 == 'longitude') {
-        if (_location_floats_are_equal($obj[$a3], $a4)) {
+      switch ($a3) {
+        case 'lid':
+          // Consider 0, NULL, and FALSE to be equivilent.
+          if (empty($obj[$a3]) && empty($a4)) {
+            return TRUE;
+          }
+          break;
+        case 'latitude':
+        case 'longitude':
+          if (_location_floats_are_equal($obj[$a3], $a4)) {
+            return TRUE;
+          }
+          break;
+
+        case 'country':
+          // Consider '  ' and '' to be equivilent, due to us storing country
+          // as char(2) in the database.
+          if (trim($obj[$a3]) == trim($a4)) {
+            return TRUE;
+          }
+          break;
+
+        case 'province_name':
+        case 'country_name':
+        case 'map_link':
+        case 'coords':
+          // Always considered unchanged.
           return TRUE;
-        }
-      }
-      if ($a3 == 'country') {
-        // Consider '  ' and '' to be equivilent, due to us storing country
-        // as char(2) in the database.
-        if (trim($obj[$a3]) == trim($a4)) {
-          return TRUE;
-        }
       }
       break;
 
@@ -793,17 +877,12 @@ function location_form_alter(&$form, &$form_state, $form_id) {
  * @ingroup $form
  */
 function location_node_settings_validate($form, &$form_state) {
- // @@@ Fix validation again.
-/*
-  if (!empty($form_state['values']['location_maxnum']) && empty($form_state['values']['location_defaultnum'])) {
-    form_set_error('location_defaultnum',
-      t("You must have at least 1 default location-form enabled if you are going to allow locations to be submitted for nodes of this type. If you don't intend to allow locations to be submitted for nodes of this type, set the maximum number of locations allowed for this type to 0."));
+  if (!empty($form_state['values']['location_settings']['multiple']['max']) && empty($form_state['values']['location_settings']['multiple']['add'])) {
+    form_error($form['location_settings']['multiple']['add'], t("You must have at least one empty location form enabled if you are going to allow locations to be submitted for nodes of this content type. If you don't intend to allow locations to be submitted for nodes of this content type, set the maximum number of locations allowed for this content type to 0."));
   }
-  elseif ($form_state['values']['location_defaultnum'] > $form_state['values']['location_maxnum']) {
-    form_set_error('location_defaultnum',
-      t("Your default number of location-forms that show up can't be greater than the maximum number of locations allowed for this node type."));
+  elseif ($form_state['values']['location_settings']['multiple']['add'] > $form_state['values']['location_settings']['multiple']['max']) {
+    form_error($form['location_settings']['multiple']['add'], t("You can't show more empty location forms than the maximum number of locations allowed for this content type."));
   }
-*/
 }
 
 /**
@@ -1200,31 +1279,25 @@ function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a
  * @return The lid of the saved location, or FALSE if the location is considered "empty."
  */
 function location_save(&$location, $cow = TRUE, $criteria = array()) {
-  $inhibit_geocode = FALSE;
+  // Quick settings fixup.
+  if (!isset($location['location_settings'])) {
+    $location['location_settings'] = array();
+  }
+  location_normalize_settings($location['location_settings']);
 
-  $dummy = array();
-  $virtual = location_invoke_locationapi($dummy, 'virtual fields');
+  $inhibit_geocode = FALSE;
 
   if (isset($location['delete_location']) && $location['delete_location']) {
     // Location is being deleted.
-    // Stomp on it with the default values.
-    $dummy = array();
-    $location = location_invoke_locationapi($dummy, 'default values');
-  }
-  unset($location['delete_location']);
-
-  // Remove the "virtual fields" from the location.
-  foreach ($virtual as $field => $name) {
-    unset($location[$field]);
+    // Consider it empty and return early.
+    $location['lid'] = FALSE;
+    return FALSE;
   }
 
-  $oldloc = array();
-  if ($location['lid']) {
+  // If there's already a lid, we're editing an old location. Load it in.
+  $oldloc = location_empty_location($location['location_settings']);
+  if (isset($location['lid']) && !empty($location['lid'])) {
     $oldloc = (array)location_load_location($location['lid']);
-    // Remove the "virtual fields" from the old location too.
-    foreach ($virtual as $field => $name) {
-      unset($oldloc[$field]);
-    }
   }
 
   // @@@ This isn't the best place to do this...
@@ -1244,6 +1317,8 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
   // Pull in fields that hold data currently not editable directly by the user.
   $location = array_merge($oldloc, $location);
 
+  // Note: If the user clears all the fields, the location can still
+  // be non-empty if the user didn't have access to everything..
   $filled = array();
   if (location_is_empty($location, $filled)) {
     // This location was empty, we don't need to continue.
@@ -1251,38 +1326,8 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
     return FALSE;
   }
 
-  // Change detection.
   $changed = array();
-  foreach ($location as $k => $v) {
-    if ($k == 'locpick') {
-      // The locpick element is "special".
-      continue;
-    }
-    if (!isset($oldloc[$k])) {
-      // Field missing from old location, automatic save.
-      $changed[$k] = TRUE;
-      continue;
-    }
-    else if ($oldloc[$k] == $v) {
-      // Exact match, no change.
-      continue;
-    }
-
-    // It wasn't equal, but perhaps it was equivilent?
-    $results = location_invoke_locationapi($location, 'isunchanged', $k, $oldloc[$k]);
-    $waschanged = TRUE; // First, assume changed.
-    foreach ($results as $r) {
-      if ($r) {
-        $waschanged = FALSE;
-      }
-    }
-    if ($waschanged) {
-      // Nobody okayed this difference.
-      $changed[$k] = TRUE;
-    }
-  }
-
-  if (empty($changed)) {
+  if (!location_diff($oldloc, $location, $changed)) {
     // We didn't actually need to save anything.
     if (!empty($location['lid'])) {
       return $location['lid'];
@@ -1345,6 +1390,52 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
 }
 
 /**
+ * Computes the differences between two locations.
+ * @param $oldloc Original location.
+ * @param $newloc New location.
+ * @param &$changes Array of changes.
+ *   The keys are field names, and the values are boolean FALSE and TRUE.
+ * @return Whether or not there were any changes.
+ */
+function location_diff($oldloc, $newloc, &$changes) {
+  location_strip($oldloc);
+  location_strip($newloc);
+  $location_changed = FALSE;
+  foreach ($newloc as $k => $v) {
+    if (!isset($oldloc[$k])) {
+      // Field missing from old location, automatic save.
+      $changes[$k] = TRUE;
+      $location_changed = TRUE;
+      continue;
+    }
+    else if ($oldloc[$k] == $v) {
+      $changes[$k] = FALSE;
+      // Exact match, no change.
+      continue;
+    }
+
+    // It wasn't equal, but perhaps it was equivilent?
+    $results = location_invoke_locationapi($newloc, 'isunchanged', $k, $oldloc[$k]);
+    $waschanged = TRUE; // First, assume changed.
+    foreach ($results as $r) {
+      if ($r) {
+        $waschanged = FALSE;
+        $changes[$k] = FALSE;
+      }
+    }
+    if ($waschanged) {
+      // Nobody okayed this difference.
+      $changes[$k] = TRUE;
+      $location_changed = TRUE;
+    }
+  }
+  if (!$location_changed) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Checks if a location is empty, and sets up an array of filled fields.
  * @param $location The location to check.
  * @param $filled An array (Will contain the list of filled fields upon return.)
@@ -1352,43 +1443,90 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
  * @return TRUE if the location is empty, FALSE otherwise.
  */
 function location_is_empty($location, &$filled) {
-  $dummy = array();
-  $emptyloc = location_invoke_locationapi($dummy, 'default values');
-
-  if (isset($location['delete_location']) && $location['delete_location']) {
-    // Although this doesn't occur in location.module, it is used in other places.
+  // Special case: Consider an empty array to be empty.
+  if (empty($location)) {
     return TRUE;
   }
 
-  // Determine what fields were filled in.
+  $settings = isset($location['location_settings']) ? $location['location_settings'] : array();
+  $emptyloc = location_empty_location($settings);
+
+  return !location_diff($emptyloc, $location, $filled);
+}
+
+/**
+ * Returns an empty location object based on the given settings.
+ */
+function location_empty_location($settings) {
+  $defaults = location_invoke_locationapi($location, 'defaults');
+  if (isset($settings['form']['fields'])) {
+    foreach ($settings['form']['fields'] as $k => $v) {
+      $defaults[$k] = array_merge($defaults[$k], $v);
+    }
+  }
+
+  $location = array();
+  foreach ($defaults as $k => $v) {
+    if (isset($v['default'])) {
+      $location[$k] = $v['default'];
+    }
+  }
+  return $location;
+}
+
+/**
+ * Strip junk out of a location.
+ */
+function location_strip(&$location) {
+  static $tmp;
+  if (!isset($tmp)) {
+    $tmp = array();
+    $defaults = location_invoke_locationapi($location, 'defaults');
+    foreach ($defaults as $k => $v) {
+      $tmp[$k] = TRUE;
+    }
+  }
   foreach ($location as $k => $v) {
-    if (!isset($emptyloc[$k])) {
-      // No default value -- This isn't a field location cares about.
-      continue;
+    if (!isset($tmp[$k])) {
+      unset($location[$k]);
     }
-    if ($emptyloc[$k] == $v) {
-      // Exact match, no change.
-      continue;
+  }
+}
+
+/**
+ * Adjust a settings array.
+ * This will add any missing pieces and will set up requirements.
+ */
+function location_normalize_settings(&$settings, $required = TRUE) {
+
+  if (!isset($settings['form'])) {
+    $settings['form'] = array();
+  }
+  if (!isset($settings['form']['fields'])) {
+    $settings['form']['fields'] = array();
+  }
+
+
+  // Merge defaults in.
+  $dummy = array();
+  $ds = location_invoke_locationapi($dummy, 'defaults');
+  foreach ($ds as $k => $v) {
+    if (!isset($settings['form']['fields'][$k])) {
+      $settings['form']['fields'][$k] = array();
     }
-    else {
-      // It wasn't equal, but perhaps it was equivilent?
-      $results = location_invoke_locationapi($shadow, 'isunchanged', $k, $emptyloc[$k]);
-      $changed = TRUE; // First, assume changed.
-      foreach ($results as $r) {
-        if ($r) {
-          $changed = FALSE;
-        }
-      }
-      if ($changed) {
-        // Nobody answered affirmative, it must be different.
-        $filled[$k] = TRUE;
+    $settings['form']['fields'][$k] = array_merge($v, $settings['form']['fields'][$k]);
+  }
+
+  // Adjust collection settings if the entire location is "optional."
+  if (!$required) {
+    // Relax non-required settings.
+    foreach ($settings['form']['fields'] as $k => $v) {
+      if (isset($settings['form']['fields'][$k]['collect'])) {
+        // Block 2 (Required).
+        $settings['form']['fields'][$k]['collect'] = $settings['form']['fields'][$k]['collect'] & ~2;
       }
     }
   }
-  if (empty($filled)) {
-    return TRUE;
-  }
-  return FALSE;
 }
 
 /**
@@ -1785,7 +1923,7 @@ function location_form($settings, $locations) {
       '#type' => 'location_element',
       '#title' => t('Location #%number', array('%number' => $i + 1)),
       '#default_value' => isset($locations[$i]) ? $locations[$i] : NULL,
-      '#location_settings' => $settings['form']['fields'],
+      '#location_settings' => $settings,
       '#required' => $required,
     );
   }

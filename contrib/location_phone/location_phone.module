@@ -14,11 +14,10 @@ function location_phone_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
     case 'fields':
       return array('phone' => t('Phone number'));
 
-    case 'collection default':
-      return array('phone' => 0);
-
-    case 'default values':
-      return array('phone' => '');
+    case 'defaults':
+      return array(
+        'phone' => array('default' => '', 'collect' => 0, 'weight' => 25),
+      );
 
     case 'field_expand':
       if ($a3 == 'phone') {
