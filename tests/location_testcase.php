@@ -69,4 +69,38 @@ class LocationTestCase extends DrupalWebTestCase {
     return $name;
   }
 
+  /**
+   * Delete a node.
+   */
+  function deleteNode($nid) {
+    // Implemention taken from node_delete, with some assumptions regarding
+    // function_exists removed.
+
+    $node = node_load($nid);
+    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
+    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
+
+    // Call the node-specific callback (if any):
+    node_invoke($node, 'delete');
+    node_invoke_nodeapi($node, 'delete');
+
+    // Clear the page and block caches.
+    cache_clear_all();
+  }
+
+  /**
+   * Order locations in a node by LID for testing repeatability purposes.
+   */
+  function reorderLocations(&$node) {
+    $locations = array();
+    foreach ($node->locations as $location) {
+      $locations[$location['lid']] = $location;
+    }
+    ksort($locations);
+    $node->locations = array();
+    foreach ($locations as $location) {
+      $node->locations[] = $location;
+    }
+  }
+
 }
