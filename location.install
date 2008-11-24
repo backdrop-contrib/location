@@ -981,6 +981,12 @@ function location_update_6303() {
  * Upgrade all of the settings variables to the new unified system.
  */
 function location_update_6304() {
+  // Skip this update if it was already done on the 5.x side.
+  if (variable_get('location_update_5305_done', FALSE)) {
+    variable_del('location_update_5305_done');
+    return array();
+  }
+
   $ret = array();
 
   $variables = array();
