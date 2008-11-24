@@ -1088,6 +1088,11 @@ function location_update_6305() {
  * Add per-location-field weights and defaults.
  */
 function location_update_6306() {
+  // Skip this update if it was already done on the 5.x side.
+  if (variable_get('location_update_5306_done', FALSE)) {
+    variable_del('location_update_5306_done');
+    return array();
+  }
   $ret = array();
   $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_settings_%'");
   while ($row = db_fetch_object($result)) {
