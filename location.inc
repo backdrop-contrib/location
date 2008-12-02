@@ -448,11 +448,21 @@ function location_province_name($country = 'us', $province = 'xx') {
  * Get a province code from a code or full name and a country.
  */
 function location_province_code($country = 'us', $province = 'xx') {
-  $provinces = location_get_provinces($country);
+  // An array of countries is useful if someone specified multiple countries
+  // in an autoselect for example.
+  // It *is* possibly ambiguous, especially if the province was already a code.
+  // We make an array here for single (the usual case) for code simplicity reasons.
+  if (!is_array($country)) {
+    $country = array($country);
+  }
+
   $p = strtoupper($province);
-  foreach ($provinces as $k => $v) {
-    if ($p == strtoupper($k) || $p == strtoupper($v)) {
-      return $k;
+  foreach ($country as $c) {
+    $provinces = location_get_provinces($c);
+    foreach ($provinces as $k => $v) {
+      if ($p == strtoupper($k) || $p == strtoupper($v)) {
+        return $k;
+      }
     }
   }
   return '';

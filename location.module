@@ -1188,7 +1188,18 @@ function _location_autocomplete($country, $string = '') {
   $string   = strtolower($string);
   $string   = '/^'. $string .'/';
   $matches  = array();
-  $provinces = location_get_provinces($country);
+
+  if (strpos($country, ',') !== FALSE) {
+    // Multiple countries specified.
+    $provinces = array();
+    $country = explode(',', $country);
+    foreach($country as $c) {
+      $provinces = $provinces + location_get_provinces($c);
+    }
+  }
+  else {
+    $provinces = location_get_provinces($country);
+  }
 
   if (!empty($provinces)) {
     while (list($code, $name) = each($provinces)) {

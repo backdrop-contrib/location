@@ -45,6 +45,9 @@ function location_views_handlers() {
       'location_handler_field_location_province' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_handler_filter_location_province' => array(
+        'parent' => 'views_handler_filter',
+      ),
       'location_handler_argument_location_province' => array(
         'parent' => 'views_handler_argument',
       ),
@@ -198,8 +201,7 @@ function location_views_data() {
       //'name field' => 'name',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
-      // TODO: needs handler to filter by name, not code
+      'handler' => 'location_handler_filter_location_province',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
