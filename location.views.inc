@@ -63,6 +63,17 @@ function location_views_handlers() {
       'location_handler_field_location_distance' => array(
         'parent' => 'views_handler_field',
       ),
+      'location_handler_sort_location_distance' => array(
+        'parent' => 'views_handler_sort',
+      ),
+//      'location_handler_relationship_location_distance' => array(
+//        'parent' => 'views_handler_relationship',
+//      ),
+
+//      'location_handler_field_location_coordinates_user' => array(
+//        'parent' => 'views_handler_field',
+//      ),
+
     ),
   );
 }
@@ -280,30 +291,34 @@ function location_views_data() {
       'handler' => 'location_views_handler_field_coordinates',
       'click sortable' => FALSE,
     ),
-    'filter' => array(
-      'handler' => 'location_views_handler_filter_proximity',
-    ),
   );
 
   $data['location']['distance'] = array(
-    'title' => t('Distance'),
+    'title' => t('Distance / Proximity'),
     'help' => t("The distance from the selected location and either the current user or a specific location."),
     'field' => array(
-      'field' => 'latitude', // The handler adds the longitude.
       'handler' => 'location_handler_field_location_distance',
       'click sortable' => TRUE,
     ),
-//    'sort' => array(
-//      'handler' => 'views_handler_sort',
-//      TODO: needs handler
-//    ),
-//    'filter' => array(
-//      'handler' => 'location_views_handler_filter_proximity',
+    'sort' => array(
+      'handler' => 'location_handler_sort_location_distance',
+    ),
+    'filter' => array(
+      'handler' => 'location_views_handler_filter_proximity',
+    ),
+//    'relationship' => array(
+//      'handler' => 'location_handler_relationship_location_distance',
 //    ),
   );
 
-
-
+//  $data['location']['coordinates_user'] = array(
+//    'title' => t('Coordinates of logged-on user'),
+//    'help' => t('This will contain the coordinates of the logged-on user.'),
+//    'field' => array(
+//      'handler' => 'location_handler_field_location_coordinates_user',
+//      'click sortable' => FALSE,
+//    ),
+//  );
 
 /*
       'latitude' => array(

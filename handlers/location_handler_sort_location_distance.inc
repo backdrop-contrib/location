@@ -3,10 +3,10 @@
 
 /**
  * @file
- * Coordinates field handler.
+ * Coordinates sort handler.
  */
 
-class location_handler_field_location_distance extends views_handler_field {
+class location_handler_sort_location_distance extends views_handler_sort {
 
   function option_definition() {
     $options = parent::option_definition();
@@ -56,22 +56,6 @@ class location_handler_field_location_distance extends views_handler_field {
     );
   }
 
-  function render($values) {
-    if (empty($values->{$this->field_alias}) || $values->{$this->field_alias} == 'Unknown') {
-      // Unset location, empty display.
-      return;
-    }
-    $dist = (float)$values->{$this->field_alias};
-    if ($this->options['units'] == 'km') {
-      $dist = $dist / 1000.0;
-      return theme('location_distance', $dist, 'km');
-    }
-    else {
-      $dist = $dist / 1609.347;
-      return theme('location_distance', $dist, 'mi');
-    }
-  }
-
   function query() {
     $latitude = 0;
     $longitude = 0;
@@ -107,12 +91,32 @@ class location_handler_field_location_distance extends views_handler_field {
 
     $this->ensure_my_table();
 
+    // OK, so this part will need a little explanation.
+    // Since the distance calculation is so icky, we try quite hard
+    // to save some work for the database.
+    // If someone has added a field that matches the sort, we just sort on that column!
+    $alias = $this->table_alias .'_'. $this->field .'_sort';
+    foreach ($this->view->field as $k => $v) {
+      if ($v->table == 'location' && $v->field == 'distance' && $v->options['relationship'] == $this->options['relationship']) {
+        if ($v->options['origin'] == $this->options['origin']
+            && $v->options['units'] == $this->options['units']
+            && $v->options['latitude'] == $this->options['latitude']
+            && $v->options['longitude'] == $this->options['longitude']) {
+          // We have a match! Sync aliases to make it easier on the database.
+          $alias = $v->field_alias;
+        }
+      }
+    }
+
     if (empty($latitude) && empty($longitude)) {
       // We don't know the distance.
-      $this->field_alias = $this->query->add_field(NULL, "'Unknown'", $this->table_alias .'_'. $this->field);
+      // Therefore, we don't need to sort on it.
     }
     else {
-      $this->field_alias = $this->query->add_field(NULL, earth_distance_sql($longitude, $latitude, $this->table_alias), $this->table_alias .'_'. $this->field);
+      // This is done exactly the same as the field version.
+      // Views is ok with us redefining the formula for a field.
+      // If ANYTHING differs in the configuration, we will use a new alias.
+      $this->query->add_orderby(NULL, earth_distance_sql($longitude, $latitude, $this->table_alias), $this->options['order'], $alias);
     }
   }
 }
