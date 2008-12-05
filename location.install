@@ -1111,3 +1111,13 @@ function location_update_6306() {
   }
   return $ret;
 }
+
+/**
+ * I hate to waste a whole update on this, but people will need to know.
+ */
+function location_update_6307() {
+  $ret = array();
+  drupal_set_message(t("NOTE: Location module has now split off user location support into a seperate module, called <em>User Locations</em>. It has been enabled for you. If you don't want user locations, visit the <a href='!url'>modules page</a> and disable it.", array('!url' => url('admin/build/modules'))));
+  module_enable(array('location_user'));
+  return $ret;
+}
