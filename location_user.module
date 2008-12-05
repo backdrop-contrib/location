@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Short description.
+ * Associate locations with users.
  */
 
 function location_user_perm() {
