@@ -1217,6 +1217,13 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
 
   $inhibit_geocode = FALSE;
 
+  if (isset($location['inhibit_geocode']) && $location['inhibit_geocode']) {
+    // Workaround for people importing / generating locations.
+    // Allows things like location_generate.module to work properly.
+    $inhibit_geocode = TRUE;
+    unset($location['inhibit_geocode']);
+  }
+
   if (isset($location['delete_location']) && $location['delete_location']) {
     // Location is being deleted.
     // Consider it empty and return early.
