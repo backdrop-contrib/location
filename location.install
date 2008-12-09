@@ -29,23 +29,23 @@ function location_uninstall() {
   variable_del('location_settings_user');
 
   // Delete node settings.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_settings_node_%");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_settings_node_%'");
   while ($row = db_fetch_object($result)) {
     variable_del($row->name);
   }
 
   // Delete geocoder settings.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%'");
   while ($row = db_fetch_object($result)) {
     variable_del($row->name);
   }
 
   // Delete compatibility variables.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_maxnum_%");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_maxnum_%'");
   while ($row = db_fetch_object($result)) {
     variable_del($row->name);
   }
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_defaultnum_%");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_defaultnum_%'");
   while ($row = db_fetch_object($result)) {
     variable_del($row->name);
   }
