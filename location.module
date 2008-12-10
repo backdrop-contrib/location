@@ -248,11 +248,13 @@ function _location_expand_location($element) {
       // @@@ Permission check hook?
       if ($fsettings[$field]['collect'] != 0) {
         $element[$field] = location_invoke_locationapi($defaults[$field], 'field_expand', $field, $fsettings[$field]['collect'], $defaults);
+        $element[$field]['#weight'] = (int)$fsettings[$field]['weight'];
       }
 
       // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
       if ($field == 'street' && $fsettings[$field]['collect']) {
         $element['additional'] = location_invoke_locationapi($defaults['additional'], 'field_expand', 'additional', 1, $defaults);
+        $element['additional']['#weight'] = (int)$fsettings[$field]['weight'];
       }
     }
   }
@@ -487,9 +489,15 @@ function theme_location_settings($element) {
     $row[] = array('data' => drupal_render($element[$key]['weight']), 'class' => 'delta-order');
 
     $rows[] = array(
+      '#weight' => (int)$element[$key]['weight']['#value'],
       'data' => $row,
       'class' => 'draggable',
     );
+  }
+
+  uasort($rows, 'element_sort');
+  foreach ($rows as $k => $v) {
+    unset($rows[$k]['#weight']);
   }
 
   drupal_add_tabledrag('location-settings-table', 'order', 'sibling', 'location-settings-weight');
