@@ -144,39 +144,6 @@ function location_distance_between($latlon_a = array(), $latlon_b = array(), $di
   return array('scalar' => round($meters/(($distance_unit == 'km') ? 1000.0 : 1609.347), 1), 'distance_unit' => $distance_unit);
 }
 
-// @@@ Update for newer gmap
-function location_latlon_form($description = '', $prefilled_values = array()) {
-  $form = array();
-
-  $usegmap = (function_exists('gmap_set_location') && variable_get('location_usegmap', FALSE));
-
-  if ($usegmap) {
-    $form['map'] = array();  //reserve spot at top of form for map
-  }
-
-  $form['latitude'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Latitude'),
-    '#default_value' => isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '',
-    '#size' => 64,
-    '#maxlength' => 64
-  );
-  $form['longitude'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Longitude'),
-    '#default_value' => isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '',
-    '#size' => 64,
-    '#maxlength' => 64,
-    '#description' => $description,
-  );
-
-  if ($usegmap) {
-    $map_macro = variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]');
-    $form['map']['gmap']['#value'] = gmap_set_location($map_macro, $form, array('latitude' => 'latitude', 'longitude' => 'longitude'));
-  }
-  return $form;
-}
-
 /**
  * Takes two locations and tries to return a deep-link to driving directions.
  *
