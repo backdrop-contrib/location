@@ -6,5 +6,4 @@ Originally developed and implemented by:
 
 Maintained by:
   Brandon Bergren (user name 'Bdragon' http://drupal.org/user/53801 )
-  Bruno Massa (user name 'brmassa' http://drupal.org/user/67164 )
-
+  Rebecca White (user name 'bec' http://drupal.org/user/81067)
