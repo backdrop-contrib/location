@@ -1,24 +1,28 @@
-$Id$
+<!-- $Id$ -->
 
-ADDING SUPPORT FOR AN UNSUPPORTED COUNTRY
-=========================================
+<p><em>Note:</em> This file describes the original country API. While the API itself hasn't
+changed, some things have moved in directions not forseen by this documentation.
+For example, there is less emphasis today on postal data and more emphasis on
+geocoding webservices. Please take this documentation with a grain of salt until
+it is fully cleaned up and brought up to date.</p>
 
-This file is a PHP programmer's description of what needs to be done in order to extend the
-location system to support locationes from a new country.
+<h3>location.xx.inc: Adding support for an unsupported country</h3>
+<hr />
 
-Let's suppose we want to extend the location system to support locationes from Belgium.  To this end,
-there are 2 tasks:
+<p>This file is a PHP programmer's description of what needs to be done in order to extend the
+location system to support locationes from a new country.</p>
+
+<p>Let's suppose we want to extend the location system to support locationes from Belgium.  To this end,
+there are 2 tasks:</p>
 
 TASK #1
----
-We use the lower-case of the country's two-letter ISO 3166 code to create a file, "location.be.inc", that
+<p>We use the lower-case of the country's two-letter ISO 3166 code to create a file, "location.be.inc", that
 defines the necessary functions that will "hook" into the location system.  This way, when a high-level
 function in the public location API receives a call that uses some Belgium specific function, the call
-will be delegated to the appropriately named function in "location.be.inc".
+will be delegated to the appropriately named function in "location.be.inc".</p>
 
 TASK #2
----
-You need postal code data for your country.  This postal code data needs to be able to connect the
+<p>You need postal code data for your country.  This postal code data needs to be able to connect the
 base-length postal code (e.g., U.S. postal codes can be 9 digits, but we're only interested to the
 level of 5 digits and most people only know the 5-digit version) to a city, province/state, country (duh),
 and a latitude/longitude pair in degrees that represents the approximate center of the postal code's area.
@@ -26,32 +30,29 @@ Ultimately, you will want to create a database dump that inserts these fields in
 'zip' (for postal codes), 'city' (for city names), 'province' for (the standard state/province/country
 abbreviation), 'country' (for the lower-case of the country's two letter ISO code), 'latitude' (for the
 latitude in degree value, as opposed to radian value) and 'longitude' (for the degree value of the
-longitude).
+longitude).</p>
 
-
-In a lot of countries, this data costs money!  You cannot simply create a dump and then publish it on
+<p>In a lot of countries, this data costs money!  You cannot simply create a dump and then publish it on
 drupal.org unless the data is free to redistribute.  However, if you are interested in buying this data
 from some vendor and using it on your own site, you can do so but may have to acquire a new license for
 each seperate business or web site for which you wish to use postal code data if, in fact, you had to
-pay a fee or license for this data.
+pay a fee or license for this data.</p>
 
-This postalcode-to-lat/lon mapping is important if you want to enable location-based proximity searches of
+<p>This postalcode-to-lat/lon mapping is important if you want to enable location-based proximity searches of
 anykind for addresses in a particular country.  The module will still work fine without it, but will not
-be able to support searches based on postal codes.
+be able to support searches based on postal codes.</p>
 
+<h3>Contents of location.be.inc</h3>
+<hr />
+<p>This file will need to implement a handful of functions with the parameters and return values described below.</p>
 
-
-
-WHAT WOULD GO INTO location.be.inc
----------------------------------
-This file will need to implement a handful of functions with the parameters and return values described below.
-
-It is possible to not implement all of these functions since the caller usually checks to see if the function
+<p>It is possible to not implement all of these functions since the caller usually checks to see if the function
 exists before calling it, but it may limit the number of features the location system will be able to support
-for your country.
+for your country.</p>
 
-For an example implementation of the functions described below, see "supported/location.us.inc".
+<p>For an example implementation of the functions described below, see "supported/location.us.inc".</p>
 
+<pre>
 -------------------------------------------------------------------------------------------------
 function theme_location_be($location, $hide);                                                    |
 -------------------------------------------------------------------------------------------------
@@ -66,13 +67,12 @@ function theme_location_be($location, $hide);                                   
 @param $hide
   An linear array where the values are the location fields to suppress in the themed display.
 @return
-  A string of the themed location.  The entire location should be enclosed by '<dl class="location">' </dl> tags.
-  The different lines of the location should be enclosed by <dl> </dl> tags.  The idea is to allow country-specific
+  A string of the themed location.  The entire location should be enclosed by &lt;dl class="location"&gt; &lt;/dl&gt; tags.
+  The different lines of the location should be enclosed by &lt;dl&gt; &lt;/dl&gt; tags.  The idea is to allow country-specific
   files to change the display of an location from the default theming done in theme_location() defined in location.inc
+</pre>
 
-
-
-
+<pre>
 -------------------------------------------------------------------------------------------------
 function location_province_list_be();                                                            |
 -------------------------------------------------------------------------------------------------
@@ -81,10 +81,9 @@ Returns an associative array where
   -> the values are the fully spelled names of the abbreviated names.
 
 Preferrably, these will be sorted by the full name.
+</pre>
 
-
-
-
+<pre>
 -------------------------------------------------------------------------------------------------
 function location_map_link_be($location);                                                       |
 -------------------------------------------------------------------------------------------------
@@ -109,8 +108,9 @@ document (location_API.txt).
   when all fields are supplied.  Some mapping services will be unable to map a city/province location
   while they can't do anything with a postal code while others map postal codes fine, but can't do
   anything useful with a city/province pair.
+</pre>
 
-
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_map_link_be_providers();                                                       |
 --------------------------------------------------------------------------------------------------
@@ -130,7 +130,9 @@ See location.us.inc for an example.
           'name' => The name of the mapping service.  In the case of Yahoo, it would be 'Yahoo! Maps'
           'url'  => The full URL of the main page of the mapping service (i.e., the home page)
           'tos'  => The full URL of the Terms Of Service for the mapping service.
+</pre>
 
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_map_link_be_default_providers();                                                |
 --------------------------------------------------------------------------------------------------
@@ -149,8 +151,9 @@ IMPORTANT: For more information on how to add support for deep-links, you are en
 the examples in modules/location/supported/location.us.inc.  If you need extra help, please feel
 free to submit a question on the issues queue for this project at: http://drupal.org/project/issues/location
 Replies will be prompt.
+</pre>
 
-
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_driving_directions_link_be($locationA, $locationB);                            |
 --------------------------------------------------------------------------------------------------
@@ -182,8 +185,9 @@ driving directions on the site you choose to link to.
   A URL (not HTML link) with HTTP GET variables tacked on to the end.  This URL either points to a
   form for driving directions from $locationA to $locationB or a deep-link directly to the driving
   directions depending on how complete the locationes are.
+</pre>
 
-
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_get_postalcode_data_be($location = array());                                            |
 --------------------------------------------------------------------------------------------------
@@ -211,9 +215,9 @@ of varying precision while postal codes for this country in the database table m
 format.  It is up to this country specific function to examine $location['postal_code'] and format it
 appropriately so that it matches with a postal code in the postal codes table.  This 'hook' is meant
 to be a replacement for the location_get_latlon_rough_xx hook, described next.
+</pre>
 
-
-
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_latlon_rough_be($location = array());                                            |
 --------------------------------------------------------------------------------------------------
@@ -234,10 +238,9 @@ function location_latlon_rough_be($location = array());                         
 
 Typically, this function will pull out the latitude/longitude of the approximate center of postal code
 in the given $location parameter.
+</pre>
 
-
-
-
+<pre>
 --------------------------------------------------------------------------------------------------
 function location_latlon_exact_be($location = array());                                            |
 --------------------------------------------------------------------------------------------------
@@ -259,3 +262,4 @@ function location_latlon_exact_be($location = array());                         
 Typically, this function will be implemented on top of a web-service for retrieving exact lat/lon information
 for a full location.  This function is not a necessity, but a sample implementation would be helpful for
 future users.  If not, it can always be added on a supply and demand basis.
+</pre>
