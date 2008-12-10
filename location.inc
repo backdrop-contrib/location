@@ -2,6 +2,13 @@
 // $Id$
 
 /**
+ * @defgroup Location Location: An API for working with locations.
+ *
+ * Public API for the Location module.
+ */
+
+
+/**
  * @file
  * An implementation of a universal API for location manipulation.  Provides functions for
  * postal_code proximity searching, deep-linking into online mapping services.  Currently,
@@ -26,6 +33,8 @@ include_once drupal_get_path('module', 'location') .'/earth.inc';
  * @return
  *   A link to a map provided by a third-party.  The idea is to encode the appropriate
  *   parameters as HTTP GET variables to the URL.
+ *
+ * @ingroup Location
  */
 function location_map_link($location = array(), $link_text = 'See map: ') {
   if (!isset($location['country']) && $location['country'] != 'xx') {
@@ -76,9 +85,10 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
  *   then this function returns an associative array where
  *    'lon' => A floating point number for the longitude coordinate of the parameter location
  *    'lat' => A floating point number for the latitude coordinate of the parameter location
+ *
+ * @ingroup Location
  */
 function location_get_postalcode_data($location = array()) {
-  //@@@ Megapatch change here.
   $location['country'] = isset($location['country']) ? trim($location['country']) : NULL;
   $location['postal_code'] = isset($location['postal_code']) ? trim($location['postal_code']) : NULL;
   if (is_null($location['postal_code']) || is_null($location['country']) || empty($location['country']) || empty($location['postal_code']) || $location['postal_code'] == 'xx') {
@@ -114,6 +124,8 @@ function location_get_postalcode_data($location = array()) {
  *      'scalar' => Is the distance between the two lat/lon parameter points
  *      'distance_unit' => Is the unit of distance being represented by 'scalar'.
  *                         This will be 'km' unless 'mile' is passed for the $distance_unit param
+ *
+ * @ingroup Location
  */
 function location_distance_between($latlon_a = array(), $latlon_b = array(), $distance_unit = 'km') {
   if (!isset($latlon_a['lon']) || !isset($latlon_a['lat']) || !isset($latlon_b['lon']) || !isset($latlon_b['lat'])) {
@@ -143,20 +155,20 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
   }
 
   $form['latitude'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Latitude'),
-      '#default_value' => isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '',
-      '#size' => 64,
-      '#maxlength' => 64
-      );
+    '#type' => 'textfield',
+    '#title' => t('Latitude'),
+    '#default_value' => isset($prefilled_values['latitude']) ? $prefilled_values['latitude'] : '',
+    '#size' => 64,
+    '#maxlength' => 64
+  );
   $form['longitude'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Longitude'),
-      '#default_value' => isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '',
-      '#size' => 64,
-      '#maxlength' => 64,
-      '#description' => $description,
-      );
+    '#type' => 'textfield',
+    '#title' => t('Longitude'),
+    '#default_value' => isset($prefilled_values['longitude']) ? $prefilled_values['longitude'] : '',
+    '#size' => 64,
+    '#maxlength' => 64,
+    '#description' => $description,
+  );
 
   if ($usegmap) {
     $map_macro = variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]');
@@ -199,6 +211,8 @@ function location_latlon_form($description = '', $prefilled_values = array()) {
  *   to link to a form for driving directions is provided, where this form will be
  *   pre-populated with whatever values were available or whether to link directly to the driving
  *   directions themselves if enough fields are filled for each location.
+ *
+ * @ingroup Location
  */
 function location_driving_directions_link($location_a = array(), $location_b = array(), $link_text = 'Get directions') {
   if (!isset($location_a['country']) or !isset($location_b['country'])) {
@@ -282,6 +296,8 @@ function _location_convert_distance_to_meters($distance, $distance_unit = 'km') 
  *   Otherwise, an associative array where
  *     'lat' => is a floating point of the latitude coordinate of this location
  *     'lon' => is a floating point of the longitude coordinate of this location
+ *
+ * @ingroup Location
  */
 function location_latlon_rough($location = array()) {
   if (!isset($location['country']) || !isset($location['postal_code'])) {
@@ -323,6 +339,8 @@ function location_latlon_rough($location = array()) {
  *   If the appropriate function exists, then this function returns an associative array where
  *      'lon' => A floating point number for the longitude coordinate of the parameter location
  *      'lat' => A floating point number for the latitude coordinate of the parameter location
+ *
+ * @ingroup Location
  */
 function location_latlon_exact($location = array()) {
   $country = $location['country'];
@@ -362,6 +380,8 @@ function location_latlon_exact($location = array()) {
  * countries: A country being "supported" means that there is an include file
  * to support the country while "configure" implies that the site admin has
  * configured the site to actually use that country.
+ *
+ * @ingroup Location
  */
 function _location_supported_countries() {
   static $supported_countries = array();
