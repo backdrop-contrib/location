@@ -21,7 +21,8 @@ This package consists of several modules, including:
 - Location Fax: Add a fax number to a location.
 - Location Phone: Add a phone number to a location.
 - Location Search: A custom search page for locations.
-- Location Views: Views integration for Location fields.
+
+For Drupal 6, Views support has been rolled directly into the base Location module.
 
 INSTALLATION
 ------------
