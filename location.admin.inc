@@ -57,15 +57,6 @@ function location_admin_settings() {
     '#description' => t('If you would like to change the macro used to generate the location chooser map, you can do so here. Note: Behaviors <em>locpick</em> and <em>collapsehack</em> are forced to be enabled and cannot be changed.'),
   );
 
-  $form['countries'] = array(
-    '#collapsible'    => TRUE,
-    '#collapsed'      => TRUE,
-    '#description'    => t('Currently, your Drupal site is capable of supporting extra features (e.g., postal code proximity searches) for locations from this list of countries. You can narrow the list down to countries for which you want to support these extra features. It may be useful for performance to narrow down this list if most the locations in your system are from only a handful of the listed countries.'),
-    '#title'          => t('Countries'),
-    '#tree'           => FALSE,
-    '#type'           => 'fieldset',
-  );
-
   return system_settings_form($form);
 }
 
