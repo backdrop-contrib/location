@@ -242,12 +242,20 @@ function _location_expand_location($element) {
 
   // $settings -> $settings['form']['fields']
 
+  // $defaults is not necessarily what we want.
+  // If #default_value was already specified, we want to use that, because
+  // otherwise we will lose our values on preview!
+  $fdefaults = $defaults;
+  foreach ($element['#default_value'] as $k => $v) {
+    $fdefaults[$k] = $v;
+  }
+
   $fields = location_field_names();
   foreach ($fields as $field => $title) {
     if (!isset($element[$field])) {
       // @@@ Permission check hook?
       if ($fsettings[$field]['collect'] != 0) {
-        $element[$field] = location_invoke_locationapi($defaults[$field], 'field_expand', $field, $fsettings[$field]['collect'], $defaults);
+        $element[$field] = location_invoke_locationapi($fdefaults[$field], 'field_expand', $field, $fsettings[$field]['collect'], $fdefaults);
         $element[$field]['#weight'] = (int)$fsettings[$field]['weight'];
       }
 
