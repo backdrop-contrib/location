@@ -248,23 +248,37 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   if ($field['widget']['type'] == 'location') {
     $settings = $field['location_settings'];
 
+    // Initialize empty location.
+    $location = location_empty_location($settings);
+
     // Load location data for existing locations.
     if (isset($items[$delta]['lid']) && $items[$delta]['lid']) {
       $location = location_load_location($items[$delta]['lid']);
     }
+    // Load location data passed by cck.
     else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
-      // User has set default value in the field settings. Go with the flow. *shrug*
-      $location = $items[$delta];
-      // Also, override the field defaults so the location is only saved if the user
-      // changes something.
-      unset($location['location_settings']);
-      unset($location['locpick']);
-      foreach ($location as $k => $v) {
-        $settings['form']['fields'][$k]['default'] = $v;
+
+      foreach ($items[$delta] as $k => $v) {
+        $location[$k] = $v;
       }
-    }
-    else {
-      $location = array();
+
+      // We can't trust that CCK is giving us the right information.
+      // It can't tell us whether $items is defaults or multistep values.
+      // Location *needs* the defaults to match the initial field values,
+      // so we re-calculate the defaults here and stash them into the settings.
+      // @@@ There is still a bug here!
+      // If you go back and edit something, and you hadn't set a location the
+      // first time, CCK fails to set up the defaults properly!
+      // I'm just going to leave it like that for now, because I don't know how
+      // to work around it.
+      $temp = content_default_value($form, $form_state, $field, 0);
+      if (is_array($temp) && isset($temp[$delta]) && is_array($temp[$delta])) {
+        foreach ($temp[$delta] as $k => $v) {
+          $settings['forms']['fields'][$k]['default'] = $v;
+        }
+      }
+//      unset($location['location_settings']);
+//      unset($location['locpick']);
     }
 
     $element = array(
@@ -283,14 +297,19 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
  * CCK Emptiness check.
  */
 function location_cck_content_is_empty($item, $field) {
-  $filled = array();
-  if (location_is_empty($item, $filled)) {
+  // I had originally way overthought this question and attempted to do a
+  // location emptiness check. But now I realize all cck is asking is if it
+  // needs to write a row or not.
+  if (empty($item['lid'])) {
     return TRUE;
   }
   return FALSE;
 }
 
 function theme_location_cck_formatter_default($element) {
-  $location = location_load_location($element['#item']['lid']);
-  return theme('location', $location);
+  // @@@ Figure out how to do previews?
+  if (isset($element['#item']['lid']) && $element['#item']['lid']) {
+    $location = location_load_location($element['#item']['lid']);
+    return theme('location', $location);
+  }
 }
