@@ -45,6 +45,11 @@ function location_cck_field_settings($op, $field) {
 
       // Multiple is handled by CCK.
       unset ($form['location_settings']['multiple']);
+      // CCK handles weight, and collapsibility is not changeable.
+      unset ($form['location_settings']['form']['weight']);
+      unset ($form['location_settings']['form']['collapsible']);
+      unset ($form['location_settings']['form']['collapsed']);
+      unset ($form['location_settings']['display']['weight']);
       return $form;
 
     case 'save':
