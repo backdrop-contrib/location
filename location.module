@@ -262,7 +262,7 @@ function _location_expand_location($element) {
       // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
       if ($field == 'street' && $fsettings[$field]['collect']) {
         $element['additional'] = location_invoke_locationapi($defaults['additional'], 'field_expand', 'additional', 1, $defaults);
-        $element['additional']['#weight'] = (int)$fsettings[$field]['weight'];
+        $element['additional']['#weight'] = (int)$fsettings['additional']['weight'];
       }
     }
   }
