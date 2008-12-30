@@ -267,8 +267,8 @@ function _location_expand_location($element) {
     }
   }
   // @@@ Split into submit and view permissions?
-  if (user_access('submit latitude/longitude')) {
-    $element['locpick'] = array();
+  if (user_access('submit latitude/longitude') && $fsettings['locpick']['collect']) {
+    $element['locpick'] = array('#weight' => $fsettings['locpick']['weight']);
 
     if (location_has_coordinates($defaults, FALSE)) {
       $element['locpick']['current'] = array(
@@ -542,7 +542,7 @@ function location_field_names($all = FALSE) {
 function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {
     case 'fields':
-      return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'));
+      return array('name' => t('Location name'), 'street' => t('Street location'), 'additional' => t('Additional'), 'city' => t('City'), 'province' => t('State/Province'), 'postal_code' => t('Postal code'), 'country' => t('Country'), 'locpick' => t('Coordinate Chooser'));
 
     case 'virtual fields':
       return array('province_name' => t('Province name'), 'country_name' => t('Country name'), 'map_link' => t('Map link'), 'coords' => t('Coordinates'));
@@ -557,6 +557,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         'province'    => array('default' => '', 'collect' => 0, 'weight' => 10),
         'postal_code' => array('default' => '', 'collect' => 0, 'weight' => 12),
         'country'     => array('default' => variable_get('location_default_country', 'us'), 'collect' => 1, 'weight' => 14), // @@@ Fix weight?
+        'locpick'     => array('default' => FALSE, 'collect' => 1, 'weight' => 20),
         'latitude'    => array('default' => 0),
         'longitude'   => array('default' => 0),
         'source'      => array('default' => LOCATION_LATLON_UNDEFINED),
@@ -717,6 +718,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         case 'country_name':
         case 'map_link':
         case 'coords':
+        case 'locpick':
           // Always considered unchanged.
           return TRUE;
       }
