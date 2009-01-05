@@ -97,6 +97,22 @@ function location_cck_field_settings($op, $field) {
         );
       }*/
       break;
+
+    case 'views data':
+      // We want to for the most part use the CCK stuff, but we also want to
+      // patch in a relationship so location's views support can target
+      // cck fields directly.
+      $table = content_views_tablename($field);
+      $db_info = content_database_info($field);
+      $field_alias = $db_info['columns']['lid']['column'];
+      $data = content_views_field_views_data($field);
+      $data[$table][$field_alias]['relationship'] = array(
+        'base' => 'location',
+        'field' => 'lid',
+        'handler' => 'views_handler_relationship',
+        'label' => t('Location'), // @@@ Some sort of better name?
+      );
+      return $data;
   }
 }
 
