@@ -1650,7 +1650,8 @@ function template_preprocess_location(&$variables) {
   $fields = location_field_names(TRUE);
   foreach ($fields as $key => $value) {
     $variables[$key] = '';
-    if (!empty($location[$key])) {
+    // Arrays can't be converted, ignore them.
+    if (!empty($location[$key]) && !is_array($location[$key])) {
       $variables[$key] = check_plain($location[$key]);
     }
   }
