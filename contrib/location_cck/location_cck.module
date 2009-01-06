@@ -274,7 +274,18 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
 
     // Load location data for existing locations.
     if (isset($items[$delta]['lid']) && $items[$delta]['lid']) {
-      $location = location_load_location($items[$delta]['lid']);
+      // Are we in a node preview?
+      // If we aren't, then we only have the lid, because that's all cck
+      // actually knows about internally. So, we have to pull in the location
+      // at this point.
+      if (empty($items[$delta]['cck_preview_in_progress'])) {
+        $location = location_load_location($items[$delta]['lid']);
+      }
+      else {
+        // Otherwise, the data was already populated and we're running
+        // off the form state.
+        $location = $items[$delta];
+      }
     }
     // Load location data passed by cck.
     else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
@@ -295,7 +306,7 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       $temp = content_default_value($form, $form_state, $field, 0);
       if (is_array($temp) && isset($temp[$delta]) && is_array($temp[$delta])) {
         foreach ($temp[$delta] as $k => $v) {
-          $settings['forms']['fields'][$k]['default'] = $v;
+          $settings['form']['fields'][$k]['default'] = $v;
         }
       }
 //      unset($location['location_settings']);
@@ -310,6 +321,12 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       '#location_settings' => $settings,
       '#default_value' => $location,
     );
+    // This is used to determine whether we are in a preview or not, because
+    // several pieces of code work differently when previewing.
+    $element['cck_preview_in_progress'] = array(
+      '#type' => 'value',
+      '#value' => TRUE,
+    );
     return $element;
   }
 }
@@ -318,19 +335,34 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
  * CCK Emptiness check.
  */
 function location_cck_content_is_empty($item, $field) {
-  // I had originally way overthought this question and attempted to do a
-  // location emptiness check. But now I realize all cck is asking is if it
-  // needs to write a row or not.
-  if (empty($item['lid'])) {
+  // @@@ Bug:
+  // There is a suspect check here from content_set_empty().
+  // It's calling this function with raw cck defaults.
+  // I think it's causing a minimum of two fieldsets to be shown when using
+  // cck default values.
+
+  // Empty check
+  $fields = array();
+  if (location_is_empty($item, $fields)) {
     return TRUE;
   }
   return FALSE;
 }
 
 function theme_location_cck_formatter_default($element) {
-  // @@@ Figure out how to do previews?
-  if (isset($element['#item']['lid']) && $element['#item']['lid']) {
-    $location = location_load_location($element['#item']['lid']);
+  $location = $element['#item'];
+  if (!empty($location['cck_preview_in_progress'])) {
+    // Our canary field is in place, we are in a node preview.
+    $fields = array();
+    // If the delete location checkbox isn't checked, and the location isn't
+    // "empty", then theme it based on the current state of the item.
+    if (!location_is_empty($location, $fields) && empty($location['delete_location'])) {
+      return theme('location', $location);
+    }
+  }
+  else if (isset($location['lid']) && $location['lid']) {
+    // "normal" viewing.
+    $location = location_load_location($location['lid']);
     return theme('location', $location);
   }
 }
