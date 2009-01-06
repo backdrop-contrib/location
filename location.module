@@ -77,7 +77,7 @@ function location_menu() {
  *
  */
 function location_api_variant() {
-  return 1;
+  return 2;
 }
 
 /**
@@ -1282,7 +1282,7 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
   }
 
   $changed = array();
-  if (!location_diff($oldloc, $location, $changed)) {
+  if (!location_calc_difference($oldloc, $location, $changed)) {
     // We didn't actually need to save anything.
     if (!empty($location['lid'])) {
       return $location['lid'];
@@ -1352,7 +1352,7 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
  *   The keys are field names, and the values are boolean FALSE and TRUE.
  * @return Whether or not there were any changes.
  */
-function location_diff($oldloc, $newloc, &$changes) {
+function location_calc_difference($oldloc, $newloc, &$changes) {
   location_strip($oldloc);
   location_strip($newloc);
   $location_changed = FALSE;
@@ -1406,7 +1406,7 @@ function location_is_empty($location, &$filled) {
   $settings = isset($location['location_settings']) ? $location['location_settings'] : array();
   $emptyloc = location_empty_location($settings);
 
-  return !location_diff($emptyloc, $location, $filled);
+  return !location_calc_difference($emptyloc, $location, $filled);
 }
 
 /**
