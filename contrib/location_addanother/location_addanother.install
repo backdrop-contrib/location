@@ -20,8 +20,8 @@ function location_addanother_install() {
  * Implementation of hook_uninstall().
  */
 function location_addanother_uninstall() {
-  $types = node_get_types('types');
-  foreach ($types as $type) {
-    variable_del('location_addanother_'. $type);
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_addanother_%'");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
   }
 }
