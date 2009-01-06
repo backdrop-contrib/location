@@ -1,6 +1,6 @@
 ; $Id$
 name = Location CCK
-description = Bla bla location cck stuff
+description = Defines a Location field type.
 core = 6.x
 package = CCK
 dependencies[] = location
