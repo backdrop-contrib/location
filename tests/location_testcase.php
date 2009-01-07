@@ -37,7 +37,9 @@ class LocationTestCase extends DrupalWebTestCase {
     $d = location_invoke_locationapi($location, 'defaults');
     $fields = location_field_names();
     foreach ($fields as $k => $v) {
-      $defaults[$k] = $d[$k];
+      if (!isset($v['nodiff'])) {
+        $defaults[$k] = $d[$k];
+      }
     }
 
     foreach ($defaults as $k => $v) {
@@ -51,6 +53,7 @@ class LocationTestCase extends DrupalWebTestCase {
       'location_settings' => array(
         'multiple' => array(
           'max' => 1,
+          'add' => 1,
         ),
         'form' => array(
           'fields' => $defaults,

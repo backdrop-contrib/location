@@ -557,12 +557,12 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         'province'    => array('default' => '', 'collect' => 0, 'weight' => 10),
         'postal_code' => array('default' => '', 'collect' => 0, 'weight' => 12),
         'country'     => array('default' => variable_get('location_default_country', 'us'), 'collect' => 1, 'weight' => 14), // @@@ Fix weight?
-        'locpick'     => array('default' => FALSE, 'collect' => 1, 'weight' => 20),
+        'locpick'     => array('default' => FALSE, 'collect' => 1, 'weight' => 20, 'nodiff' => TRUE),
         'latitude'    => array('default' => 0),
         'longitude'   => array('default' => 0),
         'source'      => array('default' => LOCATION_LATLON_UNDEFINED),
         'is_primary'  => array('default' => 0), // @@@
-        'delete_location' => array('default' => FALSE),
+        'delete_location' => array('default' => FALSE, 'nodiff' => TRUE),
       );
 
     case 'validate':
@@ -1442,7 +1442,9 @@ function location_strip(&$location) {
     $tmp = array();
     $defaults = location_invoke_locationapi($location, 'defaults');
     foreach ($defaults as $k => $v) {
-      $tmp[$k] = TRUE;
+      if (!isset($v['nodiff'])) {
+        $tmp[$k] = TRUE;
+      }
     }
   }
   foreach ($location as $k => $v) {
