@@ -350,6 +350,8 @@ function location_cck_content_is_empty($item, $field) {
 }
 
 function theme_location_cck_formatter_default($element) {
+  $field = content_fields($element['#field_name'], $element['#type_name']);
+  $hide = array_keys(array_filter($field['location_settings']['display']['hide']));
   $location = $element['#item'];
   if (!empty($location['cck_preview_in_progress'])) {
     // Our canary field is in place, we are in a node preview.
@@ -357,12 +359,12 @@ function theme_location_cck_formatter_default($element) {
     // If the delete location checkbox isn't checked, and the location isn't
     // "empty", then theme it based on the current state of the item.
     if (!location_is_empty($location, $fields) && empty($location['delete_location'])) {
-      return theme('location', $location);
+      return theme('location', $location, $hide);
     }
   }
   else if (isset($location['lid']) && $location['lid']) {
     // "normal" viewing.
     $location = location_load_location($location['lid']);
-    return theme('location', $location);
+    return theme('location', $location, $hide);
   }
 }
