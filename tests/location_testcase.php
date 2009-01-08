@@ -9,6 +9,23 @@
 class LocationTestCase extends DrupalWebTestCase {
 
   /**
+   * Custom assertion -- will check each element of an array against a reference value.
+   */
+  function assertArrayEpsilon($result, $expected, $epsilon, $message = '', $group = 'Other') {
+    foreach ($expected as $k => $test) {
+      $lower = $test - $epsilon;
+      $upper = $test + $epsilon;
+      if ($result[$k] < $lower || $result[$k] > $upper) {
+        $this->_assert('fail', $message ? $message : t('Value deviates by @amt, which is more than @maxdev.', array('@amt' => abs($test - $result[$k]), '@maxdev' => $epsilon)), $group);
+      }
+      else {
+        $this->_assert('pass', $message ? $message : t('Value within expected margin.'), $group);
+      }
+    }
+  }
+
+
+  /**
    * Flatten a post settings array because drupalPost isn't smart enough to.
    */
   function flattenPostData(&$edit) {
