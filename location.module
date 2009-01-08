@@ -1420,7 +1420,9 @@ function location_empty_location($settings) {
   $defaults = location_invoke_locationapi($location, 'defaults');
   if (isset($settings['form']['fields'])) {
     foreach ($settings['form']['fields'] as $k => $v) {
-      $defaults[$k] = array_merge($defaults[$k], $v);
+      if (isset($defaults[$k])) {
+        $defaults[$k] = array_merge($defaults[$k], $v);
+      }
     }
   }
 
