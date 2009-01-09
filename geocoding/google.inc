@@ -99,46 +99,30 @@ function google_geocode_info() {
  *   an associative array with keys 'lat' and 'lon' containing the coordinates.
  */
 function google_geocode_location($location = array()) {
-  switch ($location['country']) {
-    case 'li':
-      $location['country'] = 'Liechtenstein';
-      $query = location_address2singleline($location);
-      break;
 
-    case 'at':
-      $location['country'] = 'Austria';
-      $query = location_address2singleline($location);
-      break;
-
-    case 'uk':
-      // @@@ Bdragon: Doesn't google support UK postcodes now?
-      if ($location['street'] && $location['city']) {
-        unset($location['postal_code']);
-      }
-      elseif ($location['postal_code']) {
-        unset($location['city']);
-        unset($location['street']);
-        unset($location['additional']);
-      }
-      else {
-        unset($location['postal_code']);
-      }
-      $query = location_address2singleline($location);
-      break;
-
-    default:
-      $query = location_address2singleline($location);
-      break;
-  }
-
-  $key = variable_get('location_geocode_google_apikey', '');
   if (function_exists('gmap_get_key')) {
     $key = gmap_get_key();
   }
+  else {
+    $key = variable_get('location_geocode_google_apikey', '');
+  }
 
-  $service_url = 'http://maps.google.com/maps/geo?output=xml&key='. $key .'&q=';
+  $query = array(
+    'key' => $key,
+    'sensor' => 'false', // Required by TOS.
+    'output' => 'xml',
+    //'ll' => 0,
+    //'spn' => 0,
+    'gl' => $location['country'],
+    'q' => _google_geocode_flatten($location),
+  );
 
-  $http_reply = drupal_http_request($service_url . urlencode($query));
+  $url = url('http://maps.google.com/maps/geo', array(
+    'query' => $query,
+    'external' => TRUE,
+  ));
+
+  $http_reply = drupal_http_request($url);
 
   $status_code_match = array();
   preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
@@ -192,4 +176,48 @@ function google_geocode_settings() {
   }
 
   return $form;
+}
+
+function _google_geocode_flatten($location = array()) {
+  // Check if its a valid address
+  if (empty($location)) {
+    return '';
+  }
+
+  $address = '';
+  if (!empty($location['street'])) {
+    $address .= $location['street'];
+  }
+
+  if (!empty($location['city'])) {
+    if (!empty($location['street'])) {
+      $address .= ', ';
+    }
+
+    $address .= $location['city'];
+  }
+
+  if (!empty($location['province'])) {
+    if (!empty($location['street']) || !empty($location['city'])) {
+      $address .= ', ';
+    }
+
+    // @@@ Fix this!
+    if (substr($location['province'], 0, 3) == $location['country'] .'-') {
+      $address .= substr($location['province'], 3);
+      watchdog('Location', 'BUG: Country found in province attribute.');
+    }
+    else {
+      $address .= $location['province'];
+    }
+  }
+
+  if (!empty($location['postal_code'])) {
+    if (!empty($address)) {
+      $address .= ' ';
+    }
+    $address .= $location['postal_code'];
+  }
+
+  return $address;
 }
