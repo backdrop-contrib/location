@@ -583,13 +583,15 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
         }
       }
 
-      // Can't specify just latitude or just longitude.
-      if (_location_floats_are_equal($obj['locpick']['user_latitude'], 0) xor _location_floats_are_equal($obj['locpick']['user_longitude'], 0)) {
-        $ref = &$a3['locpick']['user_latitude'];
-        if (_location_floats_are_equal($obj['locpick']['user_longitude'], 0)) {
-          $ref = &$a3['locpick']['user_longitude'];
+      if (!empty($obj['locpick']) && is_array($obj['locpick'])) {
+        // Can't specify just latitude or just longitude.
+        if (_location_floats_are_equal($obj['locpick']['user_latitude'], 0) xor _location_floats_are_equal($obj['locpick']['user_longitude'], 0)) {
+          $ref = &$a3['locpick']['user_latitude'];
+          if (_location_floats_are_equal($obj['locpick']['user_longitude'], 0)) {
+            $ref = &$a3['locpick']['user_longitude'];
+          }
+          form_error($ref, t('You must fill out both latitude and longitude or you must leave them both blank.'));
         }
-        form_error($ref, t('You must fill out both latitude and longitude or you must leave them both blank.'));
       }
 
       break;
