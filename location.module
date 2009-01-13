@@ -1323,7 +1323,7 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
         }
         $querybase = 'FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
 
-        $associated = db_result(db_query("SELECT COUNT(*) $querybase"));
+        $associated = db_result(db_query("SELECT COUNT(*) $querybase", $args));
         $all = db_result(db_query("SELECT COUNT(*) FROM {location_instance} WHERE lid = %d", $location['lid']));
         if ($associated != $all) {
           // If there were a different number of instances than instances matching the criteria,
@@ -1339,12 +1339,13 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
   }
 
   if (!empty($location['lid'])) {
-    db_query('DELETE FROM {location} WHERE lid = %d', $location['lid']);
+    watchdog('location', 'Conserving lid %lid due to uniqueness.', array('%lid' => $location['lid']));
+    drupal_write_record('location', $location, array('lid'));
   }
   else {
     unset($location['lid']);
+    drupal_write_record('location', $location);
   }
-  drupal_write_record('location', $location);
 
   location_invoke_locationapi($location, 'save');
   return $location['lid'];
