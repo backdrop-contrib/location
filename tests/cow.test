@@ -209,8 +209,45 @@ class CowInstanceTest extends LocationTestCase {
     else {
       $this->fail(t('Ensuring shared location on deleted revision is NOT garbage collected'));
     }
-
-
   }
 
+  function testCOWConservation() {
+    $settings = array();
+    $location_type = $this->addLocationContentType($settings, array('multiple' => array('max' => 3, 'add' => 3)));
+
+    $location1_name = $this->randomName();
+
+    $node = $this->drupalCreateNode(array(
+      'type' => $location_type,
+      'locations' => array(
+        0 => array( // First
+          'name' => $location1_name,
+          'location_settings' => $settings,
+        ),
+      ),
+    ));
+
+    // Reload the node.
+    $node = node_load($node->nid, NULL, TRUE);
+
+    $changes = array(
+      'locations' => array(
+        0 => array( // Delete First
+          'name' => $location1_name .'_CHANGE',
+        ),
+      ),
+    );
+    $this->flattenPostData($changes);
+    $this->drupalPost('node/'. $node->nid .'/edit', $changes, 'Save');
+
+    // Reload the node again.
+    $node1 = node_load($node->nid, NULL, TRUE);
+
+    // Ensure locations are in a consistent order.
+    $this->reorderLocations($node);
+    $this->reorderLocations($node1);
+
+    $this->assertEqual($node->locations[0]['lid'], $node1->locations[0]['lid'], t('Ensuring LIDs are conserved'));
+
+  }
 }
