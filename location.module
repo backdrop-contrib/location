@@ -1486,9 +1486,11 @@ function location_normalize_settings(&$settings, $required = TRUE) {
   if (!$required) {
     // Relax non-required settings.
     foreach ($settings['form']['fields'] as $k => $v) {
-      if (isset($settings['form']['fields'][$k]['collect'])) {
-        // Block 2 (Required).
-        $settings['form']['fields'][$k]['collect'] = $settings['form']['fields'][$k]['collect'] & ~2;
+      if (isset($v['collect'])) {
+        if ($v['collect'] == 2) {
+          // Required -> Optional.
+          $settings['form']['fields'][$k]['collect'] = 1;
+        }
       }
     }
   }
