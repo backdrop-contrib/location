@@ -123,7 +123,7 @@ function location_elements() {
       '#required' => FALSE,
       '#attributes' => array('class' => 'location'),
       // Element level validation.
-      '#validate' => array('location_element_validate' => array()),
+      '#element_validate' => array('location_element_validate'),
     ),
     'location_settings' => array(
       '#input' => TRUE,
@@ -1568,8 +1568,9 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
 /**
  * Perform validation against a location fieldset.
  */
-function location_element_validate($form, &$form_state) {
-  location_invoke_locationapi($form['#value'], 'validate', $form);
+function location_element_validate($element, &$form_state) {
+  // @@@ TODO -- future API change -- Send $form_state as param 0 so implementations can set values.
+  location_invoke_locationapi($element['#value'], 'validate', $element);
 }
 
 /**
