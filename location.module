@@ -370,15 +370,15 @@ function _location_expand_location($element) {
         '#suffix' => '</div>',
       );
     }
+  }
 
-    if (isset($defaults['lid']) && !empty($defaults['lid'])) {
-      $element['delete_location'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Delete'),
-        '#default_value' => isset($fdefaults['delete_location']) ? $fdefaults['delete_location'] : FALSE,
-        '#description' => t('Check this box to delete this location.'),
-      );
-    }
+  if (isset($defaults['lid']) && !empty($defaults['lid'])) {
+    $element['delete_location'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Delete'),
+      '#default_value' => isset($fdefaults['delete_location']) ? $fdefaults['delete_location'] : FALSE,
+      '#description' => t('Check this box to delete this location.'),
+    );
   }
 
   $element += _element_info('fieldset');
