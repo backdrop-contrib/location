@@ -8,6 +8,6 @@ function location_province_list_vc() {
     'R' => "Grenadines",
     'A' => "Saint Andrew",
     'D' => "Saint David",
-    'G' => "Saint George ",
+    'G' => "Saint George",
     'P' => "Saint Patrick");
 }

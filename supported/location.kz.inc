@@ -17,7 +17,7 @@ function location_province_list_kz() {
     'KAR' => "Qaraghandy",
     'KUS' => "Qustanay",
     'KZY' => "Qyzylorda",
-    'VOS' => "Shyghys Qazaqstan ",
-    'SEV' => "Soltustik Qazaqstan ",
+    'VOS' => "Shyghys Qazaqstan",
+    'SEV' => "Soltustik Qazaqstan",
     'ZHA' => "Zhambyl");
 }

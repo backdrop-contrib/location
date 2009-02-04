@@ -9,5 +9,5 @@ function location_province_list_pk() {
     'I' => "Islamabad Capital Territory",
     'N' => "North-West Frontier Province",
     'P' => "Punjab",
-    'S' => "Sindh ");
+    'S' => "Sindh");
 }

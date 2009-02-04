@@ -13,6 +13,6 @@ function location_province_list_cg() {
     'LI' => "Likouala",
     'NI' => "Niari",
     'PL' => "Plateaux",
-    'PO' => "Pool ",
+    'PO' => "Pool",
     'SA' => "Sangha");
 }
