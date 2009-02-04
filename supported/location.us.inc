@@ -154,7 +154,7 @@ function location_map_link_us_google($location = array()) {
     }
   }
 
-  if ($location['latitude'] && $location['longitude']) {
+  if (location_has_coordinates($location)) {
     $q = urlencode($location['latitude'] . ' ' . $location['longitude'] . ' (' . implode(', ', $query_params) . ')' );
   } else if (count($query_params) > 0) {
     $q = urlencode(implode(", ", $query_params));
