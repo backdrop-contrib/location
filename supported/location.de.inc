@@ -213,7 +213,7 @@ function theme_location_de($location = array(), $hide = array()) {
       $output .= '<div class="country-name">'. t('Germany') .'</div>';
     }
 
-    if (isset($location['latitude']) && isset($location['longitude'])) {
+    if (location_has_coordinates($location)) {
       $output .=  '<div class="geo"><abbr class="latitude" title="'. $location['latitude'] .'" /><abbr class="longitude" title="'. $location['latitude'] .'" /></div>';
     }
 
