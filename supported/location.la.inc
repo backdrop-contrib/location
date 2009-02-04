@@ -8,7 +8,7 @@ function location_province_list_la() {
     'AT' => "Attapu",
     'BK' => "Bokeo",
     'BL' => "Bolikhamxai",
-    'CH' => "Champasak ",
+    'CH' => "Champasak",
     'HO' => "Houaphan",
     'KH' => "Khammouan",
     'LM' => "Louang Namtha",

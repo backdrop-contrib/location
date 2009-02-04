@@ -5,6 +5,6 @@
 
 function location_province_list_gl() {
   return array('A' => "Avannaa",
-    'T' => "Tunu ",
+    'T' => "Tunu",
     'K' => "Kitaa");
 }

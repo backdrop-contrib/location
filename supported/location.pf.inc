@@ -8,5 +8,5 @@ function location_province_list_pf() {
     'T' => "Archipel des Tuamotu",
     'I' => "Archipel des Tubuai",
     'V' => "Iles du Vent",
-    'S' => "Iles Sous-le-Vent ");
+    'S' => "Iles Sous-le-Vent");
 }

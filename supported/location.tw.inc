@@ -27,6 +27,6 @@ function location_province_list_tw() {
     'HC' => "Hsin-chu",
     'TH' => "T'ai-chung",
     'TN' => "T'ai-nan",
-    'KC' => "Kao-hsiung city ",
-    'TC' => "T'ai-pei city ");
+    'KC' => "Kao-hsiung city",
+    'TC' => "T'ai-pei city");
 }

@@ -13,6 +13,6 @@ function location_province_list_sn() {
     'MA' => "Matam",
     'SL' => "Saint-Louis",
     'TA' => "Tambacounda",
-    'TH' => "Thies ",
+    'TH' => "Thies",
     'ZI' => "Ziguinchor");
 }
