@@ -25,10 +25,6 @@ function location_cck_field_info() {
     'location' => array(
       'label' => t('Location'),
       'description' => t('Store a location.module location.'),
-      'callbacks' => array(
-        'tables' => CONTENT_CALLBACK_DEFAULT, // @@@ Needs to be custom -- views support
-        'arguments' => CONTENT_CALLBACK_DEFAULT, // @@@ Needs to be custom -- views support
-      ),
     ),
   );
 }
