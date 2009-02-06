@@ -364,3 +364,44 @@ function theme_location_cck_formatter_default($element) {
     return theme('location', $location, $hide);
   }
 }
+
+function location_cck_token_list($type = 'all') {
+  if ($type == 'field') {
+    $tokens = array();
+
+    $fields = location_field_names(TRUE);
+    // @@@ We really need to rethink fields in location..
+    unset($fields['locpick']);
+    foreach ($fields as $k => $v) {
+      $tokens['location'][$k] = $v;
+    }
+
+    return $tokens;
+  }
+}
+
+function location_cck_token_values($type, $object = NULL) {
+  if ($type == 'field') {
+    $item = $object[0];
+    $location = array(
+      'hide' => array_keys(array_filter($item['location_settings']['display']['hide'])),
+      'location' => location_load_location($item['lid']),
+    );
+
+    // @@@ This is rather silly, but I can't think of anything better at the moment.
+    template_preprocess_location($location);
+
+    $fields = location_field_names(TRUE);
+    // @@@ We really need to rethink fields in location..
+    unset($fields['locpick']);
+    foreach ($fields as $k => $v) {
+      if (isset($location[$k])) {
+        $tokens[$k] = $location[$k];
+      }
+      else {
+        $tokens[$k] = '';
+      }
+    }
+    return $tokens;
+  }
+}
