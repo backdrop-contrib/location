@@ -1652,6 +1652,8 @@ function location_search($op = 'search', $keys = null) {
  */
 function template_preprocess_location(&$variables) {
   $location = $variables['location'];
+  // This will get taken back out if map links are hidden.
+  $location['map_link'] = TRUE;
   foreach($variables['hide'] as $key) {
     unset($location[$key]);
     // Special case for coords.
@@ -1678,7 +1680,7 @@ function template_preprocess_location(&$variables) {
 
   // Map link.
   $variables['map_link'] = '';
-  if (isset($variables['hide']['map_link']) && !$variables['hide']['map_link']) {
+  if (!empty($location['map_link'])) {
     $variables['map_link'] = location_map_link($location);
   }
 
