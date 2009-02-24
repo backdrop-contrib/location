@@ -15,6 +15,7 @@ define('LOCATION_LATLON_UNDEFINED',       0);
 define('LOCATION_LATLON_USER_SUBMITTED',  1);
 define('LOCATION_LATLON_GEOCODED_APPROX', 2);
 define('LOCATION_LATLON_GEOCODED_EXACT',  3);
+define('LOCATION_LATLON_JIT_GEOCODING',   4); // Force regeocoding immediately.
 
 define('LOCATION_USER_DONT_COLLECT',      0);
 define('LOCATION_USER_COLLECT',           1);
@@ -1101,6 +1102,20 @@ function location_load_location($lid) {
       'user_longitude' => $location['longitude'],
     );
   }
+
+  // JIT Geocoding
+  // Geocodes during load, useful with bulk imports.
+  if (isset($location['source']) && $location['source'] == LOCATION_LATLON_JIT_GEOCODING) {
+    if (variable_get('location_jit_geocoding', FALSE)) {
+      _location_geo_logic($location, array('street' => 1), array());
+      db_query("UPDATE {location} SET latitude = '%f', longitude = '%f', source = %d WHERE lid = %d",
+      $location['latitude'],
+      $location['longitude'],
+      $location['source'],
+      $location['lid']);
+    }
+  }
+
   $location['province_name'] = '';
   $location['country_name'] = '';
 
