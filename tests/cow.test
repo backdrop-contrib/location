@@ -18,7 +18,7 @@ class CowInstanceTest extends LocationTestCase {
   }
 
   function setUp() {
-    parent::setUp('location', 'devel');
+    parent::setUp('location', 'location_node', 'devel');
     $web_admin = $this->drupalCreateUser(array('administer nodes', 'submit latitude/longitude', 'administer site configuration', 'access administration pages', 'administer content types'));
     $this->drupalLogin($web_admin);
   }
