@@ -57,6 +57,13 @@ function location_admin_settings() {
     '#description' => t('If you would like to change the macro used to generate the location chooser map, you can do so here. Note: Behaviors <em>locpick</em> and <em>collapsehack</em> are forced to be enabled and cannot be changed.'),
   );
 
+  $form['location_jit_geocoding'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable JIT geocoding'),
+    '#default_value' => variable_get('location_jit_geocoding', FALSE),
+    '#description' => t('If you are going to be importing locations in bulk directly into the database, you may wish to enable JIT geocoding and load the locations with source set to 4 (LOCATION_LATLON_JIT_GEOCODING). The system will automatically geocode locations as they are loaded.'),
+  );
+
   return system_settings_form($form);
 }
 
