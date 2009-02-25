@@ -1,5 +1,7 @@
 ; $Id$
 name = Location Add Another
-package = Location
 description = Allows you to quickly add locations directly from a node without having to click 'edit' first.
+dependencies[] = location
+dependencies[] = location_node
+package = Location
 core = 6.x
