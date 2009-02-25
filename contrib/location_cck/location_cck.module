@@ -181,15 +181,13 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
       // CCK automatically picks up the new lids and stores them in its own tables.
       break;
 
-/*
     case 'load':
-      foreach ($items as $k => $v) {
-        if ($v['lid']) {
-          $items[$k] = location_load_location($v['lid']);
-        }
+      $locations = array();
+      // Locations are being cached by CCK now. Load the full location.
+      foreach ($items as $item) {
+        $locations[] = location_load_location($item['lid']);
       }
-      break;
-*/
+      return array($field['field_name'] => $locations);
 
     case 'delete':
       // Run through the revisions and clean up all applicable references.
