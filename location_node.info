@@ -1,0 +1,6 @@
+; $Id$
+name = Node Locations
+description = Associate locations with nodes.
+dependencies[] = location
+package = Location
+core = 6.x
