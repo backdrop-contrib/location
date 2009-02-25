@@ -358,7 +358,7 @@ function theme_location_cck_formatter_default($element) {
   }
   else if (isset($location['lid']) && $location['lid']) {
     // "normal" viewing.
-    $location = location_load_location($location['lid']);
+    // Location is already cached by CCK, so no need to load it.
     return theme('location', $location, $hide);
   }
 }
