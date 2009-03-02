@@ -176,15 +176,6 @@ function location_theme() {
 }
 
 /**
- * Implementation of hook_simpletest().
- */
-function location_simpletest() {
-  $dir = drupal_get_path('module', 'location') .'/tests';
-  $tests = file_scan_directory($dir, '\.test$');
-  return array_keys($tests);
-}
-
-/**
  * Implementation of hook_views_api().
  */
 function location_views_api() {
