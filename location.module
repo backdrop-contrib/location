@@ -441,21 +441,6 @@ function _location_expand_location_settings(&$element) {
     );
   }
 
-  // Override country field.
-/*  $element['country'] = array(
-    '#type'           => 'radios',
-    '#title'          => t('Country names'),
-    '#description'    => t('When using "Force Default", the country field will be set to the value of the "Default country selection" dropdown on the <a href="@location_settings">location settings page</a> and hidden from the user.', array('@location_settings' => url('admin/settings/location'))),
-    '#default_value'  => $defaults['country'],
-    '#options'        => array(
-      // 0 is omitted so the behavior lines up properly with everything else.
-      1 => t('Use'),
-      2 => t('Require'),
-      3 => t('Force Default'),
-    ),
-  );
-*/
-
   // 'Street Additional' field should depend on 'Street' setting.
   // It should never be required and should only display when the street field is 'allowed' or 'required'
 //  unset($element['additional']);
@@ -1270,7 +1255,6 @@ function location_normalize_settings(&$settings, $required = TRUE) {
   if (!isset($settings['form']['fields'])) {
     $settings['form']['fields'] = array();
   }
-
 
   // Merge defaults in.
   $dummy = array();
