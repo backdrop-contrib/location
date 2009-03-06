@@ -126,6 +126,18 @@ function location_node_form_node_type_form_alter(&$form, &$form_state) {
     '#default_value' => isset($settings['rss']['mode']) ? $settings['rss']['mode'] : 'simple',
   );
 
+  // Make the weight inaccessible here if cck is being used.
+  if (module_exists('content')) {
+    $form['location_settings']['form']['weight']['#type'] = 'value';
+    $form['location_settings']['form']['weight']['#value'] = $form['location_settings']['form']['weight']['#default_value'];
+    $form['location_settings']['form']['help'] = array(
+      '#type' => 'item',
+      '#title' => $form['location_settings']['form']['weight']['#title'],
+      '#value' => t('<a href="@url">Managed by CCK</a>', array('@url' => url('admin/content/node-type/'. $type .'/fields'))),
+      '#weight' => -10,
+    );
+  }
+
   // @@@ THIS IS NOT GOOD. --Bdragon
   // clear the views cache in case anything was changed
   if (function_exists('views_invalidate_cache')) {
@@ -164,4 +176,46 @@ function _location_node_type_save_submit($form, &$form_state) {
 
   // Prevent the "normal" submit handler from stomping our variable.
   unset($form_state['values']['location_settings']);
+}
+
+/**
+ * Alter the content_field_overview_form form.
+ */
+function location_node_form_content_field_overview_form_alter(&$form, &$form_state) {
+  $form['#submit'][] = 'location_node_content_extra_save';
+}
+
+/**
+ * Implementation of hook_content_extra_fields()
+ *
+ * For being able to edit location weight in node forms and node view
+ */
+function location_node_content_extra_fields($type_name) {
+  $settings = variable_get('location_settings_node_'. $type_name, array());
+  if ($settings['multiple']['max'] > 0) {
+    $weight = isset($settings['form']['weight']) ? $settings['form']['weight'] : 0;
+    $extra['locations'] = array(
+      'label' => t('Locations'),
+      'description' => t('Node Locations module form.'),
+      'weight' => $weight,
+    );
+  }
+  return $extra;
+ }
+
+/**
+ * Saving the fields management's weight for location node data in forms and node view
+ *
+ * @param $form
+ * @param $form_state
+ */
+function location_node_content_extra_save($form, &$form_state) {
+  $type = $form['#type_name'];
+  // We need to stay in sync with CCK's idea of the weight.
+  $settings = variable_get('location_settings_node_'. $type, array());
+  if (isset($form_state['values']['locations'])) {
+    $settings['form']['weight'] = $form_state['values']['locations']['weight'];
+    $settings['display']['weight'] = $form_state['values']['locations']['weight'];
+  }
+  variable_set('location_settings_node_'. $type, $settings);
 }
