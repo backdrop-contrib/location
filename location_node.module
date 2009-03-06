@@ -126,16 +126,12 @@ function location_node_form_node_type_form_alter(&$form, &$form_state) {
     '#default_value' => isset($settings['rss']['mode']) ? $settings['rss']['mode'] : 'simple',
   );
 
-  // Make the weight inaccessible here if cck is being used.
+  // Make the weights inaccessible if CCK is being used.
   if (module_exists('content')) {
     $form['location_settings']['form']['weight']['#type'] = 'value';
     $form['location_settings']['form']['weight']['#value'] = $form['location_settings']['form']['weight']['#default_value'];
-    $form['location_settings']['form']['help'] = array(
-      '#type' => 'item',
-      '#title' => $form['location_settings']['form']['weight']['#title'],
-      '#value' => t('<a href="@url">Managed by CCK</a>', array('@url' => url('admin/content/node-type/'. $type .'/fields'))),
-      '#weight' => -10,
-    );
+    $form['location_settings']['display']['weight']['#type'] = 'value';
+    $form['location_settings']['display']['weight']['#value'] = $form['location_settings']['display']['weight']['#default_value'];
   }
 
   // @@@ THIS IS NOT GOOD. --Bdragon
