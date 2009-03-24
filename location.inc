@@ -37,7 +37,7 @@ include_once drupal_get_path('module', 'location') .'/earth.inc';
  * @ingroup Location
  */
 function location_map_link($location = array(), $link_text = 'See map: ') {
-  if (!isset($location['country']) && $location['country'] != 'xx') {
+  if (!isset($location['country']) || $location['country'] == 'xx') {
     return '';
   }
 
