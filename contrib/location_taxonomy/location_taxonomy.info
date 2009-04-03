@@ -1,0 +1,7 @@
+; $Id$
+name = Location Taxonomy
+description = Associate locations with taxonomy terms.
+dependencies[] = location
+dependencies[] = taxonomy
+package = Location
+core = 6.x
