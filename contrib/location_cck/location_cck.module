@@ -380,24 +380,29 @@ function location_cck_token_list($type = 'all') {
 
 function location_cck_token_values($type, $object = NULL) {
   if ($type == 'field') {
+    $tokens = array();
     $item = $object[0];
-    $location = array(
-      'hide' => array_keys(array_filter($item['location_settings']['display']['hide'])),
-      'location' => location_load_location($item['lid']),
-    );
+    if ($item['lid']) {
+      // If the location exists, we need to set up the tokens.
 
-    // @@@ This is rather silly, but I can't think of anything better at the moment.
-    template_preprocess_location($location);
+      $location = array(
+        'hide' => array_keys(array_filter($item['location_settings']['display']['hide'])),
+        'location' => location_load_location($item['lid']),
+      );
 
-    $fields = location_field_names(TRUE);
-    // @@@ We really need to rethink fields in location..
-    unset($fields['locpick']);
-    foreach ($fields as $k => $v) {
-      if (isset($location[$k])) {
-        $tokens[$k] = $location[$k];
-      }
-      else {
-        $tokens[$k] = '';
+      // @@@ This is rather silly, but I can't think of anything better at the moment.
+      template_preprocess_location($location);
+
+      $fields = location_field_names(TRUE);
+      // @@@ We really need to rethink fields in location..
+      unset($fields['locpick']);
+      foreach ($fields as $k => $v) {
+        if (isset($location[$k])) {
+          $tokens[$k] = $location[$k];
+        }
+        else {
+          $tokens[$k] = '';
+        }
       }
     }
     return $tokens;
