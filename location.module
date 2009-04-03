@@ -705,21 +705,6 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
       }
       break;
 
-    case 'instance_links':
-      foreach ($obj as $k => $v) {
-        if ($v['nid'] != 0) {
-          $node = node_load($v['nid']);
-          $obj[$k]['href'] = 'node/'. $v['nid'];
-          $obj[$k]['title'] = $node->title;
-        }
-        else if ($v['uid'] != 0) {
-          $account = user_load(array('uid' => $v['uid']));
-          $obj[$k]['href'] = 'user/'. $v['uid'];
-          $obj[$k]['title'] = $account->name;
-        }
-      }
-      break;
-
   }
 }
 
