@@ -199,22 +199,22 @@ function location_node_form_content_field_overview_form_alter(&$form, &$form_sta
 }
 
 /**
- * Implementation of hook_content_extra_fields()
+ * Implementation of hook_content_extra_fields().
  *
- * For being able to edit location weight in node forms and node view
+ * For being able to edit location weight in node forms and node view.
  */
 function location_node_content_extra_fields($type_name) {
   $settings = variable_get('location_settings_node_'. $type_name, array());
-  if ($settings['multiple']['max'] > 0) {
+  if (isset($settings['multiple']) && $settings['multiple']['max'] > 0) {
     $weight = isset($settings['form']['weight']) ? $settings['form']['weight'] : 0;
     $extra['locations'] = array(
       'label' => t('Locations'),
       'description' => t('Node Locations module form.'),
       'weight' => $weight,
     );
+    return $extra;
   }
-  return $extra;
- }
+}
 
 /**
  * Saving the fields management's weight for location node data in forms and node view
