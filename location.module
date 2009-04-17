@@ -70,6 +70,15 @@ function location_menu() {
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/settings/location/util'] = array(
+    'title' => 'Location utilities',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('location_util_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'location.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+  );
 
   return $items;
 }
