@@ -4,7 +4,8 @@
 // China
 
 function location_province_list_cn() {
-  return array('11' => "Beijing",
+  return array(
+    '11' => "Beijing",
     '12' => "Tianjin",
     '13' => "Hebei",
     '14' => "Shanxi",
@@ -28,7 +29,7 @@ function location_province_list_cn() {
     '51' => "Sichuan",
     '52' => "Guizhou",
     '53' => "Yunnan",
-    '54' => "Xizang Z�zh�qu (Tibet)",
+    '54' => "Xizang (Tibet)",
     '61' => "Shaanxi",
     '62' => "Gansu",
     '63' => "Qinghai",
@@ -37,7 +38,8 @@ function location_province_list_cn() {
     '71' => "Taiwan",
     '91' => "Xianggang",
     '92' => "Aomen",
-    '97' => "Chongq�ng",
+    '97' => "Chongqing",
     '98' => "Gaoxiong",
-    '99' => "Taibei");
+    '99' => "Taibei",
+  );
 }
