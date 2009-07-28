@@ -314,7 +314,7 @@ function location_cck_content_is_empty($item, $field) {
  */
 function theme_location_cck_formatter_default($element) {
   $field = content_fields($element['#field_name'], $element['#type_name']);
-  $hide = array_keys(array_filter($field['location_settings']['display']['hide']));
+  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
   $location = $element['#item'];
   if (!empty($location['cck_preview_in_progress'])) {
     // Our canary field is in place, we are in a node preview.
@@ -338,7 +338,7 @@ function theme_location_cck_formatter_default($element) {
 function theme_location_cck_formatter_all($element) {
   $content = '';
   $field = content_fields($element['#field_name'], $element['#type_name']);
-  $hide = array_keys(array_filter($field['location_settings']['display']['hide']));
+  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
   $location = $element['#item'];
   if (!empty($location['cck_preview_in_progress'])) {
     // Our canary field is in place, we are in a node preview.
@@ -419,7 +419,7 @@ function theme_location_cck_field_map($locations, $field) {
  * Theme the GMap popup text for the field.
  */
 function theme_location_cck_field_popup($location, $field) {
-  $hide = array_keys(array_filter($field['location_settings']['display']['hide']));
+  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
   // Don't use a map link in a popup!
   // We're making the name into a title.
   $hide[] = 'map_link';
@@ -461,7 +461,10 @@ function location_cck_token_values($type, $object = NULL) {
       // If the location exists, we need to set up the tokens.
 
       $location = array(
-        'hide' => array_keys(array_filter($item['location_settings']['display']['hide'])),
+        // There is no way to find out which elements to hide because $item does not contain
+        // the 'location_settings' element, so for now, just set it to be an empty array.
+        // See http://drupal.org/node/463618 for more infomation.
+        'hide' => array(),
         'location' => location_load_location($item['lid']),
       );
 
