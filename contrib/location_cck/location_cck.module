@@ -383,6 +383,7 @@ function theme_location_cck_formatter_combined($element) {
  * block view.
  */
 function theme_location_cck_field_map($locations, $field) {
+  $count = 0;
   $content = '';
   foreach ($locations as $location) {
     if (location_has_coordinates($location)) {
@@ -403,7 +404,6 @@ function theme_location_cck_field_map($locations, $field) {
     $map['latitude'] = $markers[0]['latitude'];
     $map['longitude'] = $markers[0]['longitude'];
     $map['markers'] = $markers;
-    $map['zoom'] = $map['gmap zoom'];
     $map['id'] = gmap_get_auto_mapid();
     $content = theme('gmap', array('#settings' => $map));
   }
