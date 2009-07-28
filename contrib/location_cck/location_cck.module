@@ -58,23 +58,21 @@ function location_cck_field_settings($op, $field) {
       unset ($form['location_settings']['form']['collapsible']);
       unset ($form['location_settings']['form']['collapsed']);
       unset ($form['location_settings']['display']['weight']);
-      
+
       // We want to see the settings, so uncollapse them.
       $form['location_settings']['#collapsible'] = FALSE;
       $form['location_settings']['form']['#collapsed'] = FALSE;
       $form['location_settings']['display']['#collapsed'] = FALSE;
-      
+
       // Add some GMap settings, if GMap is enabled.
       if (module_exists('gmap')) {
-        $gmap = variable_get("gmap_node_map", _gmap_location_node_map_defaults());
-        $default_macro = $gmap['macro'];
         $form['gmap_macro'] = array(
           '#type' => 'textarea',
           '#title' => t('GMap Macro'),
           '#rows' => 2,
           '#maxlength' => 500,
           '#description' => t('A macro to be used as a base map for this field.  This map will be recentered on the location, so the center is not that important.'),
-          '#default_value' => !empty($field['gmap_macro']) ? $field['gmap_macro'] : $default_macro,
+          '#default_value' => !empty($field['gmap_macro']) ? $field['gmap_macro'] : '[gmap ]',
         );
         $options = gmap_get_marker_titles();
         $form['gmap_marker'] = array(
@@ -85,14 +83,15 @@ function location_cck_field_settings($op, $field) {
         );
       }
       else {
+        // Preserve existing data, apply defaults even if gmap is disabled.
         $form['gmap_macro'] = array(
-          '#type' => 'hidden',
-          '#value' => '',
-          );
+          '#type' => 'value',
+          '#value' => !empty($field['gmap_macro']) ? $field['gmap_macro'] : '[gmap ]',
+        );
         $form['gmap_marker'] = array(
-          '#type' => 'hidden',
-          '#value' => '',
-        );  
+          '#type' => 'value',
+          '#value' => !empty($field['gmap_marker']) ? $field['gmap_marker'] : 'drupal',
+        );
       }
       return $form;
 
@@ -234,7 +233,7 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
     }
     // Load location data passed by cck.
     else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
-      
+
       // Initialize empty location.
       $location = location_empty_location($settings);
       foreach ($items[$delta] as $k => $v) {
@@ -364,7 +363,7 @@ function theme_location_cck_formatter_all($element) {
 function theme_location_cck_formatter_map($element) {
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $location = $element['#item'];
-  return theme_location_cck_field_map(array($location), $field);  
+  return theme_location_cck_field_map(array($location), $field);
 }
 
 /**
@@ -379,8 +378,8 @@ function theme_location_cck_formatter_combined($element) {
 
 /**
  * Generate a GMap map for one or more location field values.
- * 
- * Mostly just cut and paste from gmap_location 
+ *
+ * Mostly just cut and paste from gmap_location
  * block view.
  */
 function theme_location_cck_field_map($locations, $field) {
@@ -424,7 +423,7 @@ function theme_location_cck_field_popup($location, $field) {
   // We're making the name into a title.
   $hide[] = 'map_link';
   $hide[] = 'name';
-  
+
   $markertitle = $field['widget']['label'];
   if (!empty($location['name'])) {
     $markertitle = $location['name'];
