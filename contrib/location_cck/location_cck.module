@@ -398,11 +398,7 @@ function theme_location_cck_field_map($locations, $field) {
     }
   }
   if (!empty($markers)) {
-    $macro = $field['gmap_macro'];
-    if (empty($macro)) {
-      $gmap = variable_get("gmap_node_map", _gmap_location_node_map_defaults());
-      $macro = $gmap['macro'];
-    }
+    $macro = !empty($field['gmap_macro']) ? $field['gmap_macro'] : '[gmap ]';
     $map = gmap_parse_macro($macro);
     $map['latitude'] = $markers[0]['latitude'];
     $map['longitude'] = $markers[0]['longitude'];
