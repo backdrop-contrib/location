@@ -54,7 +54,7 @@ class LocationTestCase extends DrupalWebTestCase {
     $d = location_invoke_locationapi($location, 'defaults');
     $fields = location_field_names();
     foreach ($fields as $k => $v) {
-      if (!isset($v['nodiff'])) {
+      if (!isset($d[$k]['nodiff'])) {
         $defaults[$k] = $d[$k];
       }
     }
@@ -121,6 +121,45 @@ class LocationTestCase extends DrupalWebTestCase {
     foreach ($locations as $location) {
       $node->locations[] = $location;
     }
+  }
+
+  /**
+   * Creates a node based on default settings. This uses the internal simpletest
+   * browser, meaning the node will be owned by the current simpletest _browser user.
+   *
+   * Code modified from #212304.
+   * This is mainly for testing for differences between node_save() and
+   * submitting a node/add/* form.
+   *
+   * @param values
+   *   An associative array of values to change from the defaults, keys are
+   *   node properties, for example 'body' => 'Hello, world!'.
+   * @return object Created node object.
+   */
+  function drupalCreateNodeViaForm($values = array()) {
+    $defaults = array(
+      'type' => 'page',
+      'title' => $this->randomName(8),
+     );
+
+    $edit = ($values + $defaults);
+
+    if (empty($edit['body'])) {
+      $content_type = db_fetch_array(db_query("select name, has_body from {node_type} where type='%s'", $edit['type']));
+
+      if ($content_type['has_body']) {
+        $edit['body'] = $this->randomName(32);
+      }
+    }
+    $type = $edit['type'];
+    unset($edit['type']); // Only used in URL.
+    $this->flattenPostData($edit); // Added by me.
+    $this->drupalPost('node/add/'. str_replace('_', '-', $type), $edit, t('Save'));
+
+    $node = node_load(array('title' => $edit['title']));
+    $this->assertRaw(t('@type %title has been created.', array('@type' => node_get_types('name', $node), '%title' => $edit['title'])), t('Node created successfully.'));
+
+    return $node;
   }
 
 }
