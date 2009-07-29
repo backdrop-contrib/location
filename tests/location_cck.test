@@ -3,26 +3,151 @@
 
 /**
  * @file
- * Location saving test.
+ * Tests for location_cck.module.
  */
 
 require_once drupal_get_path('module', 'location') . '/tests/location_testcase.php';
 
-class CowInstanceTest extends LocationTestCase {
+class LocationCCKTest extends LocationTestCase {
+  /**
+   * A global administrative user.
+   */
+  var $admin_user;
+
+  /**
+   * A global normal user.
+   */
+  var $normal_user;
+
   function getInfo() {
     return array(
-      'name' => t('Location Copy on Write checks'),
-      'description' => t('Test corner cases of the copy on write mechanism.'),
+      'name' => t('Location CCK checks'),
+      'description' => t('Test corner cases of the CCK Location module.'),
       'group' => t('Location'),
     );
   }
 
   function setUp() {
-    parent::setUp('location', 'location_node', 'devel');
-    $web_admin = $this->drupalCreateUser(array('administer nodes', 'submit latitude/longitude', 'administer site configuration', 'access administration pages', 'administer content types'));
-    $this->drupalLogin($web_admin);
+    parent::setUp('location', 'content', 'location_cck', 'devel');
+    $this->admin_user = $this->drupalCreateUser(array('administer nodes', 'submit latitude/longitude', 'administer site configuration', 'access administration pages', 'administer content types'));
+    $this->normal_user = $this->drupalCreateUser(array('access content'));
+
+    $this->drupalLogin($this->admin_user);
   }
 
+  function getLocationFieldDefaults() {
+    // Get the (settable) defaults.
+    $defaults = array();
+    $d = location_invoke_locationapi($location, 'defaults');
+    $fields = location_field_names();
+    foreach ($fields as $k => $v) {
+      if (!isset($d[$k]['nodiff'])) {
+        $defaults[$k] = $d[$k];
+      }
+    }
+
+    foreach ($defaults as $k => $v) {
+      // Change collection to allow.
+      $defaults[$k]['collect'] = 1;
+    }
+    return $defaults;
+  }
+
+  function addLocationContentType(&$settings, $add = array()) {
+
+    $field_name = 'loctest';
+
+    // Let the caller mess with some relevant cck stuff.
+    $required = isset($add['cck_required']) ? $add['cck_required'] : FALSE;
+    $multiple = isset($add['cck_multiple']) ? $add['cck_multiple'] : 0;
+    unset($add['cck_required']);
+    unset($add['cck_multiple']);
+
+    // find a non-existent random type name.
+    do {
+      $name = strtolower($this->randomName(3, 'type_'));
+    } while (node_get_types('type', $name));
+
+    $form = array(
+      'name' => $name,
+      'type' => $name,
+    );
+
+    $this->flattenPostData($form);
+    //$add = array('location_settings' => $add);
+    //$this->flattenPostData($add);
+    //$settings = array_merge($settings, $add);
+    $this->drupalPost('admin/content/types/add', $form, 'Save content type');
+    $this->refreshVariables();
+
+    $form = array(
+      '_add_new_field' => array(
+        'label' => 'Location',
+        'weight' => 10,
+//        'hidden_name' => '_add_new_field',
+        'field_name' => $field_name,
+        'type' => 'location',
+        'widget_type' => 'location',
+      ),
+    );
+    $this->flattenPostData($form);
+    $this->drupalPost('admin/content/node-type/'. str_replace('_', '-', $name) .'/fields', $form, 'Save');
+
+    $this->refreshVariables();
+    drupal_get_schema(NULL, TRUE);
+
+    // Get the (settable) defaults.
+    $defaults = array();
+    $d = location_invoke_locationapi($location, 'defaults');
+    $fields = location_field_names();
+    foreach ($fields as $k => $v) {
+      if (!isset($d[$k]['nodiff'])) {
+        $defaults[$k] = $d[$k];
+      }
+    }
+
+    foreach ($defaults as $k => $v) {
+      // Change collection to allow.
+      $defaults[$k]['collect'] = 1;
+    }
+
+    $form = array(
+      'required' => $required,
+      'multiple' => $multiple,
+      'location_settings' => array(
+        'form' => array(
+          'fields' => $defaults,
+        ),
+        // 'display'
+      ),
+    );
+
+    $this->flattenPostData($form);
+    $add = array('location_settings' => $add);
+    $this->flattenPostData($add);
+
+    $this->drupalPost(NULL, $form, 'Save field settings');
+
+    // @@@ This is stupid, but I don't know the api for pulling this stuff up.
+    // @@@ _content_type_info() perhaps?
+    $result = db_query("SELECT global_settings FROM {content_node_field} WHERE field_name = 'field_%s' AND type = 'location'", $field_name);
+    $row = db_fetch_object($result);
+    $settings = array();
+    $settings = unserialize($row->global_settings);
+    $settings = $settings['location_settings'];
+
+    $this->refreshVariables();
+
+    // Reset the content type info in the context of the test framework.
+    // This took me way too long to figure out.
+    _content_type_info(TRUE);
+
+    return $name;
+  }
+
+  /**
+   * Create a location via cck.
+   */
   function testCreateLocation() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
@@ -31,20 +156,26 @@ class CowInstanceTest extends LocationTestCase {
 
     $node = $this->drupalCreateNode(array(
       'type' => $location_type,
-      'locations' => array(
-        0 => array(
+      'field_loctest' => array(
+        array(
           'name' => $location1_name,
-          'location_settings' => $settings,
+          'street' => '48072 289th St.',
+          'province' => 'SD',
+          'country' => 'us',
+  //        'location_settings' => $settings,
         ),
       ),
     ));
+    cache_clear_all();
 
     // Reload the node.
     $node2 = node_load($node->nid, NULL, TRUE);
+    $location = $node2->field_loctest[0];
 
-    $this->assertEqual($location1_name, $node2->locations[0]['name'], t('Testing basic save/load'));
+    $this->assertEqual($location1_name, $location['name'], t('Testing basic save/load'));
+
   }
-
+/*
   function testLocpickOnly() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
@@ -68,6 +199,7 @@ class CowInstanceTest extends LocationTestCase {
     $node2 = node_load($node->nid, NULL, TRUE);
     $this->pass(var_export($node2->locations, TRUE));
     $this->assertEqual($node2->locations[0]['latitude'], 44.25, t('Testing coordinate-only save/load'));
+//    crash();
   }
 
   function testMultipleLocationOnSingleNode() {
@@ -275,4 +407,5 @@ class CowInstanceTest extends LocationTestCase {
     $this->assertEqual($node->locations[0]['lid'], $node1->locations[0]['lid'], t('Ensuring LIDs are conserved'));
 
   }
+ */
 }
