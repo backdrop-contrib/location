@@ -24,6 +24,27 @@ class LocationTestCase extends DrupalWebTestCase {
     }
   }
 
+  /**
+   * Get a set of location field defaults.
+   * This will also enable collection on all parts of the location field.
+   */
+  function getLocationFieldDefaults() {
+    // Get the (settable) defaults.
+    $defaults = array();
+    $d = location_invoke_locationapi($location, 'defaults');
+    $fields = location_field_names();
+    foreach ($fields as $k => $v) {
+      if (!isset($d[$k]['nodiff'])) {
+        $defaults[$k] = $d[$k];
+      }
+    }
+
+    foreach ($defaults as $k => $v) {
+      // Change collection to allow.
+      $defaults[$k]['collect'] = 1;
+    }
+    return $defaults;
+  }
 
   /**
    * Flatten a post settings array because drupalPost isn't smart enough to.
@@ -50,19 +71,7 @@ class LocationTestCase extends DrupalWebTestCase {
     } while (node_get_types('type', $name));
 
     // Get the (settable) defaults.
-    $defaults = array();
-    $d = location_invoke_locationapi($location, 'defaults');
-    $fields = location_field_names();
-    foreach ($fields as $k => $v) {
-      if (!isset($d[$k]['nodiff'])) {
-        $defaults[$k] = $d[$k];
-      }
-    }
-
-    foreach ($defaults as $k => $v) {
-      // Change collection to allow.
-      $defaults[$k]['collect'] = 1;
-    }
+    $defaults = $this->getLocationFieldDefaults();
 
     $settings = array(
       'name' => $name,
@@ -111,15 +120,17 @@ class LocationTestCase extends DrupalWebTestCase {
   /**
    * Order locations in a node by LID for testing repeatability purposes.
    */
-  function reorderLocations(&$node) {
+  function reorderLocations(&$node, $field = 'locations') {
     $locations = array();
-    foreach ($node->locations as $location) {
-      $locations[$location['lid']] = $location;
+    foreach ($node->{$field} as $location) {
+      if ($location['lid']) {
+        $locations[$location['lid']] = $location;
+      }
     }
     ksort($locations);
-    $node->locations = array();
+    $node->{$field} = array();
     foreach ($locations as $location) {
-      $node->locations[] = $location;
+      $node->{$field}[] = $location;
     }
   }
 

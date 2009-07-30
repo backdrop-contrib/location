@@ -148,8 +148,10 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
       return array($field['field_name'] => $locations);
 
     case 'delete':
-      // Run through the revisions and clean up all applicable references.
-      $result = db_query('SELECT vid FROM {node_revisions} WHERE nid = %d', $node->nid);
+      // Use the CCK storage to figure out the vids that need to be deleted,
+      // and clean up all the applicable references.
+      $db_info = content_database_info($field);
+      $result = db_query('SELECT vid FROM {'. $db_info['table'] .'} WHERE nid = %d', $node->nid);
       while ($row = db_fetch_object($result)) {
         $genid = 'cck:'. $field['field_name'] .':'. $row->vid;
         $locs = array();
@@ -297,9 +299,9 @@ function theme_location_cck_formatter_default($element) {
   if (!empty($location['cck_preview_in_progress'])) {
     // Our canary field is in place, we are in a node preview.
     $fields = array();
-    // If the delete location checkbox isn't checked, and the location isn't
-    // "empty", then theme it based on the current state of the item.
-    if (!location_is_empty($location, $fields) && empty($location['delete_location'])) {
+    // If the location isn't "empty", then theme it based on the current state
+    // of the item.
+    if (!location_is_empty($location, $fields)) {
       return theme('location', $location, $hide);
     }
   }
@@ -321,9 +323,9 @@ function theme_location_cck_formatter_all($element) {
   if (!empty($location['cck_preview_in_progress'])) {
     // Our canary field is in place, we are in a node preview.
     $fields = array();
-    // If the delete location checkbox isn't checked, and the location isn't
-    // "empty", then theme it based on the current state of the item.
-    if (!location_is_empty($location, $fields) && empty($location['delete_location'])) {
+    // If the location isn't "empty", then theme it based on the current state
+    // of the item.
+    if (!location_is_empty($location, $fields)) {
       $content = theme('location', $location, $hide);
     }
   }
