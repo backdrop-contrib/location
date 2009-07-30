@@ -265,7 +265,6 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       '#required' => $field['required'],
       '#location_settings' => $settings,
       '#default_value' => $location,
-      '#element_validate' => array('location_cck_validate'),
     );
     // This is used to determine whether we are in a preview or not, because
     // several pieces of code work differently when previewing.
@@ -274,26 +273,6 @@ function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
       '#value' => TRUE,
     );
     return $element;
-  }
-}
-
-/**
- * Add validation when a location is chosen on a map
- * but is given no name to warn it will not be
- * saved (won't make it through location_is_empty()).
- */
-function location_cck_validate($element, &$form_state) {
-  $location = $element['#value'];
-  $fields = $location;
-  if (location_is_empty($location, $fields)) {
-    if (!empty($location['locpick']['user_latitude']) && !empty($location['locpick']['user_longitude'])) {
-      // We don't exactly which location fields are available
-      // so just pick the first one for our error message.
-      $field_key = array_shift(array_keys($fields));
-      $labels = location_locationapi($fields, 'fields');
-      $error_field = implode('][', $element['#parents']) .']['. $field_key;
-      form_set_error($error_field, t('Location coordinates will not be stored unless they have %field_key or some other value set.', array('%field_key' => $labels[$field_key])));
-    }
   }
 }
 
