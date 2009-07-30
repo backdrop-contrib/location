@@ -1197,6 +1197,12 @@ function location_is_empty($location, &$filled) {
     return TRUE;
   }
 
+  // Special case: Consider a location with the "delete" checkbox checked to
+  // be empty.
+  if (isset($location['delete_location']) && $location['delete_location']) {
+    return TRUE;
+  }
+
   // Patch locpick at this point.
   // Otherwise, changing locpick only will not show a difference.
   _location_patch_locpick($location);

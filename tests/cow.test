@@ -9,6 +9,22 @@
 require_once drupal_get_path('module', 'location') . '/tests/location_testcase.php';
 
 class CowInstanceTest extends LocationTestCase {
+  /**
+   * A global administrative user.
+   */
+  var $admin_user;
+
+  /**
+   * A global normal user.
+   */
+  var $normal_user;
+
+  /**
+   * Simple content type using defaults.
+   */
+  var $content_type;
+
+
   function getInfo() {
     return array(
       'name' => t('Location Copy on Write checks'),
@@ -238,14 +254,14 @@ class CowInstanceTest extends LocationTestCase {
 
   function testCOWConservation() {
     $settings = array();
-    $location_type = $this->addLocationContentType($settings, array('multiple' => array('max' => 3, 'add' => 3)));
+    $location_type = $this->addLocationContentType($settings);
 
     $location1_name = $this->randomName();
 
     $node = $this->drupalCreateNode(array(
       'type' => $location_type,
       'locations' => array(
-        0 => array( // First
+        0 => array(
           'name' => $location1_name,
           'location_settings' => $settings,
         ),
@@ -257,7 +273,8 @@ class CowInstanceTest extends LocationTestCase {
 
     $changes = array(
       'locations' => array(
-        0 => array( // Delete First
+        0 => array(
+          // Update name.
           'name' => $location1_name .'_CHANGE',
         ),
       ),
