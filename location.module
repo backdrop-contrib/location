@@ -837,7 +837,7 @@ function location_save_locations(&$locations, $criteria) {
       // An instance may have been deleted. Check reference count.
       $count = db_result(db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = %d', $check));
       if ($count !== FALSE && $count == 0) {
-        watchdog('location', t('Deleting unreferenced location with LID %lid.', array('%lid' => $check)));
+        watchdog('location', 'Deleting unreferenced location with LID %lid.', array('%lid' => $check));
         $location = array('lid' => $check);
         location_invoke_locationapi($location, 'delete');
         db_query('DELETE FROM {location} WHERE lid = %d', $location['lid']);
@@ -915,7 +915,7 @@ function _location_autocomplete($country, $string = '') {
     // Multiple countries specified.
     $provinces = array();
     $country = explode(',', $country);
-    foreach($country as $c) {
+    foreach ($country as $c) {
       $provinces = $provinces + location_get_provinces($c);
     }
   }
