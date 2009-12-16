@@ -259,14 +259,14 @@ function _location_expand_location($element) {
         $element[$field] = location_invoke_locationapi($fdefaults[$field], 'field_expand', $field, $fsettings[$field]['collect'], $fdefaults);
         $element[$field]['#weight'] = (int)$fsettings[$field]['weight'];
       }
-
-      // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
-      if ($field == 'street' && $fsettings[$field]['collect']) {
-        $element['additional'] = location_invoke_locationapi($defaults['additional'], 'field_expand', 'additional', 1, $defaults);
-        $element['additional']['#weight'] = (int)$fsettings['additional']['weight'];
-      }
     }
   }
+
+  // Only include 'Street Additional' if 'Street' is 'allowed' or 'required'
+  if (!isset($element['street'])) {
+    unset($element['additional']);
+  }
+
   // @@@ Split into submit and view permissions?
   if (user_access('submit latitude/longitude') && $fsettings['locpick']['collect']) {
     $element['locpick'] = array('#weight' => $fsettings['locpick']['weight']);
