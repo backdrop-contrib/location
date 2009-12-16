@@ -1217,6 +1217,7 @@ function location_is_empty($location, &$filled) {
  * Returns an empty location object based on the given settings.
  */
 function location_empty_location($settings) {
+  $location = array();
   $defaults = location_invoke_locationapi($location, 'defaults');
   if (isset($settings['form']['fields'])) {
     foreach ($settings['form']['fields'] as $k => $v) {
@@ -1226,7 +1227,6 @@ function location_empty_location($settings) {
     }
   }
 
-  $location = array();
   foreach ($defaults as $k => $v) {
     if (isset($v['default'])) {
       $location[$k] = $v['default'];
