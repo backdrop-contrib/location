@@ -473,15 +473,26 @@ function location_standardize_country_code(&$country) {
   }
 }
 
-// @@@ New in 3.x, document.
 /**
- * Load the support file for a country.
+ * Load support for a country.
+ *
+ * This function will load support for a country identified by its two-letter ISO code.
+ *
+ * @param $country
+ *   Two-letter ISO code for country.
+ *
+ * @return
+ *   TRUE if the file was found and loaded, FALSE otherwise.
  */
 function location_load_country($country) {
   location_standardize_country_code($country);
-  if ($country != 'xx') {
-    include_once(drupal_get_path('module', 'location') .'/supported/location.'. $country .'.inc');
+
+  $file = drupal_get_path('module', 'location') . '/supported/location.' . $country . '.inc';
+  if (file_exists($file)) {
+    include_once($file);
+    return TRUE;
   }
+  return FALSE;
 }
 
 // @@@ New in 3.x, document.
