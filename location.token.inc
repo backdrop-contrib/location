@@ -15,6 +15,19 @@ function _location_token_values($type, $object = NULL) {
     if (!empty($object->locations)) {
       // @@@ Strip virtual fields?
       foreach ($object->locations as $key => $location) {
+
+        // Normally, location_load_location() will take care of this.
+        // However, token is commonly used during *saving*.
+        // See #322328.
+        if (empty($location['country_name'])) {
+          if (!empty($location['country'])) {
+            $location['country_name'] = location_country_name($location['country']);
+            if (!empty($location['province'])) {
+              $location['province_name'] = location_province_name($location['country'], $location['province']);
+            }
+          }
+        }
+
         foreach ($location as $field => $value) {
           if (!is_array($value)) {
             $values["location-{$field}_{$key}"] = check_plain($value);
