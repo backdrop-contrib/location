@@ -68,7 +68,7 @@ function location_addanother_form(&$form_state, &$node) {
 /**
  * Validation function for "add another location" form.
  */
-function location_addanother_form_validate($form, &$form_state, $form_id) {
+function location_addanother_form_validate($form, &$form_state) {
   $location = $form_state['values']['location'];
   $node = node_load($location['nid']);
   unset($location['nid']);
