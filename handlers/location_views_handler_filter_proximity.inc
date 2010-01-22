@@ -27,6 +27,11 @@ class location_views_handler_filter_proximity extends views_handler_filter {
         'search_units' => 'mile',
       ),
     );
+
+    $options['gmap_macro'] = array(
+      'default' => '[gmap ]',
+    );
+
     return $options;
   }
 
@@ -56,6 +61,20 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#description' => t('FIXME'),
       '#default_value' => $this->options['type'],
     );
+
+    if (module_exists('gmap')) {
+      $form['expose']['type']['#options']['latlon_gmap'] = t('Latitude / Longitude input (use map)');
+    }
+
+    // @@@ Todo: autohide this.
+    $form['expose']['gmap_macro'] = array(
+      '#parents' => array('options', 'gmap_macro'),
+      '#type' => 'textfield',
+      '#title' => t('GMap macro'),
+      '#description' => t('The macro to use for the Latitude / Longitude map, if applicable.'),
+      '#default_value' => $this->options['gmap_macro'],
+    );
+
   }
 
   function value_form(&$form, &$form_state) {
@@ -89,14 +108,14 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#title' => t('Latitude'),
       '#default_value' => $this->value['latitude'],
       '#process' => array('views_process_dependency'),
-      '#dependency' => array('edit-options-type' => array('latlon')),
+      '#dependency' => array('edit-options-type' => array('latlon', 'latlon_gmap')),
     );
     $form['value']['longitude'] = array(
       '#type' => 'textfield',
       '#title' => t('Longitude'),
       '#default_value' => $this->value['longitude'],
       '#process' => array('views_process_dependency'),
-      '#dependency' => array('edit-options-type' => array('latlon')),
+      '#dependency' => array('edit-options-type' => array('latlon', 'latlon_gmap')),
     );
 
     $form['value']['postal_code'] = array(
@@ -137,9 +156,18 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     $key = $this->options['expose']['identifier'];
     $type = $this->options['type'];
 
+    if ($type == 'latlon_gmap') {
+      if (module_exists('gmap')) {
+      $form[$key]['proximity_map'] = array(
+        '#type' => 'markup',
+        '#value' => gmap_set_location($this->options['gmap_macro'], $form[$key], array('latitude' => 'latitude', 'longitude' => 'longitude')),
+      );
+      }
+    }
+
     // Remove unneeded fields when exposing the form.
     // It's shorter than redefining value_form.
-    if ($type != 'latlon') {
+    if ($type != 'latlon' && $type != 'latlon_gmap') {
       unset($form[$key]['latitude']);
       unset($form[$key]['longitude']);
     }
