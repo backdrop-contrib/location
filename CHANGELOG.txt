@@ -1,3 +1,5 @@
+// $Id$
+
 Location 6.3.1-RC-XXX [ongoing]
 ------------------
  - Fix #692668 requested by greggles in IRC: Reimplement gmap locpick proximity filter.
