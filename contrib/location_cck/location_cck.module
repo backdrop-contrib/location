@@ -134,8 +134,12 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
     case 'insert':
     case 'update':
       // Store instances of locations by field name and vid.
-      $genid = 'cck:'. $field['field_name'] .':'. $node->vid;
-      location_save_locations($items, array('genid' => $genid));
+      $criteria = array(
+        'genid' => 'cck:'. $field['field_name'] .':'. $node->vid,
+        'vid' => $node->vid,
+        'nid' => $node->nid,
+      );
+      location_save_locations($items, $criteria);
       // CCK automatically picks up the new lids and stores them in its own tables.
       break;
 
