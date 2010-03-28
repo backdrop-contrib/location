@@ -11,7 +11,7 @@ class location_handler_filter_location_province extends views_handler_filter {
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['operator'] = array('default' => 'IS');
+    $options['operator'] = array('default' => 'is');
     return $options;
   }
 
