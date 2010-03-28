@@ -56,6 +56,14 @@ class location_handler_field_location_distance extends views_handler_field {
     );
   }
 
+  function click_sort($order) {
+    $location = $this->_get_reference_location();
+
+    if ($location) {
+      $this->query->add_orderby(NULL, earth_distance_sql($location['longitude'], $location['latitude'], $this->table_alias), $order, $this->field_alias);
+    }
+  }
+
   function render($values) {
     if (empty($values->{$this->field_alias}) || $values->{$this->field_alias} == 'Unknown') {
       // Unset location, empty display.
@@ -73,9 +81,24 @@ class location_handler_field_location_distance extends views_handler_field {
   }
 
   function query() {
-    $latitude = 0;
-    $longitude = 0;
+    $this->ensure_my_table();
 
+    $coordinates = $this->_get_reference_location();
+    if ($coordinates) {
+      $this->field_alias = $this->query->add_field(NULL, earth_distance_sql($coordinates['longitude'], $coordinates['latitude'], $this->table_alias), $this->table_alias .'_'. $this->field);
+    }
+    else {
+      $this->field_alias = $this->query->add_field(NULL, "'Unknown'", $this->table_alias .'_'. $this->field);
+    }
+  }
+
+  /**
+   * Retrieves the coordinates of the location that this field measures
+   * distances against.
+   *
+   * @return array with keys 'latitude' and 'longitude'; null if none was configured
+   */
+  function _get_reference_location() {
     if ($this->options['origin'] == 'hybrid' || $this->options['origin'] == 'user') {
       global $user;
       if (!isset($user->locations)) {
@@ -105,14 +128,11 @@ class location_handler_field_location_distance extends views_handler_field {
       }
     }
 
-    $this->ensure_my_table();
-
-    if (empty($latitude) && empty($longitude)) {
-      // We don't know the distance.
-      $this->field_alias = $this->query->add_field(NULL, "'Unknown'", "{$this->table_alias}_{$this->field}_{$this->position}");
+    if (isset($latitude) && isset($longitude)) {
+      return array('latitude' => $latitude, 'longitude' => $longitude);
     }
     else {
-      $this->field_alias = $this->query->add_field(NULL, earth_distance_sql($longitude, $latitude, $this->table_alias), "{$this->table_alias}_{$this->field}_{$this->position}");
+      return null;
     }
   }
 }
