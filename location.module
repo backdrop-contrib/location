@@ -1477,7 +1477,9 @@ function template_preprocess_location(&$variables) {
   // Map link.
   $variables['map_link'] = '';
   if (!empty($location['map_link'])) {
-    $variables['map_link'] = location_map_link($location);
+    // Do not use $location for generating the map link, since it will 
+    // not contain the country if that field is hidden.
+    $variables['map_link'] = location_map_link($variables['location']);
   }
 
   // Theme latitude and longitude as d/m/s.
