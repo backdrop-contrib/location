@@ -2,6 +2,12 @@
 
 Location 6.3.1-RC-XXX [ongoing]
 ------------------
+ - Improved support for Denmark; patch courtesy of mikl and kaerast in #412112
+ - fix for map links issue at #340740; using patch by mikl given in #412102
+ - Fixed click sort for distance field handler; thanks to nickl and traxer for revisions of the patch in #326569
+ - add new div with it's own class for location map links; revisions of patch by BWPanda and anonymous5190 in #172646
+ - Committing fix for bug causing wrong default operator for provice operator; patch from ooh_truck in #746295
+ - location_cck fixes from #391160; thank you nickl and smk-ka for patches
  - Fix #692668 requested by greggles in IRC: Reimplement gmap locpick proximity filter.
  - Fix #322328, original patch by AdAstra, rerolled by chx, rewritten to fix the root cause by BDragon: Fix country_name and province_name tokens.
  - Fix #679864 reported by ycwjjjj.
