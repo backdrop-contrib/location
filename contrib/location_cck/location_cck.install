@@ -54,7 +54,7 @@ function location_cck_update_6301() {
 
   db_create_table($ret, 'location_instance_tmp', $schema);
 
-  $ret[] = update_sql("INSERT INTO {location_instance_tmp} (nid, vid, genid, lid) SELECT nid, vid, l.genid, l.lid FROM {node} JOIN (SELECT SUBSTRING_INDEX(genid, ':', -1) as genvid, lid, genid FROM {location_instance}) as l ON node.vid = l.genvid");
+  $ret[] = update_sql("INSERT INTO {location_instance_tmp} (nid, vid, genid, lid) SELECT nid, vid, l.genid, l.lid FROM {node} n JOIN (SELECT SUBSTRING_INDEX(genid, ':', -1) as genvid, lid, genid FROM {location_instance}) as l ON n.vid = l.genvid");
   $ret[] = update_sql("DELETE FROM {location_instance} WHERE genid like 'cck:%'");
   $ret[] = update_sql("INSERT INTO {location_instance} (nid, vid, genid, lid) SELECT nid, vid, genid, lid FROM {location_instance_tmp} GROUP BY nid, vid, genid, lid");
 
