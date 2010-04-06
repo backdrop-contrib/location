@@ -2,6 +2,7 @@
 
 Location 6.3.1-RC-XXX [ongoing]
 ------------------
+ - bug #584914 by claudiu.cristea: Fixed Romanian province list
  - Fixed prefixing bug in location_cck.install; patch courtesy of reubidium in #757594
  - Improved support for Denmark; patch courtesy of mikl and kaerast in #412112
  - fix for map links issue at #340740; using patch by mikl given in #412102
