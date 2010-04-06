@@ -1468,12 +1468,6 @@ function template_preprocess_location(&$variables) {
     }
   }
 
-  // Location name.
-  $variables['name'] = '';
-  if (!empty($location['name'])) {
-    $variables['name'] = theme('placeholder', $location['name']);
-  }
-
   // Map link.
   $variables['map_link'] = '';
   if (!empty($location['map_link'])) {

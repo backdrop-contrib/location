@@ -2,6 +2,7 @@
 
 Location 6.3.1-RC-XXX [ongoing]
 ------------------
+ - #340856 by SeanA: Use CSS instead of em tags to style location name
  - bug #584914 by claudiu.cristea: Fixed Romanian province list
  - Fixed prefixing bug in location_cck.install; patch courtesy of reubidium in #757594
  - Improved support for Denmark; patch courtesy of mikl and kaerast in #412112
