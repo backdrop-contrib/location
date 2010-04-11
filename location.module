@@ -1450,21 +1450,25 @@ function template_preprocess_location(&$variables) {
   $location = $variables['location'];
   // This will get taken back out if map links are hidden.
   $location['map_link'] = TRUE;
-  foreach($variables['hide'] as $key) {
-    unset($location[$key]);
-    // Special case for coords.
-    if ($key == 'coords') {
-      unset($location['latitude']);
-      unset($location['longitude']);
+  if (is_array($variables['hide'])) {
+    foreach($variables['hide'] as $key) {
+      unset($location[$key]);
+      // Special case for coords.
+      if ($key == 'coords') {
+        unset($location['latitude']);
+        unset($location['longitude']);
+      }
     }
   }
 
   $fields = location_field_names(TRUE);
-  foreach ($fields as $key => $value) {
-    $variables[$key] = '';
-    // Arrays can't be converted, ignore them.
-    if (!empty($location[$key]) && !is_array($location[$key])) {
-      $variables[$key] = check_plain($location[$key]);
+  if (is_array($fields)) {
+    foreach ($fields as $key => $value) {
+      $variables[$key] = '';
+      // Arrays can't be converted, ignore them.
+      if (!empty($location[$key]) && !is_array($location[$key])) {
+        $variables[$key] = check_plain($location[$key]);
+      }
     }
   }
 
