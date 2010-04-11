@@ -2,6 +2,7 @@
 
 Location 6.3.1-RC-XXX [ongoing]
 ------------------
+ - #665800 by nfreear, ankur: Wrap locations in div
  - #736190 by aviram: Fixed unicode chars and accents in supported/location.br.inc and better handling of off-site links to google maps in location.br.inc
  - #617226 by nrussell, nickl: stop PHP error about foreach() applied to non-array
  - #340856 by SeanA: Use CSS instead of em tags to style location name
