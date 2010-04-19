@@ -5,6 +5,5 @@
   foreach ($locations as $location) {
     echo $location;
   }
+  echo '</div>';
 } ?>
-</div>
-
