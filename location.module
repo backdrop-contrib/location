@@ -933,8 +933,7 @@ function _location_autocomplete($country, $string = '') {
       }
     }
   }
-  echo drupal_to_js($matches);
-  return;
+  drupal_json($matches);
 }
 
 /**
