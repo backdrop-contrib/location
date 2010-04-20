@@ -226,7 +226,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       if (!empty($this->value['search_distance'])) {
         // Hmm, distance set but unable to resolve coordinates.
         // Force nothing to match.
-        $this->query->add_where($this->options['group'], "0");
+        $this->query->add_where($this->options['group'], "1=0");
       }
       return;
     }
