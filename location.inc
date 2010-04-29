@@ -53,7 +53,7 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
     $link_func = 'location_map_link_'. $location['country'] .'_'. $mapper;
     if (function_exists($link_func)) {
       if ($link = $link_func($location)) {
-        $links[] = '<a href="'. $link .'">'. $providers[$mapper]['name'] .'</a>';
+        $links[] = '<a href="'. $link .'"'. (variable_get('location_maplink_external', 0) ? ' '. variable_get('location_maplink_external_method', 'target="_blank"') : '') .'>'. $providers[$mapper]['name'] .'</a>';
       }
     }
   }

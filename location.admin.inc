@@ -64,6 +64,27 @@ function location_admin_settings() {
     '#description' => t('If you are going to be importing locations in bulk directly into the database, you may wish to enable JIT geocoding and load the locations with source set to 4 (LOCATION_LATLON_JIT_GEOCODING). The system will automatically geocode locations as they are loaded.'),
   );
 
+  $form['maplink_external'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Map link'),
+  );
+  $form['maplink_external']['location_maplink_external'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Open map link in new window'),
+    '#default_value' => variable_get('location_maplink_external', 0),
+    '#description' => t('Select this if you want the map link to open in a separate window'),
+  );
+  $form['maplink_external']['location_maplink_external_method'] = array(
+    '#type' => 'radios',
+    '#title' => t('Open in new window method'),
+    '#options' => array(
+      'target="_blank"' => 'target="_blank"',
+      'rel="external"' => 'rel="external"',
+    ),
+    '#default_value' => variable_get('location_maplink_external_method', 'target="_blank"'),
+    '#description' => t('If you have selected to open map in a new window this controls the method used to open in a new window.  target="_blank" will just work but is not XTHML Strict compliant.  rel="external" is XHTML Strict compliant but will not open in a new window unless you add some jQuery to your site to add the target attribute. If you are unsure leave set to target="_blank"'),
+  );
+
   return system_settings_form($form);
 }
 
