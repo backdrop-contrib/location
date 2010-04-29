@@ -48,5 +48,8 @@
     }
   }
 ?>
-</div></div>
-<?php echo $map_link; ?>
+</div>
+<div class="map-link">
+  <?php echo $map_link; ?>
+</div>
+</div>
