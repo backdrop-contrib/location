@@ -278,6 +278,7 @@ function _location_expand_location($element) {
       $element['locpick']['current'] = array(
         '#type' => 'fieldset',
         '#title' => t('Current coordinates'),
+        '#attributes' => array('class' => 'location-current-coordinates-fieldset'),
       );
       $element['locpick']['current']['current_latitude'] = array(
         '#type' => 'item',
