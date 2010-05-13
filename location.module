@@ -96,6 +96,9 @@ function location_api_variant() {
 function location_perm() {
   return array(
     'submit latitude/longitude',
+    'view location directory',
+    'view node location table',
+    'view user location table',
   );
 }
 

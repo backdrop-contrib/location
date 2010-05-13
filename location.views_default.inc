@@ -124,7 +124,8 @@ function location_views_default_views() {
     ),
   ));
   $handler->override_option('access', array(
-    'type' => 'none',
+    'type' => 'perm',
+    'perm' => 'view node location table',
   ));
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
@@ -379,7 +380,8 @@ function location_views_default_views() {
     ),
   ));
   $handler->override_option('access', array(
-    'type' => 'none',
+    'type' => 'perm',
+    'perm' => 'view location directory',
   ));
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
@@ -556,7 +558,8 @@ function location_views_default_views() {
     ),
   ));
   $handler->override_option('access', array(
-    'type' => 'none',
+    'type' => 'perm',
+    'perm' => 'view user location table',
   ));
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
