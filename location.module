@@ -198,6 +198,15 @@ function location_views_api() {
 }
 
 /**
+ * Implementation of hook_ctools_plugin_directory().
+ */
+function location_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'ctools' && !empty($plugin)) {
+    return 'plugins/' . $plugin;
+  }
+}
+
+/**
  * Process a location element.
  */
 function _location_expand_location($element) {
