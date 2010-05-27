@@ -39,6 +39,16 @@ function location_admin_settings() {
     '#description'    => t('If you are interested in turning off locations and having a custom theme control their display, you may want to disable the display of locations so your theme can take that function.')
   );
 
+  $form['location_use_province_abbreviation'] = array(
+    '#type' => 'radios',
+    '#title' => t('Province display'),
+    '#default_value' => variable_get('location_use_province_abbreviation', 1),
+    '#options' => array(
+      0 => t('Display full province name.'),
+      1 => t('Display province/state code.'),
+    ),
+  );
+
   $form['location_usegmap'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Use a Google Map to set latitude and longitude '),

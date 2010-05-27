@@ -16,7 +16,7 @@
     }
   }
   if ($province) {
-    echo '<span class="region">' . $province . '</span> ';
+    echo '<span class="region">' . $province_print . '</span> ';
   }
   if ($postal_code) {
     echo ' <span class="postal-code">' . $postal_code . '</span>';
