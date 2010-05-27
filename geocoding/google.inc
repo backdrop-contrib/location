@@ -136,7 +136,7 @@ function google_geocode_location($location = array()) {
   $accuracy_code_match = array();
   preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
   $accuracy_code = $accuracy_code_match[1];
-  if ($accuracy_code < 3) {
+  if ($accuracy_code < variable_get('location_geocode_' . $location['country'] . 'google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'))) {
     return NULL;
   }
 
@@ -177,6 +177,16 @@ function google_geocode_settings() {
     );
   }
 
+  $country = arg(4);
+  if ($country) {
+    $form['location_geocode_' . $country . '_google_accuracy_code'] = array(
+      '#type' => 'select',
+      '#title' => t('Google Maps Geocoding Accuracy for %country', array('%country' => $country ) ),
+      '#default_value' => variable_get('location_geocode_' . $country . '_google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3')),
+      '#options' => location_google_geocode_accuracy_codes(),
+      '#description' => t('The minimum required accuracy for the geolocation data to be saved.'),
+    );
+  }
   return $form;
 }
 
