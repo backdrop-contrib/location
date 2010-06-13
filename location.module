@@ -1588,7 +1588,7 @@ function location_settings($old = FALSE) {
     '#type' => 'select',
     '#title' => t('Maximum number of locations'),
     '#options' => drupal_map_assoc(range(0, 100)),
-    '#default_value' => isset($old['multiple']['max']) ? $old['multiple']['max'] : 0,
+    '#default_value' => isset($old['multiple']['max']) ? $old['multiple']['max'] : 1,
     '#description' => t('The maximum number of locations that can be associated.'),
   );
   // @@@ Dynamic location adding via ahah?
@@ -1596,7 +1596,7 @@ function location_settings($old = FALSE) {
     '#type' => 'select',
     '#title' => t('Number of locations that can be added at once'),
     '#options' => drupal_map_assoc(range(0, 100)),
-    '#default_value' => isset($old['multiple']['add']) ? $old['multiple']['add'] : 3,
+    '#default_value' => isset($old['multiple']['add']) ? $old['multiple']['add'] : 1,
     '#description' => t('The number of empty location forms to show when editing.'),
   );
   // Thought: What about prefilled names and fixed locations that way?
