@@ -279,7 +279,7 @@ function location_latlon_rough($location = array()) {
     return $latlon_function($location);
   }
   else {
-    return NULL;
+    return location_latlon_exact($location);
   }
 }
 
