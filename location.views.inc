@@ -344,6 +344,7 @@ function location_views_data() {
     'field' => array(
       'field' => 'lid',
       'handler' => 'location_handler_field_location_address',
+      'element type' => 'div',
     ),
   );
 
