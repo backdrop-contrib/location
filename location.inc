@@ -225,14 +225,7 @@ function _location_convert_distance_to_meters($distance, $distance_unit = 'km') 
     return NULL;
   }
 
-  // Force an integer version of distance, just in case anyone wants to add a caching mechanism
-  // for postal code proximity searches.
-
-  if (is_float($distance)) {
-    $distance = intval(ceil($distance));
-  }
-
-  if ($distance < 1) {
+  if ($distance == 0) {
     return NULL;
   }
 
@@ -241,8 +234,6 @@ function _location_convert_distance_to_meters($distance, $distance_unit = 'km') 
   }
 
   // Convert distance to meters
-  //$distance_float = floatval($distance) * (($distance_unit == 'km') ? 1000.0 : 1609.347);
-  //return round($distance_float, 2);
   $retval = round(floatval($distance) * (($distance_unit == 'km') ? 1000.0 : 1609.347), 2);
   return $retval;
 }
