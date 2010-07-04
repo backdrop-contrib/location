@@ -603,7 +603,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#title'          => t('Location name'),
             '#default_value'  => $obj,
             '#size'           => 64,
-            '#maxlength'      => 64,
+            '#maxlength'      => 255,
             '#description'    => t('e.g. a place of business, venue, meeting point'),
             '#attributes'     => NULL,
             '#required'       => ($a4 == 2),
@@ -615,7 +615,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#title'          => t('Street'),
             '#default_value'  => $obj,
             '#size'           => 64,
-            '#maxlength'      => 64,
+            '#maxlength'      => 255,
             '#required'       => ($a4 == 2),
           );
 
@@ -626,7 +626,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#title'          => t('Additional'),
             '#default_value'  => $obj,
             '#size'           => 64,
-            '#maxlength'      => 64,
+            '#maxlength'      => 255,
             // Required is forced OFF because this is technically part of street.
           );
 
@@ -636,7 +636,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#title'          => t('City'),
             '#default_value'  => $obj,
             '#size'           => 64,
-            '#maxlength'      => 64,
+            '#maxlength'      => 255,
             '#description'    => NULL,
             '#attributes'     => NULL,
             '#required'       => ($a4 == 2),
