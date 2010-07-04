@@ -279,7 +279,50 @@ function location_latlon_rough($location = array()) {
     return $latlon_function($location);
   }
   else {
-    return location_latlon_exact($location);
+    return location_latlon_rough_default($location);
+  }
+}
+
+/**
+ * Returns a lat/lon pair of the approximate center of the given postal code in the given country
+ * This function is a default implementation, in case the country support doesn't implement a proper function for this.
+ *
+ * @param $location
+ *   An associative array $location where
+ *     'street'       => the street portion of the location
+ *     'supplemental' => additional street portion of the location
+ *     'province'     => the province, state, or territory
+ *     'country'      => lower-cased two-letter ISO code (REQUIRED)
+ *     'postal_code'  => the international postal code for this location (REQUIRED)
+ *
+ * @return
+ *   An associative array where
+ *      'lat' => approximate latitude of the center of the postal code's area
+ *      'lon' => approximate longitude of the center of the postal code's area
+ *
+ */
+function location_latlon_rough_default($location = array()) {
+  if (!isset($location['country']) || !isset($location['postal_code'])) {
+    return NULL;
+  }
+
+  $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], $location['postal_code']);
+  if ($row = db_fetch_object($result)) {
+    return array('lat' => $row->latitude, 'lon' => $row->longitude);
+  }
+  // if nothing found internally (new zipcode, or incomplete zipcodes table)
+  elseif (($newlatlong = location_latlon_exact($location)) != NULL) {
+    // try a one-time external geocoding
+    if ($newlatlong['lat']) {
+      // and store results in zipcodes table for next lookups being internally handled
+      // (yeah this is missing city/state info a.t.m., but is way better than nothing!)
+      $result = db_query("INSERT INTO {zipcodes} (latitude, longitude, country, zip) values ('%s', '%s', '%s', '%s')",
+        $newlatlong['lat'], $newlatlong['lon'], $location['country'], $location['postal_code']);
+    }
+    return $newlatlong;
+  }
+  else {
+    return NULL;
   }
 }
 
