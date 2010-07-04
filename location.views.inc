@@ -51,6 +51,9 @@ function location_views_handlers() {
       'location_handler_argument_location_province' => array(
         'parent' => 'views_handler_argument',
       ),
+      'location_handler_argument_location_proximity' => array(
+        'parent' => 'views_handler_argument',
+      ),
       'location_handler_field_location_address' => array(
         'parent' => 'views_handler_field',
       ),
@@ -302,6 +305,9 @@ function location_views_data() {
     ),
     'sort' => array(
       'handler' => 'location_handler_sort_location_distance',
+    ),
+    'argument' => array(
+      'handler' => 'location_handler_argument_location_proximity',
     ),
     'filter' => array(
       'handler' => 'location_views_handler_filter_proximity',
