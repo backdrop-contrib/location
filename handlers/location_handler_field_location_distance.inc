@@ -128,7 +128,7 @@ class location_handler_field_location_distance extends views_handler_field {
   }
 
   function click_sort($order) {
-    $location = $this->_get_reference_location();
+    $location = location_views_proximity_get_reference_location($this->view, $this->options);
 
     if ($location) {
       $this->query->add_orderby(NULL, earth_distance_sql($location['longitude'], $location['latitude'], $this->table_alias), $order, $this->field_alias);
