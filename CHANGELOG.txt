@@ -1,7 +1,32 @@
 // $Id$
 
-Location 6.3.1-RC-XXX [ongoing]
+Location 6.3.1 [ongoing]
 ------------------
+ - #718928 by rooby - Fix bug intrduced in previous commit. Call to undefined mothod when using table click sorting on distance/proximity field.
+ - #718928 by ankur, rooby, hutch, nicholasThompson, evan23, - Overhaul of views field/sort/filter proximity handlers so they have the same options.  Added options to use views arguments or php code for the origin coordinates.
+ - #821628 by rooby - Make sure invalid numbers are not passed into the asin() function in earth_longitude_range().
+ - #839652 by dboulet - Set element type to div for the address views field.
+ - #130550 by killes@www.drop.org, dboulet & hutch - Increase max length of location name, additional, street & city fields to 255.
+ - #343487 by danielnolde - Addition of location_latlon_rough_default function in case countries do not have their own
+ - #606342 by Dustin Currie, gravisrs, matt2000, totsubo, corona ronin, hutch, rooby et al. - Add views argument handler for proximity.
+ - #175193 by drupal steve - Added us zipcode database entry for 92011
+ - #175193 by DarrellDuane - In us zipcode database file zipcode 10004 should be NY not NJ
+ - #830352 by rooby & hutch - Postcodes for au and be have their lat/lon coords reversed.  Also, make sure all the files have consistent formatting.
+ - bug #578216 by Blackice2999 - Proximity filter not working for countries that do not have a location_latlon_rough_xx() function defined.
+ - #338963 by thebuckst0p & hutch - Made default values for content type max num locations and max locations added at once to 1
+ - #757186 by TechnoBuddhist - Added province data for Guernsey, Jersey and Isle of Man.
+ - #115323 by SeanA, catch, hutch - Allow option for display of state/province field, province name or province code
+ - #503468 by hutch, sreynen, pingers, rooby - Make Google geocoding minimum accuracy a variable and allow country specific settings
+ - #761768 by hutch - Added location.pot for translations
+ - #487790 by dww: Added initial integration between location and panels/ctools.
+Currently there is support for a location context (with keyword substitution, so you can create a custom panel content item and format a location however you want with keywords for each field), and a full-featured relationship to create a location context from a node context.
+ - bug #394870 by mattyoung - state/province field required asterisk pushed to new line
+ - #603200 by jerdiggity - Added permissions for default location views
+ - #182786 by fuerst, hutch, rooby - Added option to have map link open in a new window
+ - #432232 by seanr - Move map link inside location div when locations are themed.
+ - #310828 by tonycpsu, SeanA et al. - Removed comma between state/province and postal code when locations are themed.
+ - Fix #370344 reported by ccurvey: Fix postgresql incompatibility.
+ - Fix #367022, reported by amccann, patch by gapple: Use drupal_json to prevent issues with devel.
  - #665800 by nfreear, ankur: Wrap locations in div
  - #736190 by aviram: Fixed unicode chars and accents in supported/location.br.inc and better handling of off-site links to google maps in location.br.inc
  - #617226 by nrussell, nickl: stop PHP error about foreach() applied to non-array
