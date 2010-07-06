@@ -1,7 +1,8 @@
 // $Id$
 
-Location 6.3.1 [ongoing]
+Location 6.3.1
 ------------------
+ - by rooby - Updated translation template location.pot for the current version of location.
  - #718928 by rooby - Fix bug intrduced in previous commit. Call to undefined mothod when using table click sorting on distance/proximity field.
  - #718928 by ankur, rooby, hutch, nicholasThompson, evan23, - Overhaul of views field/sort/filter proximity handlers so they have the same options.  Added options to use views arguments or php code for the origin coordinates.
  - #821628 by rooby - Make sure invalid numbers are not passed into the asin() function in earth_longitude_range().
