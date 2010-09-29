@@ -324,6 +324,7 @@ function _location_expand_location($element) {
       '#size' => 16,
       '#attributes' => array('class' => 'container-inline'),
       '#maxlength' => 20,
+      '#required' => $fsettings['locpick']['collect'] == 2,
     );
     $element['locpick']['user_longitude'] = array(
       '#type' => 'textfield',
@@ -331,6 +332,7 @@ function _location_expand_location($element) {
       '#default_value' => isset($element['#default_value']['locpick']['user_longitude']) ? $element['#default_value']['locpick']['user_longitude'] : '',
       '#size' => 16,
       '#maxlength' => 20,
+      '#required' => $fsettings['locpick']['collect'] == 2,
     );
 
     $element['locpick']['instructions'] = array(
