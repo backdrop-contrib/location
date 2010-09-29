@@ -288,14 +288,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     $options = array_merge($this->options, $this->options['value'], $this->value);
     $coordinates = location_views_proximity_get_reference_location($this->view, $options);
 
-    // Coordinates available?
-    if (empty($coordinates)) {
-      // Distance set?
-      if (!empty($this->value['search_distance'])) {
-        // Hmm, distance set but unable to resolve coordinates.
-        // Force nothing to match.
-        $this->query->add_where($this->options['group'], "1=0");
-      }
+    // If we don't have any coordinates or distance, there's nothing to filter
+    // by, so don't modify the query at all.
+    if (empty($coordinates) || empty($this->value['search_distance'])) {
       return;
     }
 
