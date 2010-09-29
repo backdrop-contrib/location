@@ -150,11 +150,10 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     $form['value']['php_code'] = array(
       '#type' => 'textarea',
       '#title' => t('PHP code for latitude, longitude'),
-      '#default_value' => $this->options['php_code'],
+      '#default_value' => $this->value['php_code'],
       '#process' => array('views_process_dependency'),
       '#dependency' => array('edit-options-origin' => array('php')),
       '#description' => t("Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."),
-      '#default_value' => $this->value['php_code'],
       '#weight' => 5,
     );
 
