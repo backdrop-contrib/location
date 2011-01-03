@@ -136,7 +136,7 @@ function google_geocode_location($location = array()) {
   $accuracy_code_match = array();
   preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
   $accuracy_code = $accuracy_code_match[1];
-  if ($accuracy_code < variable_get('location_geocode_' . $location['country'] . 'google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'))) {
+  if ($accuracy_code < variable_get('location_geocode_' . $location['country'] . '_google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'))) {
     return NULL;
   }
 
