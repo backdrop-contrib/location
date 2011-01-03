@@ -130,13 +130,16 @@ function google_geocode_location($location = array()) {
   preg_match('/<code>(.*)<\/code>/', $http_reply->data, $status_code_match);
   $status_code = $status_code_match[1];
   if ($status_code != 200) {
+    watchdog('location', 'Google geocoding returned status code: %status_code', array('%status_code' => $status_code));
     return NULL;
   }
 
   $accuracy_code_match = array();
   preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
   $accuracy_code = $accuracy_code_match[1];
-  if ($accuracy_code < variable_get('location_geocode_' . $location['country'] . '_google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'))) {
+  $min_accuracy = variable_get('location_geocode_' . $location['country'] . 'google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'));
+  if ($accuracy_code < $min_accuracy) {
+    watchdog('location', 'Google geocoding result for %country did not meet the minimum accuracy level of %min_accuracy. Result accuracy: %accuracy_code', array('%country' => $location['country'], '%min_accuracy' => $min_accuracy, '%accuracy_code' => $accuracy_code));
     return NULL;
   }
 
