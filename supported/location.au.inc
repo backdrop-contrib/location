@@ -303,7 +303,8 @@ function location_geocode_au_google($location = array()) {
   $accuracy_code_match = array();
   preg_match('/Accuracy="([0-9])"/', $http_reply->data, $accuracy_code_match);
   $accuracy_code = $accuracy_code_match[1];
-  if ($accuracy_code != 8 && $accuracy_code != 7) {
+  $min_accuracy = variable_get('location_geocode_au_google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3'));
+  if ($accuracy_code < $min_accuracy) {
     return NULL;
   }
 
