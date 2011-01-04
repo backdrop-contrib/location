@@ -7,78 +7,88 @@
  */
 
 /**
+ * Returns an XML document containing the list of countries supported by the
+ * Google geocoder.
+ * A cached version is stored in the Drupal cache in case Google is unreachable.
+ */
+function google_geocode_country_list_xml() {
+  // Get the google data from the feed.
+  $source = drupal_http_request('http://spreadsheets.google.com/feeds/list/p9pdwsai2hDMsLkXsoM05KQ/default/public/values');
+
+  if (!$source->data) {
+    // Use the cache.
+    $data = cache_get('location_google');
+    if (!defined('LIBXML_VERSION') || (version_compare(phpversion(), '5.1.0', '<'))) {
+      $xml = simplexml_load_string($data->data, NULL);
+    }
+    else {
+      $xml = simplexml_load_string($data->data, NULL, LIBXML_NOERROR | LIBXML_NOWARNING);
+    }
+  }
+  else {
+    if (!defined('LIBXML_VERSION') || (version_compare(phpversion(), '5.1.0', '<'))) {
+      $xml = simplexml_load_string($source->data, NULL);
+      // Stores the XML in the cache to eventually use it later.
+      cache_set('location_google', $xml->asXML());
+    }
+    else {
+      $xml = simplexml_load_string($source->data, NULL, LIBXML_NOERROR | LIBXML_NOWARNING);
+      // Store the XML in the cache to eventually use it later.
+      cache_set('location_google', $xml->asXML());
+    }
+  }
+
+  return $xml;
+}
+
+/**
  * Return the list of ISO3166 codes supported by this geocoder.
  * Coverage list: http://gmaps-samples.googlecode.com/svn/trunk/mapcoverage_filtered.html
- * Possibly in the future, allow to autogenerate this by pulling down and parsing the spreadsheet?
+ * Coverage list feed: http://spreadsheets.google.com/feeds/list/p9pdwsai2hDMsLkXsoM05KQ/default/public/values
  */
 function google_geocode_country_list() {
-  return array(
-    /* Albania                      */ 'al',
-    /* Argentina                    */ 'ar',
-    /* Australia                    */ 'au',
-    /* Austria                      */ 'at',
-    /* Belarus                      */ 'by',
-    /* Belgium                      */ 'be',
-    /* Bosnia and Herzegovina       */ 'ba',
-    /* Brazil                       */ 'br',
-    /* Bulgaria                     */ 'bg',
-    /* Canada                       */ 'ca',
-    /* Chile                        */ 'cl',
-    /* China                        */ 'cn',
-    /* Croatia                      */ 'hr',
-    /* Czech Republic               */ 'cz',
-    /* Denmark                      */ 'dk',
-    /* Ecuador                      */ 'ec',
-    /* El Salvador                  */ 'sv',
-    /* Estonia                      */ 'ee',
-    /* Finland                      */ 'fi',
-    /* France                       */ 'fr',
-    /* Germany                      */ 'de',
-    /* Greece                       */ 'gr',
-    /* Hong Kong                    */ 'hk',
-    /* Hungary                      */ 'hu',
-    /* India                        */ 'in',
-    /* Ireland                      */ 'ie',
-    /* Italy                        */ 'it',
-    /* Japan                        */ 'jp',
-    /* Kenya                        */ 'ke',
-    /* Latvia                       */ 'lv',
-    /* Lebanon                      */ 'lb',
-    /* Liechtenstein                */ 'li',
-    /* Lithuania                    */ 'lt',
-    /* Luxembourg                   */ 'lu',
-    /* Macau                        */ 'mo',
-    /* Macedonia                    */ 'mk',
-    /* Malaysia                     */ 'my',
-    /* Mexico                       */ 'mx',
-    /* Moldova                      */ 'md',
-    /* Montenegro                   */ 'me',
-    /* Netherlands                  */ 'nl',
-    /* New Zealand                  */ 'nz',
-    /* Nicaragua                    */ 'ni',
-    /* Norway                       */ 'no',
-    /* Panama                       */ 'pa',
-    /* Poland                       */ 'pl',
-    /* Portugal                     */ 'pt',
-    /* Romania                      */ 'ro',
-    /* Russia                       */ 'ru',
-    /* San Marino                   */ 'sm',
-    /* Serbia                       */ 'rs',
-    /* Singapore                    */ 'sg',
-    /* Slovakia                     */ 'sk',
-    /* Slovenia                     */ 'si',
-    /* South Korea                  */ 'kr',
-    /* Spain                        */ 'es',
-    /* Sweden                       */ 'se',
-    /* Switzerland                  */ 'ch',
-    /* Taiwan                       */ 'tw',
-    /* Thailand                     */ 'th',
-    /* Turkey                       */ 'tr',
-    /* Ukraine                      */ 'ua',
-    /* United Kingdom               */ 'uk',
-    /* United States                */ 'us',
-    /* Uruguay                      */ 'uy',
-  );
+  // Get the google data from the feed.
+  $xml = google_geocode_country_list_xml();
+
+  // Loop through google data and find all valid entries.
+  $regionclean = array();
+  foreach($xml->entry as $region) {
+    $pos = strpos($region->content, 'geocoding:') + 11;
+    $geocoding = substr($region->content, $pos, strpos($region->content, ',', $pos) - $pos);
+    if (strpos($geocoding, "Yes") !== FALSE) {
+     $regionclean[] = htmlentities($region->title);
+    }
+  }
+
+  // Get the countries list and clean it up so that names will match to google.
+  // The regex removes parenthetical items so that both of the "Congo" entries
+  // and the "Coco Islands" work.
+  // The $countriesfixes overwrites values in the Drupal API countries list
+  // with values that will match to google's entries.
+  // "Sao Tome and Principe" are non-accented in the Drupal API so the entry
+  // here is to match the htmlentities() fix in the foreach loop below.
+  // Note: it may be neccessary to adjust/add to the fixes list in the future
+  // if google adds countries that don't match the Drupal API list for whatever
+  // reason.
+  $countries = location_get_iso3166_list();
+  $regex = "#[ (].*[)]#e";
+  $cntryclean = preg_replace($regex, "", $countries);
+  $countriesfixes = array_merge($cntryclean, array(
+    "hk" => "China",
+    "mo" => "China",
+    "pn" => "Pitcairn Islands",
+    "wf" => "Wallis Futuna",
+    "st" => "S&Atilde;&pound;o Tom&Atilde;&copy; and Pr&Atilde;&shy;ncipe",
+  ));
+
+  // Compare new google data found to fixed country name values and return
+  // matches with abbreviations as keys.
+  $googlematched = array_intersect($countriesfixes, $regionclean);
+
+  // Compare new keys to original Drupal API and return the array with the
+  // original name values.
+  $fixedkeys = array_intersect_key($countries, $googlematched);
+  return array_keys($fixedkeys);
 }
 
 /**
