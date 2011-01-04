@@ -37,7 +37,7 @@ function location_views_handlers() {
         'parent' => 'views_handler_field',
       ),
       'location_handler_filter_location_country' => array(
-        'parent' => 'views_handler_filter',
+        'parent' => 'views_handler_filter_in_operator',
       ),
       'location_handler_argument_location_country' => array(
         'parent' => 'views_handler_argument',
