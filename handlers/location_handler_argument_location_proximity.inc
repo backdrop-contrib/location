@@ -33,7 +33,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
         'latlon' => t('Decimal Latitude and Longitude coordinates, comma delimited'),
       ),
       '#default_value' => $this->options['type'],
-      '#description' => t('Type of center point.') . '<br />' . t('Postal code argument format: country_postcode_distance or postcode_distance') . '<br />' . t('Lat/Lon argument format: lat,lon_distance'),
+      '#description' => t('Type of center point.') . '<br />' . t('Postal code argument format: country_postcode_distance or postcode_distance') . '<br />' . t('Lat/Lon argument format: lat,lon_distance') . '<br />' . t('where distance is either a number or a comma delimited pair of decimal degrees'),
     );
 
     // Units used.
