@@ -923,7 +923,7 @@ function location_load_location($lid) {
 function _location_autocomplete($country, $string = '') {
   $counter = 0;
   $string   = strtolower($string);
-  $string   = '/^'. $string .'/';
+  $string   = '/^'. preg_quote($string) .'/';
   $matches  = array();
 
   if (strpos($country, ',') !== FALSE) {
