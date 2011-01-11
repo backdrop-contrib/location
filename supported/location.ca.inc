@@ -345,7 +345,7 @@ function location_geocode_ca_geocoder_settings() {
 function location_geocode_ca_geocoder($location = array()) {
   $service_url = "http://geocoder.ca/?geoit=XML";
 
-  if (variable_get('location_geocode_ca_geocoder_apikey', NULL)) {
+  if (variable_get('location_geocode_ca_geocoder_apikey', '')) {
     $service_url .= '&auth='. variable_get('location_geocode_ca_geocoder_apikey', NULL) .'&locate=';
   }
   else {

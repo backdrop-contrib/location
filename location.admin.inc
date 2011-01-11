@@ -11,7 +11,7 @@
  *
  * @ingroup form
  */
-function location_admin_settings() {
+function location_admin_settings($form, &$form_state) {
   // Recalculate the supported countries.
   cache_clear_all('location:supported-countries', 'cache');
   _location_supported_countries();
@@ -101,12 +101,12 @@ function location_admin_settings() {
 /**
  * Settings page for map links.
  */
-function location_map_link_options_form() {
+function location_map_link_options_form($form, &$form_state) {
   $form = array();
 
   $form['countries'] = array(
     '#type' => 'markup',
-    '#value' => ''
+    '#markup' => ''
   );
 
   foreach (_location_supported_countries() as $country_iso => $country_name) {
@@ -114,12 +114,12 @@ function location_map_link_options_form() {
 
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
-      '#value' => ''
+      '#markup' => ''
     );
 
     $form['countries'][$country_iso]['label_'. $country_iso] = array(
       '#type' => 'markup',
-      '#value' => $country_name
+      '#markup' => $country_name
     );
 
     // Set up '#options' array for mapping providers for the current country
@@ -145,7 +145,7 @@ function location_map_link_options_form() {
     else {
       $form['countries'][$country_iso]['location_map_link_'. $country_iso] = array(
         '#type' => 'markup',
-        '#value' => t('None supported.')
+        '#markup' => t('None supported.')
       );
     }
   }
@@ -155,7 +155,7 @@ function location_map_link_options_form() {
   return $form;
 }
 
-function location_geocoding_options_form() {
+function location_geocoding_options_form($form, &$form_state) {
   $form = array();
 
   $form['location_geocode_google_minimum_accuracy'] = array(
@@ -195,12 +195,12 @@ function location_geocoding_options_form() {
 
     $form['countries'][$country_iso] = array(
       '#type' => 'markup',
-      '#value' => ''
+      '#markup' => ''
     );
 
     $form['countries'][$country_iso]['label_'. $country_iso] = array(
       '#type' => 'markup',
-      '#value' => '<div id="'. $country_iso .'">'. $country_name .'</div>'
+      '#markup' => '<div id="'. $country_iso .'">'. $country_name .'</div>'
     );
 
     // Next, we look for options presented by country specific providers
@@ -229,7 +229,7 @@ function location_geocoding_options_form() {
     else {
       $form['countries'][$country_iso]['location_geocode_'. $country_iso] = array(
         '#type' => 'markup',
-        '#value' => t('None supported.')
+        '#markup' => t('None supported.')
       );
     }
 
@@ -237,7 +237,7 @@ function location_geocoding_options_form() {
     if ($current_value == 'none') {
       $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
         '#type' => 'markup',
-        '#value' => t('No service selected for country.')
+        '#markup' => t('No service selected for country.')
       );
     }
     else {
@@ -248,19 +248,19 @@ function location_geocoding_options_form() {
       if (function_exists($geocode_settings_form_function_specific)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'markup',
-          '#value' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_val_chopped)
+          '#markup' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_val_chopped)
         );
       }
       elseif (function_exists($geocode_settings_form_function_general)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'markup',
-          '#value' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_value)
+          '#markup' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_value)
         );
       }
       else {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'markup',
-          '#value' => t('No configuration necessary for selected service.')
+          '#markup' => t('No configuration necessary for selected service.')
         );
       }
     }
@@ -302,11 +302,11 @@ function theme_location_map_link_options($form) {
     );
     $rows[] = $row;
   }
-  $output = theme('table', $header, $rows);
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
   foreach (element_children($form) as $key) {
     $output .= drupal_render($form[$key]);
   }
-  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
   return $output;
 }
 
@@ -331,18 +331,18 @@ function theme_location_geocoding_options($form) {
     );
     $rows[] = $row;
   }
-  $output .= theme('table', $header, $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows);
   foreach (element_children($form) as $key) {
     $output .= drupal_render($form[$key]);
   }
-  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
   return $output;
 }
 
 /**
  * Location Utilities form.
  */
-function location_util_form() {
+function location_util_form($form, &$form_State) {
   $form['province_clear'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clear province cache'),

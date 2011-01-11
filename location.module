@@ -9,7 +9,7 @@
  * some options are configured through an interface provided by location.module.
  */
 
-define('LOCATION_PATH',                   drupal_get_path('module', 'location'));
+define('LOCATION_PATH', drupal_get_path('module', 'location'));
 
 define('LOCATION_LATLON_UNDEFINED',       0);
 define('LOCATION_LATLON_USER_SUBMITTED',  1);
@@ -20,10 +20,8 @@ define('LOCATION_LATLON_JIT_GEOCODING',   4); // Force regeocoding immediately.
 define('LOCATION_USER_DONT_COLLECT',      0);
 define('LOCATION_USER_COLLECT',           1);
 
-include_once LOCATION_PATH .'/location.inc';
-
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function location_menu() {
   $items = array();
@@ -91,19 +89,27 @@ function location_api_variant() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function location_perm() {
+function location_permission() {
   return array(
-    'submit latitude/longitude',
-    'view location directory',
-    'view node location table',
-    'view user location table',
+    'view location directory' => array(
+      'title' => t('View location directory'),
+    ),
+    'view node location table' => array(
+      'title' => t('View node location table'),
+    ),
+    'view user location table' => array(
+      'title' => t('View user location table'),
+    ),
+    'submit latitude/longitude' => array(
+      'title' => t('Submit latitude/longitude'),
+    ),
   );
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  *
  * @TODO: check/fix this: admin/content/configure/types (still use %? still same url?)
  */
@@ -124,23 +130,23 @@ function location_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_elements().
+ * Implements hook_element_info().
  */
-function location_elements() {
+function location_element_info() {
   return array(
     'location_element' => array(
       '#input' => TRUE,
-      '#process' => array('_location_expand_location'),
+      '#process' => array('_location_process_location'),
       '#tree' => TRUE,
       '#location_settings' => array(),
       '#required' => FALSE,
-      '#attributes' => array('class' => 'location'),
+      '#attributes' => array('class' => array('location')),
       // Element level validation.
       '#element_validate' => array('location_element_validate'),
     ),
     'location_settings' => array(
       '#input' => TRUE,
-      '#process' => array('_location_expand_location_settings'),
+      '#process' => array('_location_process_location_settings'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#tree' => TRUE,
@@ -155,40 +161,45 @@ function location_elements() {
 function theme_location_element($element) {
   // Prevent spurious "Array" from appearing.
   unset($element['#value']);
-  return theme('fieldset', $element);
+  return theme('fieldset', array('element' => $element));
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function location_theme() {
   return array(
-    'location_settings' => array('arguments' => array('element')),
+    'location_settings' => array('render element' => array('element')),
     'locations' => array(
       'template' => 'locations',
-      'arguments' => array(
+      'variables' => array(
         'locations' => NULL,
         'hide' => array(),
       ),
     ),
     'location' => array(
       'template' => 'location',
-      'arguments' => array(
+      'variables' => array(
         'location' => NULL,
         'hide' => array(),
       ),
     ),
-    'location_latitude_dms' => array('arguments' => array('latitude')),
-    'location_longitude_dms' => array('arguments' => array('longitude')),
-    'location_map_link_options' => array('arguments' => array('form')),
-    'location_geocoding_options' => array('arguments' => array('form')),
-    'location_element' => array('arguments' => array('element')),
-    'location_distance' => array('template' => 'location_distance', 'arguments' => array('distance' => 0, 'units' => 'km')),
+    'location_latitude_dms' => array('variables' => array('latitude')),
+    'location_longitude_dms' => array('variables' => array('longitude')),
+    'location_map_link_options' => array('render element' => array('form')),
+    'location_geocoding_options' => array('render element' => array('form')),
+    'location_element' => array('render element' => array('element')),
+    'location_distance' => array(
+      'template' => 'location_distance',
+      'variables' => array(
+        'distance' => 0,
+        'units' => 'km'),
+      ),
   );
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function location_views_api() {
   return array(
@@ -198,7 +209,7 @@ function location_views_api() {
 }
 
 /**
- * Implementation of hook_ctools_plugin_directory().
+ * Implements hook_ctools_plugin_directory().
  */
 function location_ctools_plugin_directory($module, $plugin) {
   if ($module == 'ctools' && !empty($plugin)) {
@@ -209,8 +220,8 @@ function location_ctools_plugin_directory($module, $plugin) {
 /**
  * Process a location element.
  */
-function _location_expand_location($element) {
-  drupal_add_css(drupal_get_path('module', 'location') .'/location.css');
+function _location_process_location($element) {
+  drupal_add_css(drupal_get_path('module', 'location') . '/location.css');
   $element['#tree'] = TRUE;
 
   if (!isset($element['#title'])) {
@@ -287,17 +298,17 @@ function _location_expand_location($element) {
       $element['locpick']['current'] = array(
         '#type' => 'fieldset',
         '#title' => t('Current coordinates'),
-        '#attributes' => array('class' => 'location-current-coordinates-fieldset'),
+        '#attributes' => array('class' => array('location-current-coordinates-fieldset')),
       );
       $element['locpick']['current']['current_latitude'] = array(
         '#type' => 'item',
         '#title' => t('Latitude'),
-        '#value' => $defaults['latitude'],
+        '#markup' => $defaults['latitude'],
       );
       $element['locpick']['current']['current_longitude'] = array(
         '#type' => 'item',
         '#title' => t('Longitude'),
-        '#value' => $defaults['longitude'],
+        '#markup' => $defaults['longitude'],
       );
       $source = t('Unknown');
       switch($defaults['source']) {
@@ -313,7 +324,7 @@ function _location_expand_location($element) {
       $element['locpick']['current']['current_source'] = array(
         '#type' => 'item',
         '#title' => t('Source'),
-        '#value' => $source,
+        '#markup' => $source,
       );
     }
 
@@ -322,7 +333,7 @@ function _location_expand_location($element) {
       '#title' => t('Latitude'),
       '#default_value' => isset($element['#default_value']['locpick']['user_latitude']) ? $element['#default_value']['locpick']['user_latitude'] : '',
       '#size' => 16,
-      '#attributes' => array('class' => 'container-inline'),
+      '#attributes' => array('class' => array('container-inline')),
       '#maxlength' => 20,
       '#required' => $fsettings['locpick']['collect'] == 2,
     );
@@ -339,7 +350,7 @@ function _location_expand_location($element) {
       '#type' => 'markup',
       '#weight' => 1,
       '#prefix' => '<div class=\'description\'>',
-      '#value' => '<br /><br />' . t('If you wish to supply your own latitude and longitude, you may enter them above.  If you leave these fields blank, the system will attempt to determine a latitude and longitude for you from the entered address.  To have the system recalculate your location from the address, for example if you change the address, delete the values for these fields.'),
+      '#markup' => '<br /><br />' . t('If you wish to supply your own latitude and longitude, you may enter them above.  If you leave these fields blank, the system will attempt to determine a latitude and longitude for you from the entered address.  To have the system recalculate your location from the address, for example if you change the address, delete the values for these fields.'),
       '#suffix' => '</div>',
       );
     if (function_exists('gmap_get_auto_mapid') && variable_get('location_usegmap', FALSE)) {
@@ -382,7 +393,7 @@ function _location_expand_location($element) {
         '#type' => 'markup',
         '#weight' => 2,
         '#prefix' => '<div class=\'description\'>',
-        '#value' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'),
+        '#markup' => t('You may set the location by clicking on the map, or dragging the location marker.  To clear the location and cause it to be recalculated, click on the marker.'),
         '#suffix' => '</div>',
       );
     }
@@ -401,7 +412,7 @@ function _location_expand_location($element) {
   return $element;
 }
 
-function _location_expand_location_settings(&$element) {
+function _location_process_location_settings(&$element) {
   // Set a value for the fieldset that doesn't interfere with rendering and doesn't generate a warning.
   $element['#tree'] = TRUE;
   $element['#theme'] = 'location_settings';
@@ -446,7 +457,7 @@ function _location_expand_location_settings(&$element) {
     );
     $element[$field]['name'] = array(
       '#type' => 'item',
-      '#value' => $title,
+      '#markup' => $title,
     );
     $element[$field]['collect'] = array(
       '#type' => 'select',
@@ -488,7 +499,7 @@ function theme_location_settings($element) {
   unset($element['country']['collect']['#options'][0]);
 
   foreach (element_children($element) as $key) {
-    $element[$key]['weight']['#attributes']['class'] = 'location-settings-weight';
+    $element[$key]['weight']['#attributes']['class'] = array('location-settings-weight');
     unset($element[$key]['default']['#title']);
     $row = array();
     $row[] = array('data' => '', 'class' => 'location-settings-drag');
@@ -511,14 +522,15 @@ function theme_location_settings($element) {
 
   drupal_add_tabledrag('location-settings-table', 'order', 'sibling', 'location-settings-weight');
 
-  $output = theme('table', $header, $rows, array('id' => 'location-settings-table'));
-  //return theme('form_element', $element, $element['#children']);
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'location-settings-table')));
+  //return theme('form_element', array('element' => $element));
   return $output;
 }
 
 function location_field_names($all = FALSE) {
-  static $fields;
-  static $allfields;
+  $fields = &drupal_static(__FUNCTION__ . '_fields', array());
+  $allfields = &drupal_static(__FUNCTION__ . '_allfields', array());
+
   if ($all) {
     if (empty($allfields)) {
       $dummy = array();
@@ -538,7 +550,7 @@ function location_field_names($all = FALSE) {
 }
 
 /**
- * Implementation of hook_locationapi().
+ * Implements hook_locationapi().
  */
 function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {
@@ -645,7 +657,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
           );
 
         case 'province':
-          drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
+          drupal_add_js(drupal_get_path('module', 'location') . '/location_autocomplete.js');
           $country = $a5['country']['default'] ? $a5['country']['default'] : variable_get('location_default_country', 'us');
           return array(
             '#type' => 'textfield',
@@ -656,7 +668,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             '#maxlength' => 64,
             '#description' => NULL,
             // Used by province autocompletion js.
-            '#attributes' => array('class' => 'location_auto_province'),
+            '#attributes' => array('class' => array('location_auto_province')),
             '#required' => ($a4 == 2),
           );
 
@@ -678,7 +690,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
               '#description'    => NULL,
               '#required'       => ($a4 == 2),
               // Used by province autocompletion js.
-              '#attributes'     => array('class' => 'location_auto_country'),
+              '#attributes'     => array('class' => array('location_auto_country')),
             );
           }
           break;
@@ -733,7 +745,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 }
 
 function location_geocoding_parameters_page($country_iso, $service) {
-  drupal_set_title(t('Configure parameters for %service geocoding', array('%service' => $service)));
+  drupal_set_title(t('Configure parameters for %service geocoding', array('%service' => $service)), PASS_THROUGH);
 
   $breadcrumbs = drupal_get_breadcrumb();
   $breadcrumbs[] = l('location', 'admin/settings/location');
@@ -744,7 +756,7 @@ function location_geocoding_parameters_page($country_iso, $service) {
   return drupal_get_form('location_geocoding_parameters_form', $country_iso, $service);
 }
 
-function location_geocoding_parameters_form(&$form_state, $country_iso, $service) {
+function location_geocoding_parameters_form($form, &$form_state, $country_iso, $service) {
   location_load_country($country_iso);
   $geocode_settings_form_function_specific = 'location_geocode_'. $country_iso .'_'. $service .'_settings';
   $geocode_settings_form_function_general = $service .'_geocode_settings';
@@ -758,7 +770,7 @@ function location_geocoding_parameters_form(&$form_state, $country_iso, $service
   else {
     return system_settings_form(array(
       '#type' => 'markup',
-      '#value' => t('No configuration parameters are necessary, or a form to take such paramters has not been implemented.')
+      '#markup' => t('No configuration parameters are necessary, or a form to take such paramters has not been implemented.')
     ));
   }
 }
@@ -948,7 +960,7 @@ function _location_autocomplete($country, $string = '') {
       }
     }
   }
-  drupal_json($matches);
+  drupal_json_output($matches);
 }
 
 /**
@@ -1253,7 +1265,7 @@ function location_empty_location($settings) {
  * Strip junk out of a location.
  */
 function location_strip(&$location) {
-  static $tmp;
+  $tmp = &drupal_static(__FUNCTION__);
   if (!isset($tmp)) {
     $tmp = array();
     $defaults = location_invoke_locationapi($location, 'defaults');
@@ -1429,23 +1441,23 @@ function theme_location_longitude_dms($longitude) {
 }
 
 /**
- * Implementation of hook_token_values().
+ * Implements hook_token_values().
  */
 function location_token_values($type, $object = NULL) {
-  require_once(drupal_get_path('module', 'location') .'/location.token.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/location.token.inc');
   return _location_token_values($type, $object);
 }
 
 /**
- * Implementation of hook_token_list().
+ * Implements hook_token_list().
  */
 function location_token_list($type = 'all') {
-  require_once(drupal_get_path('module', 'location') .'/location.token.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/location.token.inc');
   return _location_token_list($type);
 }
 
 /**
- * Implementation of hook_search().
+ * Implements hook_search().
  * Implemented on behalf of location_search.module to make the urls not suck.
  *
  * This function is only declared if the location_search module is enabled,
@@ -1500,20 +1512,20 @@ function template_preprocess_location(&$variables) {
   $variables['latitude_dms'] = '';
   if (!empty($location['latitude'])) {
     $variables['latitude'] = check_plain($location['latitude']);
-    $variables['latitude_dms'] = theme('location_latitude_dms', $location['latitude']);
+    $variables['latitude_dms'] = theme('location_latitude_dms', array('latitude' => $location['latitude']));
   }
 
   $variables['longitude'] = '';
   $variables['longitude_dms'] = '';
   if (!empty($location['longitude'])) {
     $variables['longitude'] = check_plain($location['longitude']);
-    $variables['longitude_dms'] = theme('location_longitude_dms', $location['longitude']);
+    $variables['longitude_dms'] = theme('location_longitude_dms', array('longitude' => $location['longitude']));
   }
 
   // Add a country-specific template suggestion.
   if (!empty($location['country']) && location_standardize_country_code($location['country'])) {
     // $location['country'] is normalized in the previous line.
-    $variables['template_files'][] = 'location-'. $location['country'];
+    $variables['theme_hook_suggestions'][] = 'location__' . $location['country'];
   }
 
   // Display either the code or the full name for the province.
@@ -1552,7 +1564,7 @@ function template_preprocess_locations(&$variables) {
   $variables['rawlocs'] = $locs;
 
   foreach ($locs as $location) {
-    $variables['locations'][] = theme('location', $location, $variables['hide']);
+    $variables['locations'][] = theme('location', array('location' => $location, 'hide' => $variables['hide']));
   }
 }
 
@@ -1688,7 +1700,7 @@ function location_form($settings, $locations) {
     '#type' => 'fieldset',
     '#title' => format_plural($numforms, 'Location', 'Locations'),
     '#tree' => TRUE,
-    '#attributes' => array('class' => 'locations'),
+    '#attributes' => array('class' => array('locations')),
     '#weight' => $settings['form']['weight'],
     '#collapsible' => $settings['form']['collapsible'],
     '#collapsed' => $settings['form']['collapsed'],
@@ -1735,13 +1747,15 @@ function location_display($settings, $locations) {
   // Show all locations
   return array(
     '#type' => 'markup',
-    '#value' => theme('locations', $locations, $hide),
+    '#theme' => 'locations',
+    '#locations' => $locations,
+    '#hide' => $hide,
     '#weight' => $settings['display']['weight'],
   );
 }
 
 function location_rss_item($location, $mode = 'simple') {
-  require_once(drupal_get_path('module', 'location') .'/location.georss.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/location.georss.inc');
   return _location_rss_item($location, $mode);
 }
 

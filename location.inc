@@ -15,8 +15,6 @@
  * some options are configured through an interface provided by location.module.
  */
 
-include_once drupal_get_path('module', 'location') .'/earth.inc';
-
 /**
  * Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
  * call is delegated based on the 'country' value in the $location parameter.
@@ -386,7 +384,8 @@ function location_latlon_exact($location = array()) {
  * @ingroup Location
  */
 function _location_supported_countries() {
-  static $supported_countries = array();
+  $supported_countries = &drupal_static(__FUNCTION__, array());
+
 
   // If this function has already been called this request, we can avoid a DB hit.
   if (!empty($supported_countries)) {
@@ -416,7 +415,8 @@ function _location_supported_countries() {
  * Fetch the provinces for a country.
  */
 function location_get_provinces($country = 'us') {
-  static $provinces = array();
+  $provinces = &drupal_static(__FUNCTION__, array());
+
   location_standardize_country_code($country);
   if (isset($provinces[$country])) {
     return $provinces[$country];
@@ -521,7 +521,7 @@ function location_standardize_country_code(&$country) {
 function location_load_country($country) {
   location_standardize_country_code($country);
 
-  $file = drupal_get_path('module', 'location') . '/supported/location.' . $country . '.inc';
+  $file = DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/supported/location.' . $country . '.inc';
   if (file_exists($file)) {
     include_once($file);
     return TRUE;
@@ -594,12 +594,12 @@ function location_address2singleline($location = array()) {
 }
 
 function location_get_general_geocoder_list() {
-  static $list;
+  $list = &drupal_static(__FUNCTION__, array());
 
   if (!count($list)) {
-    $files = file_scan_directory(drupal_get_path('module', 'location') .'/geocoding', '\.inc$', array('.', '..', 'CVS', '.svn'));
+    $files = file_scan_directory(drupal_get_path('module', 'location') . '/geocoding', '/\.inc$/', array('nomask' => '/(\.\.?|CVS|\.svn)$/')));
     foreach ($files as $full_path_name => $fileinfo) {
-      $list[] = $fileinfo->name;
+      $list[] = $fileinfo->filename;
     }
   }
 
@@ -612,7 +612,7 @@ function location_get_general_geocoder_list() {
  * ISO 3166-1 alpha-2
  */
 function location_get_iso3166_list($upper = FALSE) {
-  static $countries;
+  static $countries = &drupal_static(__FUNCTION__);
 
   if (isset($countries)) {
     // In fact, the ISO codes for countries are all Upper Case.

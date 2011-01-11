@@ -2,4 +2,8 @@
 name = Location
 package = Location
 description = The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.
-core = 6.x
+core = 7.x
+files[] = location.module
+files[] = location.inc
+files[] = earth.inc
+configure = admin/settings/location

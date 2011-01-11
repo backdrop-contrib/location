@@ -3,4 +3,5 @@ name = Node Locations
 description = Associate locations with nodes.
 dependencies[] = location
 package = Location
-core = 6.x
+core = 7.x
+files[] = location_node.module

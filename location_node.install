@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Installation / uninstallation routines for location_node.module.
+ * Install, update and uninstall functions for the location_node module.
  */
 
 /**

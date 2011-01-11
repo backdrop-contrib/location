@@ -7,76 +7,100 @@
  */
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_BASE_FORM_ID_alter().
+ * Alter the node forms.
  */
-function location_node_form_alter(&$form, &$form_state, $form_id) {
-  if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id) {
-    // Add the Location fields on the Node edit form
-    $node = $form['#node'];
-    $settings = variable_get('location_settings_node_'. $node->type, array());
-    if (isset($settings['multiple']['max']) && $settings['multiple']['max'] > 0) {
-      $locations = isset($node->locations) ? $node->locations : array();
-      $form['locations'] = location_form($settings, $locations);
+function location_node_form_node_form_alter(&$form, &$form_state, $form_id) {
+  // Add the Location fields on the node edit form.
+  $node = $form['#node'];
+  $settings = variable_get('location_settings_node_' . $node->type, array());
+  if (isset($settings['multiple']['max']) && $settings['multiple']['max'] > 0) {
+    $locations = isset($node->locations) ? $node->locations : array();
+    $form['locations'] = location_form($settings, $locations);
+  }
+}
+
+/**
+ * Implements hook_node_revision_delete().
+ */
+function location_node_node_revision_delete($node) {
+  $locations = array();
+  location_save_locations($locations, array('vid' => $node->vid));
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function location_node_node_delete($node) {
+  $locations = array();
+  location_save_locations($locations, array('vid' => $node->vid));
+}
+
+/**
+ * Implements hook_node_load().
+ *
+ * @todo
+ *   Make this load all locations at once instead of running separate queries
+ *   for each node to enhance performance.
+ *   location_load_locations() and location_load_location() will need
+ *   changing to make this happen.
+ */
+function location_node_node_load($nodes, $types) {
+  foreach ($nodes as $nid => $node) {
+    $nodes[$nid]->locations = location_load_locations($node->vid);
+    $nodes[$nid]->location = count($nodes[$nid]->locations) ? $nodes[$nid]->locations[0] : array();
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function location_node_node_insert($node) {
+  if (!empty($node->locations)) {
+    location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function location_node_node_update($node) {
+  if (!empty($node->locations)) {
+    location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function location_node_node_view($node, $view_mode, $langcode) {
+  $settings = variable_get('location_settings_node_' . $node->type, array());
+
+  if ($view_mode == 'rss') {
+    $mode = isset($settings['rss']['mode']) ? $settings['rss']['mode'] : 'simple';
+    if ($mode != 'none') {
+      if (is_array($node->locations)) {
+        foreach ($node->locations as $location) {
+          if (($item = location_rss_item($location, $mode))) {
+            $node->rss_elements[] = $item;
+          }
+        }
+      }
+    }
+  }
+  else {
+    if (variable_get('location_display_location', 1)) {
+      if (isset($settings['display']['teaser']) && isset($settings['display']['full'])) {
+        if (($view_mode == 'teaser' && $settings['display']['teaser']) || ($view_mode == 'full' && $settings['display']['full'])) {
+          $node->content['locations'] = location_display($settings, $node->locations);
+        }
+      }
     }
   }
 }
 
 /**
- * Implementation of hook_nodeapi().
- */
-function location_node_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  switch ($op) {
-    case 'delete revision':
-      $locations = array();
-      location_save_locations($locations, array('vid' => $node->vid));
-      break;
-    case 'delete':
-      $locations = array();
-      location_save_locations($locations, array('nid' => $node->nid));
-      break;
-    case 'load':
-      $locations = location_load_locations($node->vid);
-      $location = count($locations) ? $locations[0] : array();
-      return array('locations' => $locations, 'location' => $location);
-
-    case 'insert':
-    case 'update':
-      if (!empty($node->locations)) {
-        location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
-      }
-      break;
-
-    case 'view':
-      if (variable_get('location_display_location', 1)) {
-        $settings = variable_get('location_settings_node_'. $node->type, array());
-        if (isset($settings['display']['teaser']) && isset($settings['display']['full'])) {
-          if (($a3 && $settings['display']['teaser']) || (!$a3 && $settings['display']['full'])) {
-            $node->content['locations'] = location_display($settings, $node->locations);
-          }
-        }
-      }
-      break;
-
-    case 'rss item':
-      $items = array();
-      $settings = variable_get('location_settings_node_'. $node->type, array());
-      $mode = isset($settings['rss']['mode']) ? $settings['rss']['mode'] : 'simple';
-      if ($mode == 'none') {
-        return;
-      }
-      if (is_array($node->locations)) {
-        foreach ($node->locations as $location) {
-          if (($item = location_rss_item($location, $mode))) {
-            $items[] = $item;
-          }
-        }
-      }
-      return $items;
-  }
-}
-
-/**
- * Implementation of hook_locationapi().
+ * Implements hook_locationapi().
  */
 function location_node_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {
@@ -84,7 +108,7 @@ function location_node_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NUL
       foreach ($obj as $k => $v) {
         if ($v['nid'] != 0) {
           $node = node_load($v['nid']);
-          $obj[$k]['href'] = 'node/'. $v['nid'];
+          $obj[$k]['href'] = 'node/' . $v['nid'];
           $obj[$k]['title'] = $node->title;
           $obj[$k]['type'] = t('Node location');
         }
@@ -93,9 +117,10 @@ function location_node_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NUL
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
  * Alter the node_type_form form.
  */
-function location_node_form_node_type_form_alter(&$form, &$form_state) {
+function location_node_form_node_type_form_alter(&$form, &$form_state, $form_id) {
   $type = $form['#node_type']->type;
 
   // Hook the form handlers so we can correctly extract our information;
@@ -180,12 +205,12 @@ function location_node_settings_validate($form, &$form_state) {
  * Custom submit function to save location settings properly.
  */
 function _location_node_type_save_submit($form, &$form_state) {
-  variable_set('location_settings_node_'. $form_state['values']['type'], $form_state['values']['location_settings']);
+  variable_set('location_settings_node_' . $form_state['values']['type'], $form_state['values']['location_settings']);
 
   // @@@ Backwards compatibility variables.
   // There are a few places in contrib where these variables are checked.
-  variable_set('location_maxnum_'. $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['max']);
-  variable_set('location_defaultnum_'. $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['add']);
+  variable_set('location_maxnum_' . $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['max']);
+  variable_set('location_defaultnum_' . $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['add']);
 
   // Prevent the "normal" submit handler from stomping our variable.
   unset($form_state['values']['location_settings']);
@@ -199,12 +224,12 @@ function location_node_form_content_field_overview_form_alter(&$form, &$form_sta
 }
 
 /**
- * Implementation of hook_content_extra_fields().
+ * Implements hook_content_extra_fields().
  *
  * For being able to edit location weight in node forms and node view.
  */
 function location_node_content_extra_fields($type_name) {
-  $settings = variable_get('location_settings_node_'. $type_name, array());
+  $settings = variable_get('location_settings_node_' . $type_name, array());
   if (isset($settings['multiple']) && $settings['multiple']['max'] > 0) {
     $weight = isset($settings['form']['weight']) ? $settings['form']['weight'] : 0;
     $extra['locations'] = array(
@@ -225,10 +250,10 @@ function location_node_content_extra_fields($type_name) {
 function location_node_content_extra_save($form, &$form_state) {
   $type = $form['#type_name'];
   // We need to stay in sync with CCK's idea of the weight.
-  $settings = variable_get('location_settings_node_'. $type, array());
+  $settings = variable_get('location_settings_node_' . $type, array());
   if (isset($form_state['values']['locations'])) {
     $settings['form']['weight'] = $form_state['values']['locations']['weight'];
     $settings['display']['weight'] = $form_state['values']['locations']['weight'];
   }
-  variable_set('location_settings_node_'. $type, $settings);
+  variable_set('location_settings_node_' . $type, $settings);
 }
