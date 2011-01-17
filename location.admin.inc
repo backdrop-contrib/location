@@ -247,14 +247,16 @@ function location_geocoding_options_form($form, &$form_state) {
 
       if (function_exists($geocode_settings_form_function_specific)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
-          '#type' => 'markup',
-          '#markup' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_val_chopped)
+          '#type' => 'link',
+          '#title' => t('Configure parameters'),
+          '#href' => 'admin/settings/location/geocoding/' . $country_iso . '/' . $current_val_chopped,
         );
       }
       elseif (function_exists($geocode_settings_form_function_general)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
-          '#type' => 'markup',
-          '#markup' => l(t('Configure parameters'), 'admin/settings/location/geocoding/'. $country_iso .'/'. $current_value)
+          '#type' => 'link',
+          '#title' => t('Configure parameters'),
+          '#href' =>  'admin/settings/location/geocoding/' . $country_iso . '/' . $current_value,
         );
       }
       else {
@@ -348,18 +350,22 @@ function location_util_form($form, &$form_State) {
     '#title' => t('Clear province cache'),
     '#description' => t('If you have modified location.xx.inc files, you will need to clear the province cache to get Location to recognize the modifications.'),
   );
-  $form['province_clear']['province_clear_submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clear province cache'),
-    '#submit' => array('location_util_form_clear_province_cache_submit'),
-  );
 
   $form['supported_countries_clear'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clear supported country list'),
     '#description' => t('If you have added support for a new country, you will need to clear the supported country list to get Location to recognize the modifications.'),
   );
-  $form['supported_countries_clear']['supported_countries_clear_submit'] = array(
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['province_clear_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clear province cache'),
+    '#submit' => array('location_util_form_clear_province_cache_submit'),
+  );
+  $form['actions']['supported_countries_clear_submit'] = array(
     '#type' => 'submit',
     '#value' => t('Clear supported country list'),
     '#submit' => array('location_util_form_clear_supported_countries_submit'),

@@ -130,7 +130,7 @@ function location_schema() {
         'default' => 0,
       ),
       'vid' => array(
-        'description' => 'Reference to {node_revisions}.vid.',
+        'description' => 'Reference to {node_revision}.vid.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -562,7 +562,7 @@ function location_update_5301() {
   // Joining like this allows us to backfill all the old revisions with the current
   // data, which is not nice but better than having no data at all when viewing
   // old revisions.
-  update_sql("INSERT INTO {location_instance} (nid,vid,lid) (SELECT nr.nid, nr.vid, l.lid FROM {node_revisions} nr INNER JOIN {node_revisions} nr2 ON nr.nid = nr2.nid INNER JOIN {location} l ON nr2.vid = l.eid AND l.type = 'node')");
+  update_sql("INSERT INTO {location_instance} (nid,vid,lid) (SELECT nr.nid, nr.vid, l.lid FROM {node_revision} nr INNER JOIN {node_revision} nr2 ON nr.nid = nr2.nid INNER JOIN {location} l ON nr2.vid = l.eid AND l.type = 'node')");
 
   // Users is much simpler.
   update_sql("INSERT INTO {location_instance} (uid,lid) (SELECT eid, lid FROM {location} WHERE type = 'user')");

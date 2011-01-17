@@ -123,7 +123,7 @@ function _location_latlon_exact_au_geocoder($location = array()) {
     return NULL;
   }
 
-  $result = xmlrpc('http://rpc.geocoder.us/service/xmlrpc', 'geocode', $location_string);
+  $result = xmlrpc('http://rpc.geocoder.us/service/xmlrpc', array('geocode' => array($location_string)));
 
   if (is_array($result) && is_array($result[0]) && isset($result[0]['lat']) && is_numeric($result[0]['lat']) && isset($result[0]['long']) && is_numeric($result[0]['long'])) {
     return array('lat' => $result[0]['lat'], 'lon' => $result[0]['long']);
