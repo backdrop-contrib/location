@@ -17,9 +17,9 @@ function location_uninstall() {
   variable_del('location_locpick_macro');
 
   // Delete geocoder settings.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%'");
-  while ($row = db_fetch_object($result)) {
-    variable_del($row->name);
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%'")->fetchCol();
+  foreach ($result as $var) {
+    variable_del($var);
   }
 }
 
@@ -312,12 +312,12 @@ function location_update_2() {
  * name on postgresql.
  */
 function location_update_3() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      update_sql("ALTER TABLE {location} CHANGE oid eid int unsigned NOT NULL default '0'");
-      break;
-  }
+  db_change_field('location', 'oid', 'eid', array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  ));
 
   if (module_exists('views')) {
     views_invalidate_cache();
@@ -335,31 +335,51 @@ function location_update_3() {
  * Add "lid" as the new location key.
  */
 function location_update_4() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      update_sql("ALTER TABLE {location} ADD COLUMN lid int(10) unsigned NOT NULL default '0' AFTER eid");
+  db_add_field('location', 'lid', array(
+    'type' => 'serial',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'description' => 'Primary Key: Unique location ID.',
+  ));
 
-      $result = db_query("SELECT eid, type FROM {location}");
-      $next_id = 0;
-      while ($row = db_fetch_object($result)) {
-        $next_id++;
-        db_query("UPDATE {location} SET lid = %d WHERE eid = %d AND type = '%s'", $next_id, $row->eid, $row->type);
-      }
-
-      update_sql("ALTER TABLE {location} DROP PRIMARY KEY");
-      update_sql("ALTER TABLE {location} ADD PRIMARY KEY (lid)");
-
-      db_query("INSERT INTO {sequences} (name, id) VALUES ('{location}_lid', %d)", $next_id);
-      update_sql("ALTER TABLE {location} ADD COLUMN is_primary tinyint NOT NULL default '0'");
-      update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
-
-      break;
-    case 'pgsql':
-      // help me
-      break;
+  $result = db_query("SELECT eid, type FROM {location}");
+  $next_id = 0;
+  foreach ($result as $row) {
+    $next_id++;
+    db_update('location')
+      ->fields(array(
+        'lid' => $next_id,
+      ))
+      ->condition('eid', $row->eid)
+      ->condition('type', $row->type)
+      ->execute();
   }
 
+  db_drop_primary_key('location');
+  db_add_primary_key('location', array('lid'));
+
+  db_insert('sequences')
+    ->fields(array(
+      'name' => '{location}_lid',
+      'id' => $next_id,
+    ))
+    ->execute();
+
+  db_add_field('location', 'is_primary', array(
+    'description' => 'Is this the primary location of an object? (unused, civicrm legacy field?).',
+    'type' => 'int',
+    'size' => 'tiny',
+    'default' => 0,
+    'not null' => TRUE,
+  ));
+
+  db_update('location')
+    ->fields(array(
+      'is_primary' => 1,
+    ))
+    ->condition('type', 'user')
+    ->execute();
+      
   foreach (node_type_get_types() as $type) {
     $new_setting = variable_get('location_' . $type->type, 0) ? 1 : 0;
     variable_del('location_' . $type->type);
@@ -371,37 +391,11 @@ function location_update_4() {
 /**
  * Legacy update 5.
  * Postgresql support that was missing from previous update.
+ *
+ * This update is redundant now that we have db api functions
+ * that are database independant.
  */
 function location_update_5() {
-  switch ($GLOBALS['db_type']) {
-    case 'pgsql':
-      update_sql("ALTER TABLE {location} DROP CONSTRAINT {location}_pkey");
-      update_sql("ALTER TABLE {location} RENAME TO {location}_old");
-      update_sql("CREATE TABLE {location} (
-        lid serial CHECK (lid >= 0),
-        eid int NOT NULL default '0' CHECK (eid >= 0),
-        type varchar(6) NOT NULL default '',
-        name varchar(255) default NULL,
-        street varchar(255) default NULL,
-        additional varchar(255) default NULL,
-        city varchar(255) default NULL,
-        province varchar(16) default NULL,
-        postal_code varchar(16) default NULL,
-        country char(2) default NULL,
-        latitude decimal(10,6) default NULL,
-        longitude decimal(10,6) default NULL,
-        source smallint default '0',
-        is_primary smallint default '0',
-        PRIMARY KEY (lid)
-      )");
-      update_sql("INSERT INTO {location}
-        (eid, type, name, street, additional, city, province, postal_code, country, latitude,
-        longitude, source) SELECT eid, type, name, street, additional, city, province,
-        postal_code, country, latitude, longitude, source FROM {location}_old");
-      update_sql("DROP TABLE {location}_old");
-      update_sql("UPDATE {location} SET is_primary = 1 WHERE type = 'user'");
-      break;
-  }
 }
 
 /**
@@ -409,15 +403,12 @@ function location_update_5() {
  * Use correct country code for Sweeden.
  */
 function location_update_6() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      update_sql("UPDATE {location} SET country = 'se' WHERE country = 'sw'");
-      break;
-    case 'pgsql':
-      update_sql("UPDATE {location} SET country = 'se' WHERE country = 'sw'");
-      break;
-  }
+  db_update('location')
+    ->fields(array(
+      'country' => 'se',
+    ))
+    ->condition('country', 'sw')
+    ->execute();
 }
 
 /**
@@ -428,51 +419,41 @@ function location_update_7() {
   $services = array('google');
   $general_geocoders_in_use = array();
 
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      $result = db_query('SELECT * FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]$\'');
+  $result = db_query("SELECT * FROM {variable} WHERE name REGEXP '^location_geocode_[a-z][a-z]$'");
 
-      while ($row = db_fetch_object($result)) {
-        $value_decoded = unserialize($row->value);
-        if (!in_array($value_decoded, $services)) {
-          update_sql('UPDATE {variable} SET value = \''. serialize($value_decoded .'|'. substr($row->name, 17)) .'\' WHERE name = \''. $row->name .'\'');
-        }
-        else {
-          $general_geocoders_in_use[$value_decoded] = $value_decoded;
-        }
-      }
-
-      $key = db_result(db_query('SELECT value FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\' LIMIT 1'));
-
-      update_sql('DELETE FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\'');
-      update_sql('INSERT INTO {variable} (name, value) VALUES (\'location_geocode_google_apikey\', \''. $key .'\')');
-      update_sql('DELETE FROM {cache} WHERE cid = \'variables\'');
-
-      variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
-      break;
-    case 'pgsql':
-      $result = db_query('SELECT * FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]$\'');
-
-      while ($row = db_fetch_object($result)) {
-        $value_decoded = unserialize($row->value);
-        if (!in_array($value_decoded, $services)) {
-          update_sql('UPDATE {variable} SET value = \''. serialize($value_decoded .'|'. substr($row->name, 17)) .'\' WHERE name = \''. $row->name .'\'');
-        }
-        else {
-          $general_geocoders_in_use[$value_decoded] = $value_decoded;
-        }
-      }
-
-      $key = db_result(db_query('SELECT value FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\' LIMIT 1'));
-
-      update_sql('DELETE FROM {variable} WHERE name REGEXP \'^location_geocode_[a-z][a-z]_google_apikey$\'');
-      update_sql('INSERT INTO {variable} (name, value) VALUES (\'location_geocode_google_apikey\', \''. $key .'\')');
-      update_sql('DELETE FROM {cache} WHERE cid = \'variables\'');
-
-      variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
-      break;
+  foreach ($result as $row) {
+    $value_decoded = unserialize($row->value);
+    if (!in_array($value_decoded, $services)) {
+      db_update('variable')
+        ->fields(array(
+          'value' => serialize($value_decoded . '|' . substr($row->name, 17)),
+        ))
+        ->condition('name', $row->name)
+        ->execute();
+    }
+    else {
+      $general_geocoders_in_use[$value_decoded] = $value_decoded;
+    }
   }
+
+  $key = db_query("SELECT value FROM {variable} WHERE name REGEXP '^location_geocode_[a-z][a-z]_google_apikey$'")->fetchField();
+
+  db_delete('variable')
+    ->condition('name', '^location_geocode_[a-z][a-z]_google_apikey$', 'REGEXP')
+    ->execute();
+
+  db_insert('variable')
+    ->fields(array(
+      'name' => 'location_geocode_google_apikey',
+      'value' => $key,
+    ))
+    ->execute();
+
+  db_delete('cache')
+    ->condition('cid', 'variables')
+    ->execute();
+
+  variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
 }
 
 /**
@@ -480,31 +461,45 @@ function location_update_7() {
  * Add location specific cache table.
  */
 function location_update_5300() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      update_sql("CREATE TABLE {cache_location} (
-        cid varchar(255) NOT NULL default '',
-        data longblob,
-        expire int NOT NULL default '0',
-        created int NOT NULL default '0',
-        headers text,
-        PRIMARY KEY (cid),
-        INDEX expire (expire)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
-    case 'pgsql':
-      update_sql("CREATE TABLE {cache_location} (
-        cid varchar(255) NOT NULL default '',
-        data bytea,
-        expire int NOT NULL default '0',
-        created int NOT NULL default '0',
-        headers text,
-        PRIMARY KEY (cid)
-      )");
-      update_sql("CREATE INDEX {cache_location}_expire_idx ON {cache_location} (expire)");
-      break;
-  }
+  $schema['cache_location'] = array(
+    'description' => 'Generic cache table for caching things not separated out into their own tables. Contributed modules may also use this to store cached items.',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'Primary Key: Unique cache ID.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'data' => array(
+        'description' => 'A collection of data to cache.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+      ),
+      'expire' => array(
+        'description' => 'A Unix timestamp indicating when the cache entry should expire, or 0 for never.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => 'A Unix timestamp indicating when the cache entry was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'headers' => array(
+        'description' => 'Any custom HTTP headers to be added to cached data.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array('expire' => array('expire')),
+    'primary key' => array('cid'),
+  );
+
+  db_create_table('cache_location', $schema['cache_location']);
 }
 
 /**
@@ -521,39 +516,55 @@ function location_update_5300() {
  * This is on purpose. It's a N:M join table.
  */
 function location_update_5301() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("
-      CREATE TABLE {location_instance} (
-        nid int UNSIGNED DEFAULT NULL,
-        vid int UNSIGNED DEFAULT NULL,
-        uid int UNSIGNED DEFAULT NULL,
-        genid varchar(255) NOT NULL default '',
-        lid int UNSIGNED NOT NULL DEFAULT '0',
-        INDEX {location_instance}_nid_idx (nid),
-        INDEX {location_instance}_vid_idx (vid),
-        INDEX {location_instance}_uid_idx (uid),
-        INDEX {location_instance}_genid_idx (genid),
-        INDEX {location_instance}_lid_idx (lid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */");
-      break;
-    case 'pgsql':
-      update_sql("
-      CREATE TABLE {location_instance} (
-        nid int DEFAULT NULL CHECK (nid >= 0 OR nid IS NULL),
-        vid int DEFAULT NULL CHECK (vid >= 0 OR vid IS NULL),
-        uid int DEFAULT NULL CHECK (uid >= 0 OR uid IS NULL),
-        genid varchar(255) NOT NULL default '',
-        lid int NOT NULL DEFAULT '0' CHECK (lid >= 0)
-      )");
-      update_sql('CREATE INDEX {location_instance}_nid_idx ON {location_instance} (nid)');
-      update_sql('CREATE INDEX {location_instance}_vid_idx ON {location_instance} (vid)');
-      update_sql('CREATE INDEX {location_instance}_uid_idx ON {location_instance} (uid)');
-      update_sql('CREATE INDEX {location_instance}_lid_idx ON {location_instance} (lid)');
-      update_sql('CREATE INDEX {location_instance}_genid_idx ON {location_instance} (genid)');
-      break;
-  }
+  $schema['location_instance'] = array(
+    'description' => 'N:M join table to join locations to other tables.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'Reference to {node}.nid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'Reference to {node_revision}.vid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'Reference to {users}.uid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'genid' => array(
+        'description' => 'Generic reference key.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'lid' => array(
+        'description' => 'Reference to {location}.lid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'vid' => array('vid'),
+      'uid' => array('uid'),
+      'genid' => array('genid'),
+      'lid' => array('lid'),
+    ),
+  );
+
+  db_create_table('location_instance', $schema['location_instance']);
 
   // Synthesise node location data based on what we have.
   // Storage of locations was previously stored against node revision, BUT the
@@ -562,10 +573,29 @@ function location_update_5301() {
   // Joining like this allows us to backfill all the old revisions with the current
   // data, which is not nice but better than having no data at all when viewing
   // old revisions.
-  update_sql("INSERT INTO {location_instance} (nid,vid,lid) (SELECT nr.nid, nr.vid, l.lid FROM {node_revision} nr INNER JOIN {node_revision} nr2 ON nr.nid = nr2.nid INNER JOIN {location} l ON nr2.vid = l.eid AND l.type = 'node')");
+
+  $query = db_select('node_revision', 'nr')
+    ->join('node_revision', 'nr2', 'nr.nid = nr2.nid')
+    ->join('location', 'l', "nr2.vid = l.eid AND l.type = 'node'")
+    ->addField('nr', 'nid')
+    ->addField('nr', 'vid')
+    ->addField('l', 'lid');
+
+  db_insert('location')
+    ->fields(array('nid', 'vid', 'lid'))
+    ->from($query)
+    ->execute();
 
   // Users is much simpler.
-  update_sql("INSERT INTO {location_instance} (uid,lid) (SELECT eid, lid FROM {location} WHERE type = 'user')");
+  $query = db_select('location', 'l');
+    ->addField('l', 'eid')
+    ->addField('l', 'lid')
+    ->condition('type', 'user');
+
+  db_insert('location')
+    ->fields(array('eid', 'lid'))
+    ->from($query)
+    ->execute();
 
   // Aug 18 2008:
   // Save everything else in genid.

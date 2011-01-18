@@ -789,15 +789,13 @@ function location_load_locations($id, $key = 'vid') {
     // by accident. 0 and '' are reserved for "not applicable."
     return array();
   }
-  if ($key == 'genid') {
-    $result = db_query('SELECT lid FROM {location_instance} WHERE '. db_escape_table($key) ." = '%s'", $id);
-  }
-  else {
-    $result = db_query('SELECT lid FROM {location_instance} WHERE '. db_escape_table($key) .' = %d', $id);
-  }
+  $query = db_select('location_instance', 'l');
+  $lid_field = $query->addField('l', 'lid');
+  $query->condition($key, $id);
+  $result = $query->execute();
   $locations = array();
-  while ($lid = db_fetch_object($result)) {
-    $locations[] = location_load_location($lid->lid);
+  foreach ($result as $lid) {
+    $locations[] = location_load_location($lid->{$lid_field});
   }
   return $locations;
 }
@@ -818,56 +816,56 @@ function location_save_locations(&$locations, $criteria) {
     foreach (array_keys($locations) as $key) {
       location_save($locations[$key], TRUE, $criteria);
     }
-    $columns = array();
-    $placeholders = array();
-    $qfrags = array();
-    $args = array();
-    foreach (array('nid' => '%d', 'vid' => '%d', 'uid' => '%d', 'genid' => "'%s'") as $key => $placeholder) {
-      if (isset($criteria[$key])) {
-        $columns[] = $key;
-        $placeholders[] = $placeholder;
-        $args[] = $criteria[$key];
-        $qfrags[] = "$key = $placeholder";
-      }
-    }
-    $querybase = 'FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
 
-    $oldlids = array();
-    $newlids = array();
     // Find affected lids.
-    $query = "SELECT lid $querybase";
-    $result = db_query($query, $args);
-    while ($t = db_fetch_object($result)) {
-      $oldlids[] = $t->lid;
+    $query = db_select('location_instance', 'l');
+    $lid_field = $query->addField('l', 'lid');
+    foreach ($criteria as $key => $value) {
+      $query->condition($key, $value);
     }
+    $oldlids = $query->execute()->fetchCol();
 
-    $query = "DELETE $querybase";
-    db_query($query, $args);
-    // Tack on the lid.
-    $columns[] = 'lid';
-    $placeholders[] = '%d';
+    // Delete current set of instances.
+    $query = db_delete('location_instance');
+    foreach ($criteria as $key => $value) {
+      $query->condition($key, $value);
+    }
+    $query->execute();
 
+    $newlids = array();
+    $query = db_insert('location_instance')->fields(array('nid', 'vid', 'uid', 'genid', 'lid'));
     foreach ($locations as $location) {
       // Don't save "empty" locations.
       // location_save() explicitly returns FALSE for empty locations,
       // so it should be ok to rely on the data type.
       if ($location['lid'] !== FALSE) {
-        $args[] = $location['lid'];
         $newlids[] = $location['lid'];
-        db_query('INSERT INTO {location_instance} ('. implode(', ', $columns) .') VALUES ('. implode(', ', $placeholders) .')', $args);
-        array_pop($args);
+        $instance = array(
+          'nid' => 0,
+          'vid' => 0,
+          'uid' => 0,
+          'genid' => '',
+          'lid' => $location['lid'],
+        );
+        foreach ($criteria as $k => $v) {
+          $instance[$k] = $v;
+        }
+        $query->values($instance);
       }
     }
+    $query->execute();
 
     // Check anything that dropped a reference during this operation.
     foreach (array_diff($oldlids, $newlids) as $check) {
       // An instance may have been deleted. Check reference count.
-      $count = db_result(db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = %d', $check));
+      $count = db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = :lid', array(':lid' => $check))->fetchField();
       if ($count !== FALSE && $count == 0) {
         watchdog('location', 'Deleting unreferenced location with LID %lid.', array('%lid' => $check));
         $location = array('lid' => $check);
         location_invoke_locationapi($location, 'delete');
-        db_query('DELETE FROM {location} WHERE lid = %d', $location['lid']);
+        db_delete('location')
+          ->condition('lid', $location['lid'])
+          ->execute();
       }
     }
   }
@@ -898,11 +896,11 @@ function location_load_location($lid) {
   if (isset($location['source']) && $location['source'] == LOCATION_LATLON_JIT_GEOCODING) {
     if (variable_get('location_jit_geocoding', FALSE)) {
       _location_geo_logic($location, array('street' => 1), array());
-      db_query("UPDATE {location} SET latitude = '%f', longitude = '%f', source = %d WHERE lid = %d",
-      $location['latitude'],
-      $location['longitude'],
-      $location['source'],
-      $location['lid']);
+      db_update('location')
+        ->fields(array('latitude', 'longitude', 'source'))
+        ->values($location)
+        ->condition('lid', $location['lid'])
+        ->execute();
     }
   }
 
@@ -1122,22 +1120,12 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
       if (!empty($criteria)) {
         // Check for other instances.
         // See #306171 for more information.
-        $columns = array();
-        $placeholders = array();
-        $qfrags = array();
-        $args = array();
-        foreach (array('nid' => '%d', 'vid' => '%d', 'uid' => '%d', 'genid' => "'%s'") as $key => $placeholder) {
-          if (isset($criteria[$key])) {
-            $columns[] = $key;
-            $placeholders[] = $placeholder;
-            $args[] = $criteria[$key];
-            $qfrags[] = "$key = $placeholder";
-          }
+        $query = db_select('location_instance', 'l');
+        foreach ($criteria as $key => $value) {
+          $query->condition($key, $value);
         }
-        $querybase = 'FROM {location_instance} WHERE '. implode(' AND ', $qfrags);
-
-        $associated = db_result(db_query("SELECT COUNT(*) $querybase", $args));
-        $all = db_result(db_query("SELECT COUNT(*) FROM {location_instance} WHERE lid = %d", $location['lid']));
+        $associated = $query->countQuery()->execute()->fetchField();
+        $all = db_query("SELECT COUNT(*) FROM {location_instance} WHERE lid = :lid", array(':lid' => $location['lid']))->fetchField();
         if ($associated != $all) {
           // If there were a different number of instances than instances matching the criteria,
           // we need a new LID.
