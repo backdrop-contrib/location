@@ -104,10 +104,12 @@ function location_map_link_dk_providers() {
     'findvej' => array(
       'name' => 'findvej.dk',
       'url' => 'http://findvej.dk',
+      'tos' => 'http://www.google.com/intl/da_ALL/help/terms_maps.html',
     ),
     'rejseplanen' => array(
       'name' => 'Rejseplanen',
       'url' => 'http://www.rejseplanen.dk/',
+      'tos' => 'http://info.rejseplanen.dk/om_rejseplanen', // As close as I could find.
     ),
   );
 }
