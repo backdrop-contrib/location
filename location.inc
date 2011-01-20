@@ -612,7 +612,7 @@ function location_get_general_geocoder_list() {
   $list = &drupal_static(__FUNCTION__, array());
 
   if (!count($list)) {
-    $files = file_scan_directory(drupal_get_path('module', 'location') . '/geocoding', '/\.inc$/', array('nomask' => '/(\.\.?|CVS|\.svn)$/')));
+    $files = file_scan_directory(drupal_get_path('module', 'location') . '/geocoding', '/\.inc$/', array('nomask' => '/(\.\.?|CVS|\.svn)$/'));
     foreach ($files as $full_path_name => $fileinfo) {
       $list[] = $fileinfo->filename;
     }
@@ -627,7 +627,7 @@ function location_get_general_geocoder_list() {
  * ISO 3166-1 alpha-2
  */
 function location_get_iso3166_list($upper = FALSE) {
-  static $countries = &drupal_static(__FUNCTION__);
+  $countries = &drupal_static(__FUNCTION__);
 
   if (isset($countries)) {
     // In fact, the ISO codes for countries are all Upper Case.
