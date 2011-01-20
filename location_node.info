@@ -5,3 +5,4 @@ dependencies[] = location
 package = Location
 core = 7.x
 files[] = location_node.module
+files[] = location_node.install
