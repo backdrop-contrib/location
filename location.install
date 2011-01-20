@@ -587,7 +587,7 @@ function location_update_5301() {
     ->execute();
 
   // Users is much simpler.
-  $query = db_select('location', 'l');
+  $query = db_select('location', 'l')
     ->addField('l', 'eid')
     ->addField('l', 'lid')
     ->condition('type', 'user');
@@ -599,8 +599,8 @@ function location_update_5301() {
 
   // Aug 18 2008:
   // Save everything else in genid.
-  $query = db_select('location', 'l');
-    ->addExpression("CONCAT(l.type, ':', l.eid)");
+  $query = db_select('location', 'l')
+    ->addExpression("CONCAT(l.type, ':', l.eid)")
     ->addField('l', 'lid')
     ->condition('type', 'user', '<>')
     ->condition('type', 'node', '<>');
@@ -767,7 +767,7 @@ function location_update_6301() {
   $has_rows = (bool) db_query_range('SELECT 1 FROM {location} WHERE lid = 0', 0, 1)->fetchField();
   if ($has_rows) {
     $lid = 1 + db_query('SELECT MAX(lid) FROM {location}')->fetchField();
-    $message = t('Note: A location with lid 0 was found in your database. It has been moved to lid %lid. You may wish to verify it manually, as lid 0 is usually a corrupt entry.', array('%lid' => $lid)));
+    $message = t('Note: A location with lid 0 was found in your database. It has been moved to lid %lid. You may wish to verify it manually, as lid 0 is usually a corrupt entry.', array('%lid' => $lid));
 
     db_update('location')
       ->fields(array(
@@ -1008,7 +1008,7 @@ function location_update_6303() {
       ->execute();
 
     // Do one final garbage collection by hand.
-    $query = db_select('location_instance', 'li');
+    $query = db_select('location_instance', 'li')
       ->addField('li', 'lid');
     db_delete('location')
       ->condition('lid', $query, 'NOT IN')
@@ -1016,7 +1016,7 @@ function location_update_6303() {
     
     // Garbage collect {location_phone} by hand.
     if (db_table_exists('location_phone')) {
-      $query = db_select('location', 'l');
+      $query = db_select('location', 'l')
         ->addField('l', 'lid');
       db_delete('location_phone')
         ->condition('lid', $query, 'NOT IN')
@@ -1025,7 +1025,7 @@ function location_update_6303() {
 
     // Garbage collect {location_fax} by hand.
     if (db_table_exists('location_fax')) {
-      $query = db_select('location', 'l');
+      $query = db_select('location', 'l')
         ->addField('l', 'lid');
       db_delete('location_fax')
         ->condition('lid', $query, 'NOT IN')

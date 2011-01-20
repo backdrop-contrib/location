@@ -333,7 +333,7 @@ function theme_location_geocoding_options($form) {
     );
     $rows[] = $row;
   }
-  $output .= theme('table', array('header' => $header, 'rows' => $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
   foreach (element_children($form) as $key) {
     $output .= drupal_render($form[$key]);
   }
