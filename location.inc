@@ -15,6 +15,8 @@
  * some options are configured through an interface provided by location.module.
  */
 
+include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/earth.inc');
+
 /**
  * Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
  * call is delegated based on the 'country' value in the $location parameter.

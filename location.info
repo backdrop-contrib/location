@@ -6,7 +6,4 @@ core = 7.x
 files[] = location.module
 files[] = location.install
 files[] = location.admin.inc
-files[] = location.georss.inc
-files[] = location.inc
-files[] = earth.inc
 configure = admin/settings/location

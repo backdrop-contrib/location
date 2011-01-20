@@ -20,6 +20,8 @@ define('LOCATION_LATLON_JIT_GEOCODING',   4); // Force regeocoding immediately.
 define('LOCATION_USER_DONT_COLLECT',      0);
 define('LOCATION_USER_COLLECT',           1);
 
+include_once(DRUPAL_ROOT . '/' . LOCATION_PATH . '/location.inc');
+
 /**
  * Implements hook_menu().
  */
@@ -1743,6 +1745,7 @@ function location_display($settings, $locations) {
 }
 
 function location_rss_item($location, $mode = 'simple') {
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/location.georss.inc');
   return _location_rss_item($location, $mode);
 }
 
