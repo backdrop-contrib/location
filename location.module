@@ -32,7 +32,7 @@ function location_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/settings/location'] = array(
+  $items['admin/config/content/location'] = array(
     'title' => 'Location',
     'description' => 'Settings for Location module',
     'page callback' => 'drupal_get_form',
@@ -40,11 +40,11 @@ function location_menu() {
     'file' => 'location.admin.inc',
     'access arguments' => array('administer site configuration'),
   );
-  $items['admin/settings/location/main'] = array(
+  $items['admin/config/content/location/main'] = array(
     'title' => 'Main settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items['admin/settings/location/maplinking'] = array(
+  $items['admin/config/content/location/maplinking'] = array(
     'title' => 'Map links',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('location_map_link_options_form'),
@@ -53,7 +53,7 @@ function location_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   );
-  $items['admin/settings/location/geocoding'] = array(
+  $items['admin/config/content/location/geocoding'] = array(
     'title' => 'Geocoding options',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('location_geocoding_options_form'),
@@ -62,13 +62,13 @@ function location_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
-  $items['admin/settings/location/geocoding/%/%'] = array(
+  $items['admin/config/content/location/geocoding/%/%'] = array(
     'page callback' => 'location_geocoding_parameters_page',
     'page arguments' => array(4, 5),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/settings/location/util'] = array(
+  $items['admin/config/content/location/util'] = array(
     'title' => 'Location utilities',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('location_util_form'),
