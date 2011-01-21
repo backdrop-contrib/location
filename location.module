@@ -427,7 +427,7 @@ function _location_process_location($element) {
     );
   }
 
-  $element += _element_info('fieldset');
+  $element += element_info('fieldset');
   return $element;
 }
 
@@ -523,16 +523,16 @@ function theme_location_settings($variables) {
     $element[$key]['weight']['#attributes']['class'] = array('location-settings-weight');
     unset($element[$key]['default']['#title']);
     $row = array();
-    $row[] = array('data' => '', 'class' => 'location-settings-drag');
+    $row[] = array('data' => '', 'class' => array('location-settings-drag'));
     $row[] = drupal_render($element[$key]['name']);
     $row[] = drupal_render($element[$key]['collect']);
     $row[] = drupal_render($element[$key]['default']);
-    $row[] = array('data' => drupal_render($element[$key]['weight']), 'class' => 'delta-order');
+    $row[] = array('data' => drupal_render($element[$key]['weight']), 'class' => array('delta-order'));
 
     $rows[] = array(
       '#weight' => (int)$element[$key]['weight']['#value'],
       'data' => $row,
-      'class' => 'draggable',
+      'class' => array('draggable'),
     );
   }
 
@@ -899,7 +899,7 @@ function location_save_locations(&$locations, $criteria) {
  * @return A location array.
  */
 function location_load_location($lid) {
-  $location = db_fetch_array(db_query('SELECT * FROM {location} WHERE lid = %d', $lid));
+  $location = db_query('SELECT * FROM {location} WHERE lid = :lid', array(':lid' => $lid))->fetchAssoc();
   // @@@ Just thought of this, but I am not certain it is a good idea...
   if (empty($location)) {
     $location = array('lid' => $lid);
@@ -1423,7 +1423,9 @@ function location_dd_to_dms($coord) {
 /**
  * Display a coordinate.
  */
-function theme_location_latitude_dms($latitude) {
+function theme_location_latitude_dms($variables) {
+  $latitude = $variables['latitude'];
+
   $output = '';
   list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($latitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
@@ -1436,7 +1438,9 @@ function theme_location_latitude_dms($latitude) {
   return $output;
 }
 
-function theme_location_longitude_dms($longitude) {
+function theme_location_longitude_dms($variables) {
+  $longitude = $variables['longitude'];
+
   $output = '';
   list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($longitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
