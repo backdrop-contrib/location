@@ -332,7 +332,7 @@ function location_geocode_au_google_settings() {
 
   $form['location_geocode_au_google_accuracy_code'] = array(
     '#type' => 'select',
-    '#title' => t('Google Maps Geocoding Accuracy for %country', array('%country' => $country ) ),
+    '#title' => t('Google Maps Geocoding Accuracy for Australia'),
     '#default_value' => variable_get('location_geocode_au_google_accuracy_code', variable_get('location_geocode_google_minimum_accuracy', '3')),
     '#options' => location_google_geocode_accuracy_codes(),
     '#description' => t('The minimum required accuracy for the geolocation data to be saved.'),
