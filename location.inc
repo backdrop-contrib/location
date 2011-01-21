@@ -549,7 +549,7 @@ function location_load_country($country) {
  * Load a general geocoding service.
  */
 function location_load_geocoder($geocoder) {
-  include_once drupal_get_path('module', 'location') .'/geocoding/'. $geocoder .'.inc';
+  include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/geocoding/' . $geocoder . '.inc');
 }
 
 /**
@@ -614,7 +614,7 @@ function location_get_general_geocoder_list() {
   if (!count($list)) {
     $files = file_scan_directory(drupal_get_path('module', 'location') . '/geocoding', '/\.inc$/', array('nomask' => '/(\.\.?|CVS|\.svn)$/'));
     foreach ($files as $full_path_name => $fileinfo) {
-      $list[] = $fileinfo->filename;
+      $list[] = $fileinfo->name;
     }
   }
 

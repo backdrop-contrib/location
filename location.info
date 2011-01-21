@@ -6,4 +6,4 @@ core = 7.x
 files[] = location.module
 files[] = location.install
 files[] = location.admin.inc
-configure = admin/settings/location
+configure = admin/config/content/location

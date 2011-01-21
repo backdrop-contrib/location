@@ -53,7 +53,7 @@ function location_admin_settings($form, &$form_state) {
     '#type'           => 'checkbox',
     '#title'          => t('Use a Google Map to set latitude and longitude '),
     '#default_value'  => variable_get('location_usegmap', FALSE),
-    '#description'    => t('If the gmap.module is installed and <a href="@enabled">enabled</a>, and this setting is also turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a <a href="@google_maps_api_key">Google Maps API key</a> into your <a href="@gmap_module_settings">gmap module settings</a>.', array('@enabled' => url('admin/build/modules'), '@google_maps_api_key' => 'http://www.google.com/apis/maps', '@gmap_module_settings' => url('admin/settings/gmap'))),
+    '#description'    => t('If the gmap.module is installed and <a href="@enabled">enabled</a>, and this setting is also turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a <a href="@google_maps_api_key">Google Maps API key</a> into your <a href="@gmap_module_settings">gmap module settings</a>.', array('@enabled' => url('admin/build/modules'), '@google_maps_api_key' => 'http://www.google.com/apis/maps', '@gmap_module_settings' => url('admin/config/content/gmap'))),
 // @@@ megapatch This is an idea, but I'd opt more for a warning here...
 //    '#disabled'       => !module_exists('gmap'),
   );
@@ -249,14 +249,14 @@ function location_geocoding_options_form($form, &$form_state) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'link',
           '#title' => t('Configure parameters'),
-          '#href' => 'admin/settings/location/geocoding/' . $country_iso . '/' . $current_val_chopped,
+          '#href' => 'admin/config/content/location/geocoding/' . $country_iso . '/' . $current_val_chopped,
         );
       }
       elseif (function_exists($geocode_settings_form_function_general)) {
         $form['countries'][$country_iso]['location_geocode_config_link_'. $country_iso] = array(
           '#type' => 'link',
           '#title' => t('Configure parameters'),
-          '#href' =>  'admin/settings/location/geocoding/' . $country_iso . '/' . $current_value,
+          '#href' =>  'admin/config/content/location/geocoding/' . $country_iso . '/' . $current_value,
         );
       }
       else {
@@ -291,7 +291,10 @@ function location_geocoding_options_form_submit($form, &$form_state) {
   variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
 }
 
-function theme_location_map_link_options($form) {
+
+function theme_location_map_link_options($variables) {
+  $form = $variables['form'];
+
   $header = array(array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'), array('align' => 'center', 'data' => '<center>'. t('Options') .'</center>'));
   $rows = array();
   foreach (element_children($form['countries']) as $country_iso) {
@@ -305,14 +308,13 @@ function theme_location_map_link_options($form) {
     $rows[] = $row;
   }
   $output = theme('table', array('header' => $header, 'rows' => $rows));
-  foreach (element_children($form) as $key) {
-    $output .= drupal_render($form[$key]);
-  }
   $output .= drupal_render_children($form);
   return $output;
 }
 
-function theme_location_geocoding_options($form) {
+function theme_location_geocoding_options($variables) {
+  $form = $variables['form'];
+
   $output = drupal_render($form['location_geocode_google_minimum_accuracy']);
   $header = array(
     array('align' => 'center', 'data' => '<center>'. t('Country') .'</center>'),
@@ -334,9 +336,6 @@ function theme_location_geocoding_options($form) {
     $rows[] = $row;
   }
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  foreach (element_children($form) as $key) {
-    $output .= drupal_render($form[$key]);
-  }
   $output .= drupal_render_children($form);
   return $output;
 }

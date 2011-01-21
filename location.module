@@ -66,7 +66,7 @@ function location_menu() {
   );
   $items['admin/config/content/location/geocoding/%/%'] = array(
     'page callback' => 'location_geocoding_parameters_page',
-    'page arguments' => array(4, 5),
+    'page arguments' => array(5, 6),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
@@ -125,7 +125,7 @@ function location_help($path, $arg) {
 <li>administer locative information at <a href="@admin-node-configure-types">Administer &gt;&gt; Content management &gt;&gt; Content types</a> to configure a type and see the locative information.</li>
 <li>administer location at <a href="@admin-settings-location">Administer &gt;&gt; Site configuration &gt;&gt; Location</a>.</li>
 <li>use a database dump for a U.S. and/or German postal codes table that can be found at <a href="@external-http-cvs-drupal-org">zipcode database</a>.</li>
-', array('@admin-node-configure-types' => url('admin/content/types'), '@admin-settings-location' => url('admin/settings/location'), '@external-http-cvs-drupal-org' => 'http://cvs.drupal.org/viewcvs/drupal/contributions/modules/location/database/')) .'</ul>';
+', array('@admin-node-configure-types' => url('admin/content/types'), '@admin-settings-location' => url('admin/config/content/location'), '@external-http-cvs-drupal-org' => 'http://cvs.drupal.org/viewcvs/drupal/contributions/modules/location/database/')) .'</ul>';
       $output .= '<p>'. t('For more information please read the configuration and customization handbook <a href="@location">Location page</a>.', array('@location' => 'http://www.drupal.org/handbook/modules/location/')) .'</p>';
       return $output;
   }
@@ -160,7 +160,9 @@ function location_element_info() {
  * Theme function to fixup location elements.
  * @ingroup themable
  */
-function theme_location_element($element) {
+function theme_location_element($variables) {
+  $element = $variables['element'];
+
   // Prevent spurious "Array" from appearing.
   unset($element['#value']);
   return theme('fieldset', array('element' => $element));
@@ -171,7 +173,9 @@ function theme_location_element($element) {
  */
 function location_theme() {
   return array(
-    'location_settings' => array('render element' => array('element')),
+    'location_settings' => array(
+      'render element' => 'element',
+    ),
     'locations' => array(
       'template' => 'locations',
       'variables' => array(
@@ -186,17 +190,30 @@ function location_theme() {
         'hide' => array(),
       ),
     ),
-    'location_latitude_dms' => array('variables' => array('latitude')),
-    'location_longitude_dms' => array('variables' => array('longitude')),
-    'location_map_link_options' => array('render element' => array('form')),
-    'location_geocoding_options' => array('render element' => array('form')),
-    'location_element' => array('render element' => array('element')),
+    'location_latitude_dms' => array(
+      'variables' => array('latitude'),
+    ),
+    'location_longitude_dms' => array(
+      'variables' => array('longitude'),
+    ),
+    'location_map_link_options' => array(
+      'render element' => 'form',
+      'file' => 'location.admin.inc',
+    ),
+    'location_geocoding_options' => array(
+      'render element' => 'form',
+      'file' => 'location.admin.inc',
+    ),
+    'location_element' => array(
+      'render element' => 'element',
+    ),
     'location_distance' => array(
       'template' => 'location_distance',
       'variables' => array(
         'distance' => 0,
-        'units' => 'km'),
+        'units' => 'km',
       ),
+    ),
   );
 }
 
@@ -487,7 +504,9 @@ function _location_process_location_settings(&$element) {
   return $element;
 }
 
-function theme_location_settings($element) {
+function theme_location_settings($variables) {
+  $element = $variables['element'];
+
   $rows = array();
   $header = array(
     array(
@@ -748,12 +767,13 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
 function location_geocoding_parameters_page($country_iso, $service) {
   drupal_set_title(t('Configure parameters for %service geocoding', array('%service' => $service)), PASS_THROUGH);
-
+dpm($country_iso);
+dpm($service);
   $breadcrumbs = drupal_get_breadcrumb();
-  $breadcrumbs[] = l('location', 'admin/settings/location');
-  $breadcrumbs[] = l('geocoding', 'admin/settings/location/geocoding');
+  $breadcrumbs[] = l('location', 'admin/config/content/location');
+  $breadcrumbs[] = l('geocoding', 'admin/config/content/location/geocoding');
   $countries = location_get_iso3166_list();
-  $breadcrumbs[] = l($countries[$country_iso], 'admin/settings/location/geocoding', array('fragment' => $country_iso));
+  $breadcrumbs[] = l($countries[$country_iso], 'admin/config/content/location/geocoding', array('fragment' => $country_iso));
   drupal_set_breadcrumb($breadcrumbs);
   return drupal_get_form('location_geocoding_parameters_form', $country_iso, $service);
 }
