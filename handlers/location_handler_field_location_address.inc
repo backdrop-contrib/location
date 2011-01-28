@@ -28,7 +28,7 @@ class location_handler_field_location_address extends views_handler_field {
     if ($values->{$this->field_alias}) {
       $location = location_load_location($values->{$this->field_alias});
       if ($location['lid']) {
-        return theme('location', $location, $this->options['hide']);
+        return theme('location', array('location' => $location, 'hide' => $this->options['hide']));
       }
     }
   }

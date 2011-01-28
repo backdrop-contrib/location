@@ -12,19 +12,25 @@
 function location_cck_theme() {
   return array(
     'location_cck_formatter_default' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'location_cck_formatter_all' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'location_cck_formatter_map' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'location_cck_field_map' => array(
-      'arguments' => array('locations' => NULL, 'field' => NULL),
+      'variables' => array(
+        'locations' => NULL,
+        'field' => NULL,
+      ),
     ),
     'location_cck_field_popup' => array(
-      'arguments' => array('location' => NULL, 'field' => NULL),
+      'variables' => array(
+        'location' => NULL,
+        'field' => NULL,
+      ),
     ),
   );
 }
@@ -319,20 +325,22 @@ function theme_location_cck_formatter_default($element) {
     // If the location isn't "empty", then theme it based on the current state
     // of the item.
     if (!location_is_empty($location, $fields)) {
-      return theme('location', $location, $hide);
+      return theme('location', array('location' => $location, 'hide' => $hide));
     }
   }
   else if (isset($location['lid']) && $location['lid']) {
     // "normal" viewing.
     // Location is already cached by CCK, so no need to load it.
-    return theme('location', $location, $hide);
+    return theme('location', array('location' => $location, 'hide' => $hide));
   }
 }
 
 /**
  * Return both an address and a map for an individual item.
  */
-function theme_location_cck_formatter_all($element) {
+function theme_location_cck_formatter_all($variables) {
+  $location = $variables['element'];
+
   $content = '';
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
@@ -343,35 +351,39 @@ function theme_location_cck_formatter_all($element) {
     // If the location isn't "empty", then theme it based on the current state
     // of the item.
     if (!location_is_empty($location, $fields)) {
-      $content = theme('location', $location, $hide);
+      $content = theme('location', array('location' => $location, 'hide' => $hide));
     }
   }
   else if (isset($location['lid']) && $location['lid']) {
     // "normal" viewing.
     // Location is already cached by CCK, so no need to load it.
-    $content = theme('location', $location, $hide);
+    $content = theme('location', array('location' => $location, 'hide' => $hide));
   }
-  $content .= theme_location_cck_field_map(array($location), $field);
+  $content .= theme_location_cck_field_map(array('locations' => array($location), 'field' => $field));
   return $content;
 }
 
 /**
  * Returns a map for an individual field value.
  */
-function theme_location_cck_formatter_map($element) {
+function theme_location_cck_formatter_map($variables) {
+  $location = $variables['element'];
+
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $location = $element['#item'];
-  return theme_location_cck_field_map(array($location), $field);
+  return theme_location_cck_field_map(array('locations' => array($location), 'field' => $field));
 }
 
 /**
  * Alternate function to return a map with all
  * multiple values in the same map.
  */
-function theme_location_cck_formatter_combined($element) {
+function theme_location_cck_formatter_combined($variables) {
+  $location = $variables['element'];
+
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $locations = $element['#items'];
-  return theme_location_cck_field_map($locations, $field);
+  return theme_location_cck_field_map(array('locations' => $locations, 'field' => $field));
 }
 
 /**
@@ -380,7 +392,10 @@ function theme_location_cck_formatter_combined($element) {
  * Mostly just cut and paste from gmap_location
  * block view.
  */
-function theme_location_cck_field_map($locations, $field) {
+function theme_location_cck_field_map($variables) {
+  $location = $variables['location'];
+  $field = $variables['field'];
+
   $count = 0;
   $content = '';
   foreach ($locations as $location) {
@@ -392,7 +407,7 @@ function theme_location_cck_field_map($locations, $field) {
         'longitude' => $location['longitude'],
         'markername' => $markername,
         'offset' => $count-1,
-        'text' => theme('location_cck_field_popup', $location, $field),
+        'text' => theme('location_cck_field_popup', array('location' => $location, 'field' => $field)),
       );
     }
   }
@@ -403,7 +418,7 @@ function theme_location_cck_field_map($locations, $field) {
     $map['longitude'] = $markers[0]['longitude'];
     $map['markers'] = $markers;
     $map['id'] = gmap_get_auto_mapid();
-    $content = theme('gmap', array('#settings' => $map));
+    $content = theme('gmap', array('element' => array('#settings' => $map)));
   }
   return $content;
 }
@@ -411,7 +426,10 @@ function theme_location_cck_field_map($locations, $field) {
 /**
  * Theme the GMap popup text for the field.
  */
-function theme_location_cck_field_popup($location, $field) {
+function theme_location_cck_field_popup($variables) {
+  $location = $variables['location'];
+  $field = $variables['field'];
+
   $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
   // Don't use a map link in a popup!
   // We're making the name into a title.
@@ -422,7 +440,7 @@ function theme_location_cck_field_popup($location, $field) {
   if (!empty($location['name'])) {
     $markertitle = $location['name'];
   }
-  return '<h4>'. $markertitle .'</h4>'. theme('location', $location, $hide);
+  return '<h4>'. $markertitle .'</h4>'. theme('location', array('location' => $location, 'hide' => $hide));
 }
 
 /**
@@ -462,7 +480,7 @@ function location_cck_token_values($type, $object = NULL) {
       );
 
       // @@@ This is rather silly, but I can't think of anything better at the moment.
-      template_preprocess_location($location);
+      template_preprocess_location(array('location' => $location));
 
       $fields = location_field_names(TRUE);
       // @@@ We really need to rethink fields in location..

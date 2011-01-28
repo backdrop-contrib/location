@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Install / uninstall routines for location_taxonomy.
+ *   Install, update and uninstall functions for the location_taxonomy module.
  */
 
 function location_taxonomy_uninstall() {

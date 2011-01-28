@@ -108,8 +108,8 @@ function location_views_data() {
       'left_field' => 'lid',
       'field' => 'lid',
     ),
-    // Location links to node_revisions through location_instance via lid.
-    'node_revisions' => array(
+    // Location links to node_revision through location_instance via lid.
+    'node_revision' => array(
       'left_table' => 'location_instance',
       'left_field' => 'lid',
       'field' => 'lid',
@@ -364,7 +364,7 @@ function location_views_data() {
       'left_field' => 'vid',
       'field' => 'vid',
     ),
-    'node_revisions' => array(
+    'node_revision' => array(
       'left_field' => 'vid',
       'field' => 'vid',
     ),
@@ -377,7 +377,7 @@ function location_views_data() {
     'left_field' => 'vid',
     'field' => 'vid',
   );
-  $data['node_revisions']['table']['join']['location'] = array(
+  $data['node_revision']['table']['join']['location'] = array(
     'left_table' => 'location_instance',
     'left_field' => 'vid',
     'field' => 'vid',

@@ -41,13 +41,13 @@ class location_handler_filter_location_province extends views_handler_filter {
       '#size' => 64,
       '#maxlength' => 64,
       // Used by province autocompletion js.
-      '#attributes' => array('class' => 'location_auto_province'),
+      '#attributes' => array('class' => array('location_auto_province')),
       '#multiple' => TRUE, //$this->options['multiple'],
     );
 
     // Let location_autocomplete.js find the correct fields to attach.
     if ($this->location_country_identifier) {
-      $form['value']['#attributes']['class'] .= ' location_auto_join_'. $this->location_country_identifier;
+      $form['value']['#attributes']['class'][] = 'location_auto_join_' . $this->location_country_identifier;
     }
   }
 

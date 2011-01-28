@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Administration related forms.
+ *   Administration related forms for the location_search module.
  */
 
 /**
@@ -11,7 +11,7 @@
  *
  * @ingroup form
  */
-function location_search_admin_settings() {
+function location_search_admin_settings($form, &$form_state) {
   $form['location_search_map'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use map to pick search coordinates'),

@@ -19,7 +19,10 @@ class location_views_handler_field_latitude extends views_handler_field {
     $form['style'] = array(
       '#title' => t('Display style'),
       '#type' => 'select',
-      '#options' => array('dd' => t('Decimal degrees'), 'dms' => t('Degrees, minutes, seconds')),
+      '#options' => array(
+        'dd' => t('Decimal degrees'),
+        'dms' => t('Degrees, minutes, seconds'),
+      ),
       '#default_value' => $this->options['style'],
     );
   }
@@ -29,7 +32,7 @@ class location_views_handler_field_latitude extends views_handler_field {
       return check_plain($values->{$this->field_alias});
     }
     else {
-      return theme('location_latitude_dms', $values->{$this->field_alias});
+      return theme('location_latitude_dms', array('latitude' => $values->{$this->field_alias}));
     }
   }
 }

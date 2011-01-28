@@ -44,7 +44,7 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
         $which = in_array($this->operator, $this->operator_values(1)) ? 'value' : 'none';
       }
       else {
-        $source = 'edit-' . form_clean_id($this->options['expose']['operator']);
+        $source = 'edit-' . drupal_clean_css_identifier($this->options['expose']['operator']);
       }
 
       if (!empty($this->options['expose']['reduce'])) {
@@ -76,12 +76,12 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
       '#default_value' => $default_value,
       '#options' => $options,
       // Used by province autocompletion js.
-      '#attributes' => array('class' => 'location_auto_country'),
+      '#attributes' => array('class' => array('location_auto_country')),
       '#multiple' => TRUE, // views will change this as necessary when exposed.
     );
 
     // Let location_autocomplete.js find the correct fields to attach.
-    $form['value']['#attributes']['class'] .= ' location_auto_join_'. $this->options['expose']['identifier'];
+    $form['value']['#attributes']['class'][] = 'location_auto_join_' . $this->options['expose']['identifier'];
   }
 
   function operator_options() {

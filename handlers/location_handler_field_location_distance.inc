@@ -143,11 +143,11 @@ class location_handler_field_location_distance extends views_handler_field {
     $dist = (float)$values->{$this->field_alias};
     if ($this->options['units'] == 'km') {
       $dist = $dist / 1000.0;
-      return theme('location_distance', $dist, 'km');
+      return theme('location_distance', array('distance' => $dist, 'units' => 'km'));
     }
     else {
       $dist = $dist / 1609.347;
-      return theme('location_distance', $dist, 'mi');
+      return theme('location_distance', array('distance' => $dist, 'units' => 'mi'));
     }
   }
 

@@ -3,15 +3,13 @@
 
 /**
  * @file
- * Installation routines for location_addanother.
+ *   Install, update and uninstall functions for the location_addanother module.
  */
 
 /**
  * Implementation of hook_install().
  */
 function location_addanother_install() {
-
-
   // Change weight so we execute after location.
   db_query("UPDATE {system} SET weight = 1 WHERE name = '%s' AND type = '%s'", 'location_addanother', 'module');
 }
