@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function location_cck_theme() {
   return array(
@@ -36,7 +36,7 @@ function location_cck_theme() {
 }
 
 /**
- * Implementation of hook_field_info().
+ * Implements hook_field_info().
  */
 function location_cck_field_info() {
   return array(
@@ -48,7 +48,7 @@ function location_cck_field_info() {
 }
 
 /**
- * Implementation of hook_field_settings().
+ * Implements hook_field_settings().
  */
 function location_cck_field_settings($op, $field) {
   switch ($op) {
@@ -132,7 +132,7 @@ function location_cck_field_settings($op, $field) {
 }
 
 /**
- * Implementation of hook_field().
+ * Implements hook_field().
  */
 function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
@@ -191,7 +191,7 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
 }
 
 /**
- * Implementation of hook_field_formatter_info().
+ * Implements hook_field_formatter_info().
  */
 function location_cck_field_formatter_info() {
   $info = array(
@@ -219,7 +219,7 @@ function location_cck_field_formatter_info() {
 }
 
 /**
- * Implementation of hook_widget_info().
+ * Implements hook_widget_info().
  */
 function location_cck_widget_info() {
   return array(
@@ -235,7 +235,7 @@ function location_cck_widget_info() {
 }
 
 /**
- * Implementation of hook_widget().
+ * Implements hook_widget().
  */
 function location_cck_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   if ($field['widget']['type'] == 'location') {
@@ -444,7 +444,7 @@ function theme_location_cck_field_popup($variables) {
 }
 
 /**
- * Implementation of hook_token_list().
+ * Implements hook_token_list().
  */
 function location_cck_token_list($type = 'all') {
   if ($type == 'field') {
@@ -462,7 +462,7 @@ function location_cck_token_list($type = 'all') {
 }
 
 /**
- * Implementation of hook_token_values().
+ * Implements hook_token_values().
  */
 function location_cck_token_values($type, $object = NULL) {
   if ($type == 'field') {
@@ -499,7 +499,7 @@ function location_cck_token_values($type, $object = NULL) {
 }
 
 /**
- * Implementation of hook_locationapi().
+ * Implements hook_locationapi().
  */
 function location_cck_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   switch ($op) {

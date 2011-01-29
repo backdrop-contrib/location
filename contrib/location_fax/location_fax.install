@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function location_fax_schema() {
   $schema['location_fax'] = array(
@@ -35,7 +35,7 @@ function location_fax_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function location_fax_install() {
   // Change weight so we execute after location.

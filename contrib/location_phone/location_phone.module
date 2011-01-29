@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_locationapi().
+ * Implements hook_locationapi().
  */
 function location_phone_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
@@ -62,7 +62,7 @@ function location_phone_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function location_phone_views_api() {
   return array(
@@ -71,7 +71,7 @@ function location_phone_views_api() {
 }
 
 /**
- * Implementation of hook_token_list().
+ * Implements hook_token_list().
  */
 function location_phone_token_list($type = 'all') {
   if ($type == 'node' || $type == 'user' || $type == 'all') {

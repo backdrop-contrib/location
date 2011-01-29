@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function location_phone_views_data() {
   // ----------------------------------------------------------------

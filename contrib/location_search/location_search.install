@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function location_search_schema() {
   $schema['location_search_work'] = array(
@@ -28,7 +28,7 @@ function location_search_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function location_search_install() {
   // Force reindexing.
@@ -42,7 +42,7 @@ function location_search_install() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function location_search_uninstall() {
   variable_del('location_search_map');

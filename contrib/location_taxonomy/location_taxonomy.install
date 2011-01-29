@@ -6,6 +6,9 @@
  *   Install, update and uninstall functions for the location_taxonomy module.
  */
 
+/**
+ * Implements hook_uninstall().
+ */
 function location_taxonomy_uninstall() {
   // @@@ Delete data?
 

@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_install().
+ * Implementshook_install().
  */
 function location_addanother_install() {
   // Change weight so we execute after location.
@@ -21,7 +21,7 @@ function location_addanother_install() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implementshook_uninstall().
  */
 function location_addanother_uninstall() {
   $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_addanother_%'")->fetchCol();

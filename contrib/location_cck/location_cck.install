@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function location_cck_install() {
   // Notify content module when this module is installed.
@@ -16,7 +16,7 @@ function location_cck_install() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function location_cck_uninstall() {
   // Notify content module when this module is uninstalled.
@@ -25,7 +25,7 @@ function location_cck_uninstall() {
 }
 
 /**
- * Implementation of hook_enable().
+ * Implements hook_enable().
  */
 function location_cck_enable() {
   // Notify content module when this module is enabled.
@@ -34,7 +34,7 @@ function location_cck_enable() {
 }
 
 /**
- * Implementation of hook_disable().
+ * Implements hook_disable().
  */
 function location_cck_disable() {
   // Notify content module when this module is disabled.

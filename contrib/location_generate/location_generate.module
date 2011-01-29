@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_node_presave().
+ * Implements hook_node_presave().
  */
 function location_generate_node_presave($node) {
   // Devel.module bulk node generation.

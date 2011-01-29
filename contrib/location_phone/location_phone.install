@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function location_phone_schema() {
   $schema['location_phone'] = array(
@@ -35,7 +35,7 @@ function location_phone_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function location_phone_install() {
   // Change weight.

@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function location_search_menu() {
   $items['admin/settings/location/search'] = array(
@@ -25,7 +25,7 @@ function location_search_menu() {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function location_search_theme() {
   return array(
@@ -47,7 +47,7 @@ function location_search_theme() {
 }
 
 /**
- * Implementation of hook_search_info().
+ * Implements hook_search_info().
  */
 function location_search_search_info() {
   return array(
@@ -57,7 +57,7 @@ function location_search_search_info() {
 }
 
 /**
- * Implementation of hook_search_reset().
+ * Implements hook_search_reset().
  */
 function location_search_search_reset() {
   db_delete('location_search_work')->execute();
@@ -71,7 +71,7 @@ function location_search_search_reset() {
 }
 
 /**
- * Implementation of hook_search_status().
+ * Implements hook_search_status().
  */
 function location_search_search_status() {
   $total = db_query('SELECT COUNT(lid) FROM {location}')->fetchField();
@@ -81,7 +81,7 @@ function location_search_search_status() {
 
 
 /**
- * Implementation of hook_search_execute().
+ * Implements hook_search_execute().
  */
 function location_search_search_execute($keys = NULL, $conditions = NULL) {
   $proximity = FALSE;
@@ -307,7 +307,7 @@ function location_search_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_update_index().
+ * Implements hook_update_index().
  */
 function location_update_index() {
   $limit = (int)variable_get('search_cron_limit', 100);
@@ -325,7 +325,7 @@ function location_update_index() {
 }
 
 /**
- * Implementation of hook_locationapi().
+ * Implements hook_locationapi().
  */
 function location_search_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   if ($op == 'save') {
@@ -345,7 +345,7 @@ function location_search_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = N
 }
 
 /**
- * Implementation of hook_search_page().
+ * Implements hook_search_page().
  * (It's named location_search_page because the $type is 'location'.)
  */
 function location_search_page($rows) {
