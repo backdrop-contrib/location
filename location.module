@@ -1478,20 +1478,6 @@ function location_token_list($type = 'all') {
 }
 
 /**
- * Implements hook_search().
- * Implemented on behalf of location_search.module to make the urls not suck.
- *
- * This function is only declared if the location_search module is enabled,
- * otherwise the search module will create a search page for location even
- * when the lcoation_search module is disabled.
- */
-if (module_exists('location_search')) {
-  function location_search($op = 'search', $keys = NULL) {
-    return _location_search($op, $keys);
-  }
-}
-
-/**
  * Theme preprocess function for a location.
  */
 function template_preprocess_location(&$variables) {
