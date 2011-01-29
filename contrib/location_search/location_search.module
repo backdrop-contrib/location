@@ -60,16 +60,22 @@ function location_search_search_info() {
  * Implementation of hook_search_reset().
  */
 function location_search_search_reset() {
-  db_query('DELETE FROM {location_search_work}');
-  db_query('INSERT INTO {location_search_work} (lid) (SELECT lid FROM {location})');
+  db_delete('location_search_work')->execute();
+  $insert_select = db_select('location', 'l')
+    ->addField('l', 'lid');
+
+  db_insert('location_search_work')
+    ->fields(array('lid'))
+    ->from($insert_select)
+    ->execute();
 }
 
 /**
  * Implementation of hook_search_status().
  */
 function location_search_search_status() {
-  $total = db_result(db_query('SELECT COUNT(lid) FROM {location}'));
-  $remaining = db_result(db_query('SELECT COUNT(lid) FROM {location_search_work}'));
+  $total = db_query('SELECT COUNT(lid) FROM {location}')->fetchField();
+  $remaining = db_query('SELECT COUNT(lid) FROM {location_search_work}')->fetchField();
   return array('remaining' => $remaining, 'total' => $total);
 }
 
@@ -148,9 +154,9 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
   foreach ($lids as $lid) {
     $loc = location_load_location($lid);
 
-    $result = db_query('SELECT nid, uid FROM {location_instance} WHERE lid = %d', $lid);
+    $result = db_query('SELECT nid, uid FROM {location_instance} WHERE lid = :lid', array(':lid' => $lid), array('fetch' => PDO::FETCH_ASSOC));
     $instance_links = array();
-    while ($row = db_fetch_array($result)) {
+    foreach ($result as $row) {
       $instance_links[] = $row;
     }
     location_invoke_locationapi($instance_links, 'instance_links');
@@ -166,9 +172,9 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
 function location_search_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'search_form' && arg(1) == 'location' && user_access('use advanced search')) {
     // @@@ Cache this.
-    $result = db_query('SELECT DISTINCT country FROM {location}');
+    $result = db_query('SELECT DISTINCT country FROM {location}', array(), array('fetch' => PDO::FETCH_ASSOC));
     $countries = array('' => '');
-    while ($row = db_fetch_array($result)) {
+    foreach ($result as $row) {
       if (!empty($row['country'])) {
         $country = $row['country'];
         location_standardize_country_code($country);
@@ -307,13 +313,14 @@ function location_update_index() {
   $limit = (int)variable_get('search_cron_limit', 100);
 
   $result = db_query_range('SELECT lid FROM {location_search_work}', 0, $limit);
-
-  while ($row = db_fetch_object($result)) {
+  foreach ($result as $row) {
     $loc = location_load_location($row->lid);
     $text = theme('location', array('location' => $loc, 'hide' => array())); // @@@ hide?
 
     search_index($row->lid, 'location', $text);
-    db_query('DELETE FROM {location_search_work} WHERE lid = %d', $row->lid);
+    db_delete('location_search_work')
+      ->condition('lid', $row->lid)
+      ->execute();
   }
 }
 
@@ -323,8 +330,14 @@ function location_update_index() {
 function location_search_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   if ($op == 'save') {
     // Ensure the changed location is in our work list.
-    db_query('DELETE FROM {location_search_work} WHERE lid = %d', $obj['lid']);
-    db_query('INSERT INTO {location_search_work} (lid) VALUES (%d)', $obj['lid']);
+    db_delete('location_search_work')
+      ->condition('lid', $obj['lid'])
+      ->execute();
+    db_insert('location_search_work')
+      ->fields(array(
+        'lid' => $obj['lid'],
+      ))
+      ->execute();
   }
   if ($op == 'delete') {
     search_wipe($obj['lid'], 'location');

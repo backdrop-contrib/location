@@ -32,7 +32,13 @@ function location_search_schema() {
  */
 function location_search_install() {
   // Force reindexing.
-  db_query('INSERT INTO {location_search_work} (SELECT lid FROM {location})');
+  $insert_select = db_select('location', 'l')
+    ->addField('l', 'lid');
+
+  db_insert('location_search_work')
+    ->fields(array('lid'))
+    ->from($insert_select)
+    ->execute();
 }
 
 /**
@@ -65,7 +71,13 @@ function location_search_update_5300() {
   db_create_table('location_search_work', $schema['location_search_work']);
 
   // Force reindexing.
-  update_sql('INSERT INTO {location_search_work} (SELECT lid FROM {location})');
+  $insert_select = db_select('location', 'l')
+    ->addField('l', 'lid');
+
+  db_insert('location_search_work')
+    ->fields(array('lid'))
+    ->from($insert_select)
+    ->execute();
 
   // Remove unused variables.
   variable_del('location_suppress_country');

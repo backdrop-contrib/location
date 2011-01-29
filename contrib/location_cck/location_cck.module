@@ -174,8 +174,8 @@ function location_cck_field($op, &$node, $field, &$items, $teaser, $page) {
       // Use the CCK storage to figure out the vids that need to be deleted,
       // and clean up all the applicable references.
       $db_info = content_database_info($field);
-      $result = db_query('SELECT vid FROM {'. $db_info['table'] .'} WHERE nid = %d', $node->nid);
-      while ($row = db_fetch_object($result)) {
+      $result = db_query('SELECT vid FROM {' . $db_info['table'] . '} WHERE nid = :nid', array(':nid' => $node->nid));
+      foreach ($result as $row) {
         $genid = 'cck:'. $field['field_name'] .':'. $row->vid;
         $locs = array();
         location_save_locations($locs, array('genid' => $genid));
