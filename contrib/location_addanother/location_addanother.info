@@ -4,4 +4,7 @@ description = Allows you to quickly add locations directly from a node without h
 dependencies[] = location
 dependencies[] = location_node
 package = Location
-core = 6.x
+core = 7.x
+files[] = location_addanother.module
+files[] = location_addanother.install
+
