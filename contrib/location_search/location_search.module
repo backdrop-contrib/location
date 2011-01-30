@@ -121,7 +121,7 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
       $query->condition('l.longitude', array($lonrange[0], $lonrange[1]), 'BETWEEN');
 
       // Distance query to finish the job.
-      $query->condition(earth_distance_sql($lon, $lat), $distance_meters, '<');
+      $query->where(earth_distance_sql($lon, $lat) . ' < ' . $distance_meters);
 
       // Override the scoring mechanism to use calculated distance
       // as the scoring metric.
@@ -166,7 +166,7 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
       $query->condition('l.longitude', array($lonrange[0], $lonrange[1]), 'BETWEEN');
 
       // Distance query to finish the job.
-      $query->condition(earth_distance_sql($lon, $lat), $distance_meters, '<');
+      $query->where(earth_distance_sql($lon, $lat) . ' < ' . $distance_meters);
 
       // Override the scoring mechanism to use calculated distance
       // as the scoring metric.
