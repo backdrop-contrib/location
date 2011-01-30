@@ -32,8 +32,8 @@ function location_search_schema() {
  */
 function location_search_install() {
   // Force reindexing.
-  $insert_select = db_select('location', 'l')
-    ->addField('l', 'lid');
+  $insert_select = db_select('location', 'l');
+  $insert_select->addField('l', 'lid');
 
   db_insert('location_search_work')
     ->fields(array('lid'))
@@ -71,8 +71,8 @@ function location_search_update_5300() {
   db_create_table('location_search_work', $schema['location_search_work']);
 
   // Force reindexing.
-  $insert_select = db_select('location', 'l')
-    ->addField('l', 'lid');
+  $insert_select = db_select('location', 'l');
+  $insert_select->addField('l', 'lid');
 
   db_insert('location_search_work')
     ->fields(array('lid'))

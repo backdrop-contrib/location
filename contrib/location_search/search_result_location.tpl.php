@@ -2,7 +2,7 @@
 // $Id$
 
 /**
- * @file search-result-location.tpl.php
+ * @file search_result_location.tpl.php
  * Theme a location search result.
  *
  * Available variables:
