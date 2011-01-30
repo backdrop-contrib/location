@@ -3,4 +3,8 @@ name = Location Phone
 package = Location
 description = Allows you to add a phone number to a location.
 dependencies[] = location
-core = 6.x
+core = 7.x
+files[] = location_phone.module
+files[] = location_phone.install
+files[] = location_phone.views.inc
+

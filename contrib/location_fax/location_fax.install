@@ -42,7 +42,7 @@ function location_fax_install() {
   db_update('system')
     ->fields(array(
       'weight' => 1,
-    )
+    ))
     ->condition('name', 'location_fax')
     ->condition('type', 'module')
     ->execute();
@@ -96,7 +96,7 @@ function location_fax_update_5302() {
   db_update('system')
     ->fields(array(
       'weight' => 1,
-    )
+    ))
     ->condition('name', 'location_fax')
     ->condition('type', 'module')
     ->execute();
