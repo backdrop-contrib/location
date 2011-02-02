@@ -862,7 +862,6 @@ function location_save_locations(&$locations, $criteria) {
     $query->execute();
 
     $newlids = array();
-    $query = db_insert('location_instance')->fields(array('nid', 'vid', 'uid', 'genid', 'lid'));
     foreach ($locations as $location) {
       // Don't save "empty" locations.
       // location_save() explicitly returns FALSE for empty locations,
@@ -876,18 +875,20 @@ function location_save_locations(&$locations, $criteria) {
           'genid' => '',
           'lid' => $location['lid'],
         );
-        foreach ($criteria as $k => $v) {
-          $instance[$k] = $v;
+        foreach ($criteria as $key => $value) {
+          $instance[$key] = $value;
         }
-        $query->values($instance);
+        db_insert('location_instance')
+          ->fields($instance)
+          ->execute();
       }
     }
-    $query->execute();
 
     // Check anything that dropped a reference during this operation.
     foreach (array_diff($oldlids, $newlids) as $check) {
       // An instance may have been deleted. Check reference count.
       $count = db_query('SELECT COUNT(*) FROM {location_instance} WHERE lid = :lid', array(':lid' => $check))->fetchField();
+
       if ($count !== FALSE && $count == 0) {
         watchdog('location', 'Deleting unreferenced location with LID %lid.', array('%lid' => $check));
         $location = array('lid' => $check);

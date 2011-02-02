@@ -7,42 +7,6 @@
  */
 
 /**
- * Implements hook_install().
- */
-function location_cck_install() {
-  // Notify content module when this module is installed.
-  drupal_load('module', 'content');
-  content_notify('install', 'location_cck');
-}
-
-/**
- * Implements hook_uninstall().
- */
-function location_cck_uninstall() {
-  // Notify content module when this module is uninstalled.
-  drupal_load('module', 'content');
-  content_notify('uninstall', 'location_cck');
-}
-
-/**
- * Implements hook_enable().
- */
-function location_cck_enable() {
-  // Notify content module when this module is enabled.
-  drupal_load('module', 'content');
-  content_notify('enable', 'location_cck');
-}
-
-/**
- * Implements hook_disable().
- */
-function location_cck_disable() {
-  // Notify content module when this module is disabled.
-  drupal_load('module', 'content');
-  content_notify('disable', 'location_cck');
-}
-
-/**
  * Drupal 6 location_cck 3.x update.
  */
 function location_cck_update_6301() {
@@ -55,7 +19,7 @@ function location_cck_update_6301() {
   // Populate the temporary table.
   $join_select = db_select('location_instance', 'li')
     ->addExpression("SUBSTRING_INDEX(genid, ':', -1)", 'genvid')
-    ->addField('li', 'lid'))
+    ->addField('li', 'lid')
     ->addField('li', 'genid');
   $query->join($join_select, 'l', 'n.vid = l.genvid');
 
