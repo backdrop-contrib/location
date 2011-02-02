@@ -175,8 +175,6 @@ function location_cck_field_update($entity_type, $entity, $field, $instance, $la
       'vid' => $entity->vid,
       'nid' => $entity->nid,
     );
-    dpm($items);
-    dpm($criteria);
     location_save_locations($items, $criteria);
   }
 }
