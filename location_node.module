@@ -24,16 +24,20 @@ function location_node_form_node_form_alter(&$form, &$form_state, $form_id) {
  * Implements hook_node_revision_delete().
  */
 function location_node_node_revision_delete($node) {
-  $locations = array();
-  location_save_locations($locations, array('vid' => $node->vid));
+  if (location_node_node_locations_enabled($node->type)) {
+    $locations = array();
+    location_save_locations($locations, array('vid' => $node->vid));
+  }
 }
 
 /**
  * Implements hook_node_delete().
  */
 function location_node_node_delete($node) {
-  $locations = array();
-  location_save_locations($locations, array('vid' => $node->vid));
+  if (location_node_node_locations_enabled($node->type)) {
+    $locations = array();
+    location_save_locations($locations, array('vid' => $node->vid));
+  }
 }
 
 /**
@@ -56,8 +60,10 @@ function location_node_node_load($nodes, $types) {
  * Implements hook_node_insert().
  */
 function location_node_node_insert($node) {
-  if (!empty($node->locations)) {
-    location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+  if (location_node_node_locations_enabled($node->type)) {
+    if (!empty($node->locations)) {
+      location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+    }
   }
 }
 
@@ -65,8 +71,10 @@ function location_node_node_insert($node) {
  * Implements hook_node_update().
  */
 function location_node_node_update($node) {
-  if (!empty($node->locations)) {
-    location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+  if (location_node_node_locations_enabled($node->type)) {
+    if (!empty($node->locations)) {
+      location_save_locations($node->locations, array('nid' => $node->nid, 'vid' => $node->vid));
+    }
   }
 }
 
@@ -256,4 +264,27 @@ function location_node_content_extra_save($form, &$form_state) {
     $settings['display']['weight'] = $form_state['values']['locations']['weight'];
   }
   variable_set('location_settings_node_' . $type, $settings);
+}
+
+/**
+ * Determine whether or not node locations are enabled for a given node type.
+ *
+ * This is needed to stop location_node from deleting/inserting/updating
+ * location_cck locations.  This is not used for loading and viewing locations
+ * because it is expected that cck locations will be loaded into
+ * $node->locations.
+ *
+ * @param $type
+ *   The node type.
+ *
+ * @return
+ *   Boolean depending on whether or not node locations are enabled.
+ */
+function location_node_node_locations_enabled($type) {
+  $settings = variable_get('location_settings_node_' . $type, array());
+  // If max number of locations is zero it is disabled.
+  if (!empty($settings) && isset($settings['multiple']['max']) && !empty($settings['multiple']['max'])) {
+    return TRUE;
+  }
+  return FALSE;
 }
