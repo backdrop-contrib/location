@@ -213,6 +213,14 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     parent::exposed_form($form, $form_state);
     $key = $this->options['expose']['identifier'];
     $origin = $this->options['origin'];
+
+    // Strip dependencies off on exposed form.
+    foreach (element_children($form[$key]) as $el) {
+      if (!empty($form[$key][$el]['#dependency'])) {
+        $form[$key][$el]['#dependency'] = array();
+      }
+    }
+
     if ($origin == 'latlon_gmap' && module_exists('gmap')) {
       // Bad things happen if we try to show a gmap in the views live preview.
       if ($form_state['post']['live_preview']) {
