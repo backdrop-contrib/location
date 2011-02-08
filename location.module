@@ -1487,13 +1487,11 @@ function template_preprocess_location(&$variables) {
   $location['map_link'] = TRUE;
   if (is_array($variables['hide'])) {
     foreach($variables['hide'] as $key) {
-      if (isset($location[$key])) {
-        unset($location[$key]);
-        // Special case for coords.
-        if ($key == 'coords') {
-          unset($location['latitude']);
-          unset($location['longitude']);
-        }
+      unset($location[$key]);
+      // Special case for coords.
+      if ($key == 'coords') {
+        unset($location['latitude']);
+        unset($location['longitude']);
       }
     }
   }
@@ -1503,7 +1501,7 @@ function template_preprocess_location(&$variables) {
     foreach ($fields as $key => $value) {
       $variables[$key] = '';
       // Arrays can't be converted, ignore them.
-      if (isset($location[$key]) && !empty($location[$key]) && !is_array($location[$key])) {
+      if (!empty($location[$key]) && !is_array($location[$key])) {
         $variables[$key] = check_plain($location[$key]);
       }
     }
@@ -1511,7 +1509,7 @@ function template_preprocess_location(&$variables) {
 
   // Map link.
   $variables['map_link'] = '';
-  if (isset($location['map_link']) && !empty($location['map_link'])) {
+  if (!empty($location['map_link'])) {
     // Do not use $location for generating the map link, since it will 
     // not contain the country if that field is hidden.
     $variables['map_link'] = location_map_link($variables['location']);
@@ -1520,20 +1518,20 @@ function template_preprocess_location(&$variables) {
   // Theme latitude and longitude as d/m/s.
   $variables['latitude'] = '';
   $variables['latitude_dms'] = '';
-  if (isset($location['latitude']) && !empty($location['latitude'])) {
+  if (!empty($location['latitude'])) {
     $variables['latitude'] = check_plain($location['latitude']);
     $variables['latitude_dms'] = theme('location_latitude_dms', array('latitude' => $location['latitude']));
   }
 
   $variables['longitude'] = '';
   $variables['longitude_dms'] = '';
-  if (isset($location['longitude']) && !empty($location['longitude'])) {
+  if (!empty($location['longitude'])) {
     $variables['longitude'] = check_plain($location['longitude']);
     $variables['longitude_dms'] = theme('location_longitude_dms', array('longitude' => $location['longitude']));
   }
 
   // Add a country-specific template suggestion.
-  if (isset($location['country']) && !empty($location['country']) && location_standardize_country_code($location['country'])) {
+  if (!empty($location['country']) && location_standardize_country_code($location['country'])) {
     // $location['country'] is normalized in the previous line.
     $variables['theme_hook_suggestions'][] = 'location__' . $location['country'];
   }
