@@ -11,3 +11,15 @@ function location_province_list_vc() {
     'G' => "Saint George",
     'P' => "Saint Patrick");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_vc() {
+  return array(
+    'minlng' => -61.62325,
+    'minlat' => 12.2329,
+    'maxlng' => -61.1719,
+    'maxlat' => 13.362333,
+  );
+}

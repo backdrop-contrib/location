@@ -25,3 +25,15 @@ function location_province_list_pt() {
     'VR' => "Vila Real",
     'VS' => "Viseu");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_pt() {
+  return array(
+    'minlng' => -31.25925,
+    'minlat' => 32.335633,
+    'maxlng' => -6.25515,
+    'maxlat' => 42.028267,
+  );
+}

@@ -26,3 +26,15 @@ function location_province_list_hr() {
     '20' => "Medjimurje county",
     '21' => "Zagreb (city)");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_hr() {
+  return array(
+    'minlng' => 13.50481,
+    'minlat' => 42.4555,
+    'maxlng' => 19.2728,
+    'maxlat' => 46.583016,
+  );
+}

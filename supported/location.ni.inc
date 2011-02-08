@@ -22,3 +22,15 @@ function location_province_list_ni() {
     'AN' => "Region Autonoma del Atlantico Norte",
     'AS' => "Region Autonoma del Atlantico Sur");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ni() {
+  return array(
+    'minlng' => -87.74495,
+    'minlat' => 10.7611,
+    'maxlng' => -82.6318,
+    'maxlat' => 14.9877,
+  );
+}

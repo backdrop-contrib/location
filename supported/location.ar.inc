@@ -29,3 +29,15 @@ function location_province_list_ar() {
     'Y' => "Jujuy",
     'Z' => "Santa Cruz");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ar() {
+  return array(
+    'minlng' => -73.4967,
+    'minlat' => -55.049767,
+    'maxlng' => -53.64205,
+    'maxlat' => -21.829967,
+  );
+}

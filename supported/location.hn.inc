@@ -23,3 +23,15 @@ function location_province_list_hn() {
     'VA' => "Valle",
     'YO' => "Yoro");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_hn() {
+  return array(
+    'minlng' => -89.3019,
+    'minlat' => 12.961867,
+    'maxlng' => -82.8413,
+    'maxlat' => 17.467133,
+  );
+}

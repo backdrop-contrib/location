@@ -35,3 +35,15 @@ function location_province_list_id() {
     'AC' => "Aceh",
     'YO' => "Yogyakarta");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_id() {
+  return array(
+    'minlng' => 95.1087,
+    'minlat' => -10.878967,
+    'maxlng' => 141.0309,
+    'maxlat' => 5.978267,
+  );
+}

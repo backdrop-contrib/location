@@ -21,3 +21,15 @@ function location_province_list_pl() {
     'WP' => "Wielkopolskie",
     'ZA' => "Zachodniopomorskie");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_pl() {
+  return array(
+    'minlng' => 14.10525,
+    'minlat' => 49.0147,
+    'maxlng' => 24.13405,
+    'maxlat' => 54.922967,
+  );
+}

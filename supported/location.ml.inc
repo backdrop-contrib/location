@@ -14,3 +14,15 @@ function location_province_list_ml() {
     'TB' => "Tombouctou",
     'CD' => "Bamako Capital District");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ml() {
+  return array(
+    'minlng' => -12.08985,
+    'minlat' => 10.1315,
+    'maxlng' => 4.34825,
+    'maxlat' => 24.997733,
+  );
+}

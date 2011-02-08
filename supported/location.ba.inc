@@ -23,3 +23,15 @@ function location_province_list_ba() {
     'SFO' => "Foca",
     'STR' => "Trebinje");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ba() {
+  return array(
+    'minlng' => 15.77965,
+    'minlat' => 42.621233,
+    'maxlng' => 19.61625,
+    'maxlat' => 45.251767,
+  );
+}

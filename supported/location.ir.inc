@@ -35,3 +35,15 @@ function location_province_list_ir() {
     'RKH' => "Razavi Khorasan",
     'SKH' => "South Khorasan");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ir() {
+  return array(
+    'minlng' => 44.01905,
+    'minlat' => 25.120267,
+    'maxlng' => 63.3325,
+    'maxlat' => 39.825267,
+  );
+}

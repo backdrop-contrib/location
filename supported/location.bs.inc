@@ -36,3 +36,15 @@ function location_province_list_bs() {
     'SWE' => "Spanish Wells",
     'WGB' => "West Grand Bahama");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_bs() {
+  return array(
+    'minlng' => -79.2951,
+    'minlat' => 20.8592,
+    'maxlng' => -72.6932,
+    'maxlat' => 27.0249,
+  );
+}

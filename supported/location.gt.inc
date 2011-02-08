@@ -27,3 +27,15 @@ function location_province_list_gt() {
     'TO' => "Totonicapan",
     'ZA' => "Zacapa");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_gt() {
+  return array(
+    'minlng' => -92.28845,
+    'minlat' => 13.7392,
+    'maxlng' => -88.23725,
+    'maxlat' => 17.783133,
+  );
+}

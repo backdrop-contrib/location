@@ -23,3 +23,15 @@ function location_province_list_py() {
     'PH' => "Presidente Hayes",
     'SP' => "San Pedro");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_py() {
+  return array(
+    'minlng' => -62.7526,
+    'minlat' => -27.5863,
+    'maxlng' => -54.24475,
+    'maxlat' => -19.248333,
+  );
+}

@@ -29,3 +29,15 @@ function location_province_list_tn() {
     'TU' => "Tunis",
     'ZA' => "Zaghouan");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tn() {
+  return array(
+    'minlng' => 7.521,
+    'minlat' => 30.1174,
+    'maxlng' => 11.59235,
+    'maxlat' => 37.291,
+  );
+}

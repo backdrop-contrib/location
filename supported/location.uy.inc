@@ -23,3 +23,15 @@ function location_province_list_uy() {
     'SJ' => "San Jose",
     'TT' => "Treinta y Tres");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_uy() {
+  return array(
+    'minlng' => -58.39985,
+    'minlat' => -34.9494,
+    'maxlng' => -53.1923,
+    'maxlat' => -30.1059,
+  );
+}

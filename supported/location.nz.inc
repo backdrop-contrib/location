@@ -21,3 +21,15 @@ function location_province_list_nz() {
     'WKO' => "Waikato",
     'WTC' => "West Coast");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_nz() {
+  return array(
+    'minlng' => -178.94835,
+    'minlat' => -57.294267,
+    'maxlng' => 179.22415,
+    'maxlat' => -8.536767,
+  );
+}

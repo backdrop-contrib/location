@@ -18,3 +18,15 @@ function location_province_list_sa() {
     'NR' => "Najran",
     'TB' => "Tabuk");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_sa() {
+  return array(
+    'minlng' => 34.5647,
+    'minlat' => 15.518117,
+    'maxlng' => 55.028463,
+    'maxlat' => 32.275,
+  );
+}

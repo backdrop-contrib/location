@@ -19,3 +19,15 @@ function location_province_list_mm() {
     'RK' => "Rakhine State",
     'SH' => "Shan State");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_mm() {
+  return array(
+    'minlng' => 92.1068,
+    'minlat' => 9.755067,
+    'maxlng' => 101.048,
+    'maxlat' => 28.184067,
+  );
+}

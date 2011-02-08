@@ -19,3 +19,15 @@ function location_province_list_cz() {
     'US' => "Usti nad Labem Region (Ustecky kraj)",
     'ZL' => "Zlin Region (Zlinsky kraj)");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_cz() {
+  return array(
+    'minlng' => 12.0978,
+    'minlat' => 48.5857,
+    'maxlng' => 18.90825,
+    'maxlat' => 51.041333,
+  );
+}

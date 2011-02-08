@@ -31,3 +31,15 @@ function location_province_list_eg() {
     'SHS' => "Shamal Sina'",
     'SUH' => "Suhaj");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_eg() {
+  return array(
+    'minlng' => 24.78595,
+    'minlat' => 22.008123,
+    'maxlng' => 36.88215,
+    'maxlat' => 31.746867,
+  );
+}

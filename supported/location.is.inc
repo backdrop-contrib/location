@@ -13,3 +13,15 @@ function location_province_list_is() {
     'VF' => "Vestfiroir",
     'VL' => "Vesturland");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_is() {
+  return array(
+    'minlng' => -25.3873,
+    'minlat' => 63.426633,
+    'maxlng' => -13.5579,
+    'maxlat' => 67.174067,
+  );
+}

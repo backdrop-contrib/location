@@ -256,3 +256,15 @@ function location_get_postalcode_data_de($location = array()) {
     return NULL;
   }
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_de() {
+  return array(
+    'minlng' => 5.87225,
+    'minlat' => 47.2249,
+    'maxlng' => 15.04765,
+    'maxlat' => 55.0839,
+  );
+}

@@ -84,3 +84,15 @@ function location_province_list_ph() {
     'ZSU' => "Zamboanga del Sur",
     'ZSI' => "Zamboanga Sibugay");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ph() {
+  return array(
+    'minlng' => 111.82475,
+    'minlat' => 4.704433,
+    'maxlng' => 126.7051,
+    'maxlat' => 21.3256,
+  );
+}

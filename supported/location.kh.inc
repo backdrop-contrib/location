@@ -30,3 +30,15 @@ function location_province_list_kh() {
     'SR' => "Svay Rieng",
     'TK' => "Takeo");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_kh() {
+  return array(
+    'minlng' => 102.2838,
+    'minlat' => 10.4398,
+    'maxlng' => 107.52335,
+    'maxlat' => 14.561533,
+  );
+}

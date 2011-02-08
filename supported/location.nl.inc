@@ -50,3 +50,15 @@ function location_map_link_nl_google($location = array()) {
     return NULL;
   }
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_nl() {
+  return array(
+    'minlng' => 3.3026,
+    'minlat' => 50.711233,
+    'maxlng' => 7.14225,
+    'maxlat' => 53.539867,
+  );
+}

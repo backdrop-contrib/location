@@ -129,3 +129,15 @@ function location_map_link_dk_default_providers() {
   return array('findvej', 'rejseplanen');
 }
 
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_dk() {
+  return array(
+    'minlng' => 8.00875,
+    'minlat' => 54.590067,
+    'maxlng' => 15.15975,
+    'maxlat' => 57.805567,
+  );
+}

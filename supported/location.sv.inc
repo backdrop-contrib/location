@@ -19,3 +19,15 @@ function location_province_list_sv() {
     'SO' => "Sonsonate",
     'US' => "Usulutan");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_sv() {
+  return array(
+    'minlng' => -90.12705,
+    'minlat' => 13.0919,
+    'maxlng' => -87.6757,
+    'maxlat' => 14.478067,
+  );
+}

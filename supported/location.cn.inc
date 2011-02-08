@@ -43,3 +43,15 @@ function location_province_list_cn() {
     '99' => "Taibei",
   );
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_cn() {
+  return array(
+    'minlng' => 73.5403,
+    'minlat' => 16.0968,
+    'maxlng' => 134.7658,
+    'maxlat' => 53.608867,
+  );
+}

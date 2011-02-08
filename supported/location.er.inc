@@ -13,3 +13,15 @@ function location_province_list_er() {
     'BR' => "Gash-Barka (Barentu)",
   );
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_er() {
+  return array(
+    'minlng' => 36.3629,
+    'minlat' => 12.344214,
+    'maxlng' => 43.0529,
+    'maxlat' => 18.039133,
+  );
+}

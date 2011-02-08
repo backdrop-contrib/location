@@ -30,3 +30,15 @@ function location_province_list_ve() {
     'A' => "Federal District",
     'W' => "Federal Dependency");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ve() {
+  return array(
+    'minlng' => -73.37305,
+    'minlat' => 0.793967,
+    'maxlng' => -59.8755,
+    'maxlat' => 15.7633,
+  );
+}

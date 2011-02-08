@@ -73,3 +73,15 @@ function location_province_list_mt() {
     'XEW' => "Xewkija",
     'ZEB' => "Zebbug");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_mt() {
+  return array(
+    'minlng' => 14.22605,
+    'minlat' => 35.837233,
+    'maxlng' => 14.649,
+    'maxlat' => 36.139367,
+  );
+}

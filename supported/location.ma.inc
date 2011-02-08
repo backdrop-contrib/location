@@ -47,3 +47,15 @@ function location_province_list_ma() {
     'BJD' => "Boujdour",
     'ESM' => "Es Smara");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ma() {
+  return array(
+    'minlng' => -13.26225,
+    'minlat' => 27.6511,
+    'maxlng' => -1.1251,
+    'maxlat' => 35.87,
+  );
+}

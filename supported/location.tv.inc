@@ -14,3 +14,15 @@ function location_province_list_tv() {
     'NLL' => "Nukulaelae",
     'VAI' => "Vaitupu");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tv() {
+  return array(
+    'minlng' => 176.1042,
+    'minlat' => -12.571533,
+    'maxlng' => 179.8403,
+    'maxlat' => -5.725,
+  );
+}

@@ -50,3 +50,15 @@ function location_province_list_bf() {
     'ZOD' => "Zondoma",
     'ZOW' => "Zoundweogo");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_bf() {
+  return array(
+    'minlng' => -5.5285,
+    'minlat' => 9.4826,
+    'maxlng' => 2.2205,
+    'maxlat' => 15.1109,
+  );
+}

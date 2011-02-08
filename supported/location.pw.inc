@@ -21,3 +21,15 @@ function location_province_list_pw() {
     'PE' => "Peleliu",
     'SO' => "Sonsorol");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_pw() {
+  return array(
+    'minlng' => 134.1386,
+    'minlat' => 6.798967,
+    'maxlng' => 134.8889,
+    'maxlat' => 7.697967,
+  );
+}

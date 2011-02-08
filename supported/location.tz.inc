@@ -31,3 +31,15 @@ function location_province_list_tz() {
     'ZN' => "Zanzibar North",
     'ZU' => "Zanzibar Urban/West");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tz() {
+  return array(
+    'minlng' => 29.29035,
+    'minlat' => -11.737133,
+    'maxlng' => 40.4958,
+    'maxlat' => -1.0601,
+  );
+}

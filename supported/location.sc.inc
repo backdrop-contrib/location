@@ -28,3 +28,15 @@ function location_province_list_sc() {
     'SL' => "Saint Louis",
     'TA' => "Takamaka");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_sc() {
+  return array(
+    'minlng' => 46.04125,
+    'minlat' => -11.5018,
+    'maxlng' => 56.26545,
+    'maxlat' => -4.231767,
+  );
+}

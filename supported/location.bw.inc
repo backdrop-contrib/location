@@ -15,3 +15,15 @@ function location_province_list_bw() {
     'SE' => "South East",
     'SO' => "Southern");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_bw() {
+  return array(
+    'minlng' => 19.9836,
+    'minlat' => -26.8509,
+    'maxlng' => 29.2724,
+    'maxlat' => -17.837133,
+  );
+}

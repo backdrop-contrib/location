@@ -17,3 +17,15 @@ function location_province_list_lu() {
     'LE' => "Esch-sur-Alzette",
     'LM' => "Mersch");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_lu() {
+  return array(
+    'minlng' => 5.69075,
+    'minlat' => 49.470867,
+    'maxlng' => 6.43925,
+    'maxlat' => 50.182633,
+  );
+}

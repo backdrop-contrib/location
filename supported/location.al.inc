@@ -41,3 +41,15 @@ function location_province_list_al() {
     'TR' => "Tirane",
     'VL' => "Vlore");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_al() {
+  return array(
+    'minlng' => 19.29795,
+    'minlat' => 39.713733,
+    'maxlng' => 21.072,
+    'maxlat' => 42.7006,
+  );
+}

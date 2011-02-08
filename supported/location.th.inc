@@ -82,3 +82,15 @@ function location_province_list_th() {
     '96' => "Narathiwat",
     'S' => "Pattaya");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_th() {
+  return array(
+    'minlng' => 97.3234,
+    'minlat' => 5.697633,
+    'maxlng' => 105.57965,
+    'maxlat' => 20.5392,
+  );
+}

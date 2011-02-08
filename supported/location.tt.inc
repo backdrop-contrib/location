@@ -20,3 +20,15 @@ function location_province_list_tt() {
     'CH' => "Chaguanas",
     'TO' => "Tobago");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tt() {
+  return array(
+    'minlng' => -61.93015,
+    'minlat' => 10.0588,
+    'maxlng' => -60.5064,
+    'maxlat' => 11.2911,
+  );
+}

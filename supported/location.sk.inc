@@ -13,3 +13,15 @@ function location_province_list_sk() {
     'TV' => "Trnavsky",
     'ZI' => "Zilinsky");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_sk() {
+  return array(
+    'minlng' => 16.8745,
+    'minlat' => 47.792133,
+    'maxlng' => 22.5518,
+    'maxlat' => 49.5692,
+  );
+}

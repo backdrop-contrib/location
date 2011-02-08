@@ -37,3 +37,15 @@ function location_province_list_af() {
     'WAR' => "Wardak province",
     'ZAB' => "Zabol province");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_af() {
+  return array(
+    'minlng' => 60.5054,
+    'minlat' => 29.612733,
+    'maxlng' => 74.93195,
+    'maxlat' => 38.538967,
+  );
+}

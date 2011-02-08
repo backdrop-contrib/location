@@ -25,3 +25,15 @@ function location_province_list_mv() {
     'FMU' => "Fua Mulaku",
     'ADD' => "Addu");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_mv() {
+  return array(
+    'minlng' => 72.5723,
+    'minlat' => -0.739367,
+    'maxlng' => 73.6987,
+    'maxlat' => 7.194,
+  );
+}

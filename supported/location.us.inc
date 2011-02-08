@@ -605,3 +605,15 @@ function location_province_list_numeric_us() {
                '059' => 'Virgin Islands'
               );
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_us() {
+  return array(
+    'minlng' => -179.22745,
+    'minlat' => -56.5109,
+    'maxlng' => 158.80735,
+    'maxlat' => 71.399467,
+  );
+}

@@ -40,3 +40,15 @@ function location_province_list_in() {
     'LD' => "Lakshadweep",
     'PY' => "Pondicherry");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_in() {
+  return array(
+    'minlng' => 68.1721,
+    'minlat' => 6.470867,
+    'maxlng' => 97.27195,
+    'maxlat' => 37.118133,
+  );
+}

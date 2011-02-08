@@ -31,3 +31,15 @@ function location_province_list_ie() {
     'LR' => "Leitrim",
     'DG' => "Donegal");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ie() {
+  return array(
+    'minlng' => -10.571,
+    'minlat' => 51.450467,
+    'maxlng' => -6.1045,
+    'maxlat' => 55.4358,
+  );
+}

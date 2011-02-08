@@ -19,3 +19,15 @@ function location_province_list_kn() {
     'STM' => "Saint Thomas Middle Island",
     'TPP' => "Trinity Palmetto Point");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_kn() {
+  return array(
+    'minlng' => -62.92925,
+    'minlat' => 17.095533,
+    'maxlng' => -62.5697,
+    'maxlat' => 17.3875,
+  );
+}

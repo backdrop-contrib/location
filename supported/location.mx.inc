@@ -37,3 +37,15 @@ function location_province_list_mx() {
     'ZAC' => "Zacatecas",
     'DIF' => "Distrito Federal");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_mx() {
+  return array(
+    'minlng' => -118.34045,
+    'minlat' => 14.519233,
+    'maxlng' => -86.63915,
+    'maxlat' => 32.755267,
+  );
+}

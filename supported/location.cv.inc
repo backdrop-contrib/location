@@ -22,3 +22,15 @@ function location_province_list_cv() {
     'SV' => "Sao Vicente",
     'TA' => "Tarrafal");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_cv() {
+  return array(
+    'minlng' => -25.45625,
+    'minlat' => 14.702533,
+    'maxlng' => -22.55505,
+    'maxlat' => 17.15,
+  );
+}

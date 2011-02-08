@@ -14,3 +14,15 @@ function location_province_list_sm() {
     'SM' => "Citta di San Marino",
     'SE' => "Serravalle");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_sm() {
+  return array(
+    'minlng' => 12.23665,
+    'minlat' => 43.882767,
+    'maxlng' => 12.4976,
+    'maxlat' => 44.070533,
+  );
+}

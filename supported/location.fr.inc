@@ -57,3 +57,15 @@ function location_province_list_fr() {
     'U84' => "Vaucluse - Provence-Alpes-Cote d'Azur",
   );
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_fr() {
+  return array(
+    'minlng' => -176.3726,
+    'minlat' => -27.946767,
+    'maxlng' => 172.15695,
+    'maxlat' => 51.122333,
+  );
+}

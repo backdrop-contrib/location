@@ -25,3 +25,15 @@ function location_province_list_pg() {
     'WH' => "Western Highlands",
     'WB' => "West New Britain");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_pg() {
+  return array(
+    'minlng' => 140.8018,
+    'minlat' => -11.691233,
+    'maxlng' => 159.50015,
+    'maxlat' => -0.784233,
+  );
+}

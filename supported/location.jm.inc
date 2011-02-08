@@ -19,3 +19,15 @@ function location_province_list_jm() {
     'TRL' => "Trelawny Parish",
     'WML' => "Westmoreland Parish");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_jm() {
+  return array(
+    'minlng' => -78.4033,
+    'minlat' => 16.911867,
+    'maxlng' => -75.9029,
+    'maxlat' => 18.462967,
+  );
+}

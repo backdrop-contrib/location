@@ -14,3 +14,15 @@ function location_province_list_zm() {
     'SO' => "Southern Province",
     'WE' => "Western Province");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_zm() {
+  return array(
+    'minlng' => 21.92875,
+    'minlat' => -18.0931,
+    'maxlng' => 33.53855,
+    'maxlat' => -8.221467,
+  );
+}

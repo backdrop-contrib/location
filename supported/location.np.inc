@@ -19,3 +19,15 @@ function location_province_list_np() {
     'SA' => "Sagarmatha",
     'SE' => "Seti");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_np() {
+  return array(
+    'minlng' => 80.0464,
+    'minlat' => 26.411167,
+    'maxlng' => 88.1283,
+    'maxlat' => 30.364033,
+  );
+}

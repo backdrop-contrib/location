@@ -39,3 +39,15 @@ function location_province_list_gn() {
     'TOG' => "Tougue",
     'YOM' => "Yomou");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_gn() {
+  return array(
+    'minlng' => -15.1616,
+    'minlat' => 7.179467,
+    'maxlng' => -7.68565,
+    'maxlat' => 12.672033,
+  );
+}

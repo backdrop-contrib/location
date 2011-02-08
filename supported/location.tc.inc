@@ -19,3 +19,15 @@ function location_province_list_tc() {
     'PR' => "Providenciales",
     'WC' => "West Caicos");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tc() {
+  return array(
+    'minlng' => -72.42375,
+    'minlat' => 21.2068,
+    'maxlng' => -70.9723,
+    'maxlat' => 21.9866,
+  );
+}

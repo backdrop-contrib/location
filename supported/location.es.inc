@@ -55,3 +55,15 @@ function location_province_list_es() {
     'ZM' => "Zamora",
     'ZR' => "Zaragoza");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_es() {
+  return array(
+    'minlng' => -18.26745,
+    'minlat' => 27.5218,
+    'maxlng' => 4.2802,
+    'maxlat' => 43.739867,
+  );
+}

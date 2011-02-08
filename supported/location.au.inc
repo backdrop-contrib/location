@@ -552,3 +552,15 @@ function location_province_list_numeric_au() {
     '008' => "Northern Territory",
   );
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_au() {
+  return array(
+    'minlng' => 72.57625,
+    'minlat' => -53.259967,
+    'maxlng' => 159.4839,
+    'maxlat' => -10.078033,
+  );
+}

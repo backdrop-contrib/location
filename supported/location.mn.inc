@@ -27,3 +27,15 @@ function location_province_list_mn() {
     '071' => "Bayan-Olgiy",
     '073' => "Arhangay");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_mn() {
+  return array(
+    'minlng' => 87.6924,
+    'minlat' => 41.553167,
+    'maxlng' => 119.899,
+    'maxlat' => 52.096,
+  );
+}

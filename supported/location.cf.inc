@@ -22,3 +22,15 @@ function location_province_list_cf() {
     'SMB' => "Sangha-Mbaere",
     'BAN' => "Bangui");
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_cf() {
+  return array(
+    'minlng' => 14.512,
+    'minlat' => 2.727,
+    'maxlng' => 27.4848,
+    'maxlat' => 11.062967,
+  );
+}
