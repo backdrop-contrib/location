@@ -374,7 +374,7 @@ function _location_process_location($element) {
       );
     if (function_exists('gmap_get_auto_mapid') && variable_get('location_usegmap', FALSE)) {
       $mapid = gmap_get_auto_mapid();
-      $map = gmap_parse_macro(variable_get('location_locpick_macro', '[gmap]'));
+      $map = array_merge(gmap_defaults(), gmap_parse_macro(variable_get('location_locpick_macro', '[gmap]')));
       $map['id'] = $mapid;
       $map['points'] = array();
       $map['pointsOverlays'] = array();
@@ -405,8 +405,7 @@ function _location_process_location($element) {
       $element['locpick']['map'] = array(
         '#type' => 'gmap',
         '#weight' => -1,
-        '#map' => $mapid,
-        '#settings' => $map,
+        '#gmap_settings' => $map,
       );
       $element['locpick']['map_instructions'] = array(
         '#type' => 'markup',
