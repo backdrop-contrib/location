@@ -1170,7 +1170,19 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
 
   if (!empty($location['lid'])) {
     watchdog('location', 'Conserving lid %lid due to uniqueness.', array('%lid' => $location['lid']));
-    drupal_write_record('location', $location, array('lid'));
+    // Using a merge query instead of drupal_write_record to prevent failing to save
+    // if the lid happens to not exist in {location}, which has been seen in the wild.
+    // Tested in mysql, sqlite, and postgresql.
+    $fields = array();
+    foreach (array('name', 'street', 'additional', 'city', 'province', 'postal_code', 'country', 'latitude', 'longitude', 'source') as $key) {
+      if (isset($location[$key])) {
+        $fields[$key] = $location[$key];
+      }
+    }
+    db_merge('location')
+      ->key(array('lid' => $location['lid']))
+      ->fields($fields)
+      ->execute();
   }
   else {
     unset($location['lid']);
