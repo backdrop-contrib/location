@@ -4,7 +4,8 @@
 // Libyan Arab Jamahiriya
 
 function location_province_list_ly() {
-  return array('AJ' => "Ajdabiya",
+  return array(
+    'AJ' => "Ajdabiya",
     'AZ' => "Al 'Aziziyah",
     'FA' => "Al Fatih",
     'JA' => "Al Jabal al Akhdar",
@@ -28,5 +29,20 @@ function location_province_list_ly() {
     'TH' => "Tarhunah",
     'TU' => "Tubruq",
     'YA' => "Yafran",
-    'ZL' => "Zlitan");
+    'ZL' => "Zlitan",
+  );
+}
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ly() {
+  // NaturalEarth 10m Admin 0 - Countries (v1.3.0)
+  // EPSG:900913
+  return array(
+    'minlng' => 9.28654382,
+    'minlat' => 19.4961237,
+    'maxlng' => 25.1568412,
+    'maxlat' => 33.1810765,
+  );
 }

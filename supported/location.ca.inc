@@ -387,3 +387,17 @@ function location_geocode_ca_geocoder($location = array()) {
     }
   }
 }
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_ca() {
+  // NaturalEarth 10m Admin 0 - Countries (v1.3.0)
+  // EPSG:900913
+  return array(
+    'minlng' => -141.00554,
+    'minlat' => 41.6690855,
+    'maxlng' => -52.615930,
+    'maxlat' => 83.1161164,
+  );
+}

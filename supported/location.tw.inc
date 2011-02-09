@@ -4,7 +4,8 @@
 // Taiwan, Province of China
 
 function location_province_list_tw() {
-  return array('CH' => "Chang-hua",
+  return array(
+    'CH' => "Chang-hua",
     'CI' => "Chia-i",
     'HS' => "Hsin-chu",
     'HL' => "Hua-lien",
@@ -28,5 +29,20 @@ function location_province_list_tw() {
     'TH' => "T'ai-chung",
     'TN' => "T'ai-nan",
     'KC' => "Kao-hsiung city",
-    'TC' => "T'ai-pei city");
+    'TC' => "T'ai-pei city",
+  );
+}
+
+/**
+ * Returns minimum and maximum latitude and longitude needed to create a bounding box.
+ */
+function location_bounds_tw() {
+  // NaturalEarth 10m Admin 0 - Countries (v1.3.0)
+  // EPSG:900913
+  return array(
+    'minlng' => 118.279839,
+    'minlat' => 21.9044005,
+    'maxlng' => 122.005606,
+    'maxlat' => 25.2871914,
+  );
 }

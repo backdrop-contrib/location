@@ -331,6 +331,39 @@ function location_latlon_rough_default($location = array()) {
 }
 
 /**
+ * Get an appropriate bounding box for showing an entire country on a map.
+ * Target is a bounding box large enough to show the country in both spherical
+ * mercator and mercator projections.
+ * @param $location
+ *   Either a location array or a country code.
+ *
+ * @return
+ *   An array with 'minlng', 'minlat', 'maxlng', and 'maxlat' elements.
+ */
+function location_country_bounds($location = array()) {
+  if (!is_array($location)) {
+    $location = array('country' => $location);
+  }
+  if (!empty($location['country'])) {
+    location_load_country($location['country']);
+  }
+
+  $country_bounds_function = 'location_bounds_' . $location['country'];
+
+  if (function_exists($country_bounds_function)) {
+    return $country_bounds_function();
+  }
+  else {
+    return array(
+      'minlng' => -180.0,
+      'minlat' => -90.0,
+      'maxlng' => 180.0,
+      'maxlat' => 90.0,
+    );
+  }
+}
+
+/**
  * Currently, this is not a priority until there is an implementable use for exact longitude,
  * latitude coordinates for an location.  The idea is that this call will eventually retrieve
  * information through a web-service.  Whereas location_latlon_rough() returns an approximate
