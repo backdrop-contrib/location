@@ -55,7 +55,7 @@ function location_cck_field_info() {
  * Implement hook_field_settings_form().
  */
 function location_cck_field_settings_form($field, $instance, $has_data) {
-  $settings = $field['settings']['location_settings'];
+  $settings = isset($field['settings']['location_settings']) ? $field['settings']['location_settings'] : array();
   $form = array();
   $form['location_settings'] = location_settings($settings);
 
