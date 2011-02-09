@@ -30,9 +30,9 @@ function _location_latlon_rough_no($location = array()) {
     return NULL;
   }
 
-  $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5));
+  $row = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = :country AND zip = :zip", array(':country' => $location['country'], ':zip' => substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5)))->fetchObject();
 
-  if ($row = db_fetch_object($result)) {
+  if ($row) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
   }
   else {
@@ -63,8 +63,8 @@ function _location_latlon_rough_no($location = array()) {
 function _location_latlon_postalcode_no($location = array()) {
   // Now we pad the thing and query.
   #$res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 4, "0", STR_PAD_LEFT));
-  $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], $location['postal_code']);
-  if ($row = db_fetch_object($res)) {
+  $row = db_query("SELECT * FROM {zipcodes} where country = :country AND zip = :zip", array(':country' => $location['country'], ':zip' => $location['postal_code']))->fetchObject();
+  if ($row) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude, 'city' => $row->city, 'province' => $row->state, 'country' => $row->country);
   }
   else {
