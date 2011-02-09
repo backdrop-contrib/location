@@ -23,7 +23,7 @@ function location_latlon_rough_us($location = array()) {
     return NULL;
   }
 
-  $row = db_query("SELECT latitude, longitude FROM {zipcodes} where country = :country AND zip = :zip", array(':country' => $location['country'], ':zip' => str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT)))->fetchObject();
+  $row = db_query("SELECT latitude, longitude FROM {zipcodes} where country = :country AND zip = :zip", array(':country' => $location['country'], ':zip' => substr(str_pad($location['postal_code'], 5, '0', STR_PAD_LEFT), 0, 5)))->fetchObject();
 
   if ($row) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
