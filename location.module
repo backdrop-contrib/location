@@ -1593,16 +1593,12 @@ function location_settings($old = FALSE) {
   $form = array(
     '#type' => 'fieldset',
     '#title' => t('Locative information'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
     '#tree' => TRUE,
   );
 
   $form['multiple'] = array(
     '#type' => 'fieldset',
     '#title' => t('Number of locations'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
     '#tree' => TRUE,
     '#weight' => 2,
   );
@@ -1634,8 +1630,6 @@ function location_settings($old = FALSE) {
   $form['form'] = array(
     '#type' => 'fieldset',
     '#title' => t('Collection settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
     '#tree' => TRUE,
     '#weight' => 4,
   );
@@ -1669,8 +1663,6 @@ function location_settings($old = FALSE) {
     '#type' => 'fieldset',
     '#title' => t('Display Settings'),
 //    '#description' => t('Here, you can change how locative data appears in nodes when viewed.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
     '#tree' => TRUE,
     '#weight' => 6,
   );
@@ -1685,7 +1677,6 @@ function location_settings($old = FALSE) {
   $form['display']['hide'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Hide fields from display'),
-    '#collapsed' => TRUE,
     '#default_value' => isset($old['display']['hide']) ? $old['display']['hide'] : array(),
     '#options' => $fields,
   );
