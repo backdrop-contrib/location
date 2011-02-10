@@ -173,16 +173,16 @@ class location_handler_argument_location_proximity extends views_handler_argumen
     // Add MBR check (always).
     // In case we go past the 180/-180 mark for longitude.
     if ($lonrange[0] > $lonrange[1]) {
-      $where = "$this->table_alias.latitude > %f AND $this->table_alias.latitude < %f AND (($this->table_alias.longitude < 180 AND $this->table_alias.longitude > %f) OR ($this->table_alias.longitude < %f AND $this->table_alias.longitude > -180))";
+      $where = "$this->table_alias.latitude > :minlat AND $this->table_alias.latitude < :maxlat AND (($this->table_alias.longitude < 180 AND $this->table_alias.longitude > :minlon) OR ($this->table_alias.longitude < :maxlon AND $this->table_alias.longitude > -180))";
     }
     else {
-      $where = "$this->table_alias.latitude > %f AND $this->table_alias.latitude < %f AND $this->table_alias.longitude > %f AND $this->table_alias.longitude < %f";
+      $where = "$this->table_alias.latitude > :minlat AND $this->table_alias.latitude < :maxlat AND $this->table_alias.longitude > :minlon AND $this->table_alias.longitude < :maxlon";
     }
-    $this->query->add_where($this->options['group'], $where, $latrange[0], $latrange[1], $lonrange[0], $lonrange[1]);
+    $this->query->add_where_expression($this->options['group'], $where, array(':minlat' => $latrange[0], ':maxlat' => $latrange[1], ':minlon' => $lonrange[0], ':maxlon' => $lonrange[1]));
 
     if ($this->options['search_method'] == 'dist') {
       // Add radius check.
-      $this->query->add_where($this->options['group'], earth_distance_sql($lon, $lat, $this->table_alias) . ' < %f', $distance_meters);
+      $this->query->add_where_expression($this->options['group'], earth_distance_sql($lon, $lat, $this->table_alias) . ' < :distance', array(':distance' => $distance_meters));
     }
   }
 }

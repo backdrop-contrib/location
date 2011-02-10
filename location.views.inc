@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Views 2 support for Location.
+ * Views 3 support for Location.
  */
 
 /*
@@ -266,7 +266,7 @@ function location_views_data() {
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_float',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -280,7 +280,7 @@ function location_views_data() {
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_float',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -402,7 +402,7 @@ function location_views_proximity_get_location_field_options() {
   // Get the CCK location field options.
   $field_options = array('node' => t('Node location'));
   if (module_exists('location_cck')) {
-    $fields = content_fields();
+    $fields = field_info_fields();
     foreach ($fields as $field) {
       if ($field['module'] == 'location_cck') {
         $field_options[$field['field_name']] = t('CCK Location: @label (@name)', array('@label' => $field['widget']['label'], '@name' => $field['field_name']));

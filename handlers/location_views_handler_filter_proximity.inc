@@ -116,7 +116,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#type' => 'textfield',
       '#title' => t('Latitude'),
       '#default_value' => $this->value['latitude'],
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('hybrid', 'static', 'latlon_gmap')),
       '#weight' => 1,
     );
@@ -124,7 +124,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#type' => 'textfield',
       '#title' => t('Longitude'),
       '#default_value' => $this->value['longitude'],
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('hybrid', 'static', 'latlon_gmap')),
       '#weight' => 2,
     );
@@ -133,7 +133,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#type' => 'textfield',
       '#title' => t('Postal code'),
       '#default_value' => $this->value['postal_code'],
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('postal', 'postal_default')),
       '#weight' => 3,
     );
@@ -142,7 +142,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#title' => t('Country'),
       '#options' => array('' => '') + location_get_iso3166_list(),
       '#default_value' => $this->value['country'],
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('postal')),
       '#weight' => 4,
     );
@@ -151,7 +151,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#type' => 'textarea',
       '#title' => t('PHP code for latitude, longitude'),
       '#default_value' => $this->value['php_code'],
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('php')),
       '#description' => t("Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."),
       '#weight' => 5,
@@ -166,7 +166,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#options' => $nid_argument_options,
       '#default_value' => $this->value['nid_arg'],
       '#description' => empty($nid_argument_options) ? t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID."),
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
       '#weight' => 6,
     );
@@ -176,7 +176,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#options' => $nid_loc_field_options,
       '#default_value' => $this->value['nid_loc_field'],
       '#description' => t("Select which of the node's locations to use as the origin.  Either the node locations or a CCK location field.  If the location supports multiple entries the first one will be used."),
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
       '#weight' => 7,
     );
@@ -186,7 +186,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#options' => $uid_argument_options,
       '#default_value' => $this->value['uid_arg'],
       '#description' => empty($uid_argument_options) ? t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID."),
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('uid_arg')),
       '#weight' => 8,
     );
@@ -313,16 +313,16 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     // Add MBR check (always).
     // In case we go past the 180/-180 mark for longitude.
     if ($lonrange[0] > $lonrange[1]) {
-      $where = "$this->table_alias.latitude > %f AND $this->table_alias.latitude < %f AND (($this->table_alias.longitude < 180 AND $this->table_alias.longitude > %f) OR ($this->table_alias.longitude < %f AND $this->table_alias.longitude > -180))";
+      $where = "$this->table_alias.latitude > :minlat AND $this->table_alias.latitude < :maxlat AND (($this->table_alias.longitude < 180 AND $this->table_alias.longitude > :minlon) OR ($this->table_alias.longitude < :maxlon AND $this->table_alias.longitude > -180))";
     }
     else {
-      $where = "$this->table_alias.latitude > %f AND $this->table_alias.latitude < %f AND $this->table_alias.longitude > %f AND $this->table_alias.longitude < %f";
+      $where = "$this->table_alias.latitude > :minlat AND $this->table_alias.latitude < :maxlat AND $this->table_alias.longitude > :minlon AND $this->table_alias.longitude < :maxlon";
     }
-    $this->query->add_where($this->options['group'], $where, $latrange[0], $latrange[1], $lonrange[0], $lonrange[1]);
+    $this->query->add_where_expression($this->options['group'], $where, array(':minlat' => $latrange[0], ':maxlat' => $latrange[1], ':minlon' => $lonrange[0], ':maxlon' => $lonrange[1]));
 
     if ($this->operator == 'dist') {
       // Add radius check.
-      $this->query->add_where($this->options['group'], earth_distance_sql($lon, $lat, $this->table_alias) .' < %f', $distance_meters);
+      $this->query->add_where_expression($this->options['group'], earth_distance_sql($lon, $lat, $this->table_alias) .' < :distance', array(':distance' => $distance_meters));
     }
   }
 }

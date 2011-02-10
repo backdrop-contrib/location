@@ -84,17 +84,17 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
     $form['value']['#attributes']['class'][] = 'location_auto_join_' . $this->options['expose']['identifier'];
   }
 
-  function operator_options() {
-    if ($this->options['multiple']) {
+  function operator_options($which = 'title') {
+    if ($this->options['expose']['single']) {
       return array(
-        'is' => t('Is one of'),
-        'is not' => t('Is not one of'),
+        'is' => t('Is'),
+        'is not' => t('Is not'),
       );
     }
     else {
       return array(
-        'is' => t('Is'),
-        'is not' => t('Is not'),
+        'is' => t('Is one of'),
+        'is not' => t('Is not one of'),
       );
     }
   }
@@ -110,7 +110,6 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
     // Normalize values.
     $value = $this->value;
     if (is_array($value)) {
-      $value = array_keys($value);
       if (count($value) == 1) {
         // If multiple is allowed but only one was chosen, use a string instead.
         $value = reset($value);
@@ -119,14 +118,13 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
 
     if (is_array($value)) {
       // Multiple values
-      $placeholders = db_placeholders($value, 'varchar');
       $operator = ($this->operator == 'is') ? 'IN' : 'NOT IN';
-      $this->query->add_where($this->options['group'], "$field $operator($placeholders)", $value);
+      $this->query->add_where($this->options['group'], $field, $value, $operator);
     }
     else {
       // Single value
       $operator = ($this->operator == 'is') ? '=' : '!=';
-      $this->query->add_where($this->options['group'], "$field $operator '%s'", $this->value);
+      $this->query->add_where($this->options['group'], $field, $value, $operator);
     }
   }
 }

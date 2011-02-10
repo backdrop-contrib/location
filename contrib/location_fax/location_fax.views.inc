@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Views 2 support for Location Fax.
+ * Views 3 support for Location Fax.
  */
 
 /**

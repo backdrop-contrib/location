@@ -52,16 +52,16 @@ class location_handler_filter_location_province extends views_handler_filter {
   }
 
   function operator_options() {
-    if ($this->options['multiple']) {
+    if ($this->options['expose']['single']) {
       return array(
-        'is' => t('Is one of'),
-        'is not' => t('Is not one of'),
+        'is' => t('Is'),
+        'is not' => t('Is not'),
       );
     }
     else {
       return array(
-        'is' => t('Is'),
-        'is not' => t('Is not'),
+        'is' => t('Is one of'),
+        'is not' => t('Is not one of'),
       );
     }
   }
@@ -117,16 +117,15 @@ class location_handler_filter_location_province extends views_handler_filter {
         // Convert to province codes.
         $value[$k] = location_province_code($country, $v);
       }
-      $placeholders = db_placeholders($value, 'varchar');
       $operator = ($this->operator == 'is') ? 'IN' : 'NOT IN';
-      $this->query->add_where($this->options['group'], "$field $operator($placeholders)", $value);
+      $this->query->add_where($this->options['group'], $field, $value, $operator);
     }
     else {
       // Single value
       // Convert to province code.
       $value = location_province_code($country, $value);
       $operator = ($this->operator == 'is') ? '=' : '!=';
-      $this->query->add_where($this->options['group'], "$field $operator '%s'", $value);
+      $this->query->add_where($this->options['group'], $field, $value, $operator);
     }
   }
 }
