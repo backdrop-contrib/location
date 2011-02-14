@@ -11,25 +11,25 @@
  */
 function location_cck_theme() {
   return array(
-    'location_cck_formatter_default' => array(
-      'render element' => 'element',
-    ),
-    'location_cck_formatter_all' => array(
-      'render element' => 'element',
-    ),
-    'location_cck_formatter_map' => array(
-      'render element' => 'element',
+    'location_cck_field_all' => array(
+      'variables' => array(
+        'location' => NULL,
+        'hide' => array(),
+        'field' => NULL,
+        'instance' => NULL,
+      ),
     ),
     'location_cck_field_map' => array(
       'variables' => array(
         'locations' => NULL,
         'field' => NULL,
+        'instance' => NULL,
       ),
     ),
     'location_cck_field_popup' => array(
       'variables' => array(
         'location' => NULL,
-        'field' => NULL,
+        'instance' => NULL,
       ),
     ),
   );
@@ -270,12 +270,10 @@ function location_cck_field_formatter_info() {
       'field types' => array('location'),
     );
     // @@@ How to do in D7?
-/*    $info['location_multiple'] = array(
+    $info['location_multiple'] = array(
       'label' => t('Multiple field values on a single map'),
       'field types' => array('location'),
-      'multiple values' => CONTENT_HANDLE_MODULE,
     );
-*/
   }
   return $info;
 }
@@ -287,29 +285,46 @@ function location_cck_field_formatter_info() {
 function location_cck_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
 
+  $settings = $field['settings']['location_settings'];
+  $hide = (isset($settings['display']['hide'])) ? array_keys(array_filter($settings['display']['hide'])) : array();
+
   switch ($display['type']) {
     case 'location_default':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = '';
+        if (!empty($item['lid'])) {
+          $element[$delta]['#theme'] = 'location';
+          $element[$delta]['#location'] = $item;
+          $element[$delta]['#hide'] = $hide;
+        }
       }
       break;
 
     case 'location_all':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = '';
+        if (!empty($item['lid'])) {
+          $element[$delta]['#theme'] = 'location_cck_field_all';
+          $element[$delta]['#location'] = $item;
+          $element[$delta]['#hide'] = $hide;
+          $element[$delta]['#field'] = $field;
+          $element[$delta]['#instance'] = $instance;
+        }
       }
       break;
 
     case 'location_map':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = '';
+        $element[$delta]['#theme'] = 'location_cck_field_map';
+        $element[$delta]['#locations'] = array($item);
+        $element[$delta]['#field'] = $field;
+        $element[$delta]['#instance'] = $instance;
       }
       break;
 
     case 'location_multiple':
-      foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = '';
-      }
+      $element[0]['#theme'] = 'location_cck_field_map';
+      $element[0]['#locations'] = $items;
+      $element[0]['#field'] = $field;
+      $element[0]['#instance'] = $instance;
       break;
   }
 
@@ -399,65 +414,12 @@ function location_cck_field_is_empty($item, $field) {
 }
 
 /**
- * Return an address for an individual item.
- */
-function theme_location_cck_formatter_default($element) {
-  $field = content_fields($element['#field_name'], $element['#type_name']);
-  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
-  $location = $element['#item'];
-  if (!empty($location['cck_preview_in_progress'])) {
-    // Our canary field is in place, we are in a node preview.
-    $fields = array();
-    // If the location isn't "empty", then theme it based on the current state
-    // of the item.
-    if (!location_is_empty($location, $fields)) {
-      return theme('location', array('location' => $location, 'hide' => $hide));
-    }
-  }
-  else if (isset($location['lid']) && $location['lid']) {
-    // "normal" viewing.
-    // Location is already cached by CCK, so no need to load it.
-    return theme('location', array('location' => $location, 'hide' => $hide));
-  }
-}
-
-/**
  * Return both an address and a map for an individual item.
  */
-function theme_location_cck_formatter_all($variables) {
-  $location = $variables['element'];
-
-  $content = '';
-  $field = content_fields($element['#field_name'], $element['#type_name']);
-  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
-  $location = $element['#item'];
-  if (!empty($location['cck_preview_in_progress'])) {
-    // Our canary field is in place, we are in a node preview.
-    $fields = array();
-    // If the location isn't "empty", then theme it based on the current state
-    // of the item.
-    if (!location_is_empty($location, $fields)) {
-      $content = theme('location', array('location' => $location, 'hide' => $hide));
-    }
-  }
-  else if (isset($location['lid']) && $location['lid']) {
-    // "normal" viewing.
-    // Location is already cached by CCK, so no need to load it.
-    $content = theme('location', array('location' => $location, 'hide' => $hide));
-  }
-  $content .= theme_location_cck_field_map(array('locations' => array($location), 'field' => $field));
+function theme_location_cck_field_all($variables) {
+  $content = theme('location', array('location' => $variables['location'], 'hide' => $variables['hide']));
+  $content .= theme_location_cck_field_map(array('locations' => array($variables['location']), 'field' => $variables['field'], 'instance' => $variables['instance']));
   return $content;
-}
-
-/**
- * Returns a map for an individual field value.
- */
-function theme_location_cck_formatter_map($variables) {
-  $location = $variables['element'];
-
-  $field = content_fields($element['#field_name'], $element['#type_name']);
-  $location = $element['#item'];
-  return theme_location_cck_field_map(array('locations' => array($location), 'field' => $field));
 }
 
 /**
@@ -479,33 +441,35 @@ function theme_location_cck_formatter_combined($variables) {
  * block view.
  */
 function theme_location_cck_field_map($variables) {
-  $location = $variables['location'];
+  $locations = $variables['locations'];
   $field = $variables['field'];
+  $instance = $variables['instance'];
 
   $count = 0;
   $content = '';
   foreach ($locations as $location) {
     if (location_has_coordinates($location)) {
       $count++;
-      $markername = isset($field['gmap_marker']) ? $field['gmap_marker'] : 'drupal';
+      $markername = isset($field['settings']['gmap_marker']) ? $field['settings']['gmap_marker'] : 'drupal';
       $markers[] = array(
         'latitude' => $location['latitude'],
         'longitude' => $location['longitude'],
         'markername' => $markername,
         'offset' => $count-1,
-        'text' => theme('location_cck_field_popup', array('location' => $location, 'field' => $field)),
+        'text' => theme('location_cck_field_popup', array('location' => $location, 'instance' => $instance)),
       );
     }
   }
   if (!empty($markers)) {
-    $macro = !empty($field['gmap_macro']) ? $field['gmap_macro'] : '[gmap ]';
-    $map = gmap_parse_macro($macro);
+    $macro = !empty($field['settings']['gmap_macro']) ? $field['settings']['gmap_macro'] : '[gmap ]';
+    $map = array_merge(gmap_defaults(), gmap_parse_macro($macro));
     $map['latitude'] = $markers[0]['latitude'];
     $map['longitude'] = $markers[0]['longitude'];
     $map['markers'] = $markers;
     $map['id'] = gmap_get_auto_mapid();
-    $content = theme('gmap', array('element' => array('#settings' => $map)));
+    $content = theme('gmap', array('element' => array('#gmap_settings' => $map)));
   }
+
   return $content;
 }
 
@@ -514,7 +478,7 @@ function theme_location_cck_field_map($variables) {
  */
 function theme_location_cck_field_popup($variables) {
   $location = $variables['location'];
-  $field = $variables['field'];
+  $instance = $variables['instance'];
 
   $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
   // Don't use a map link in a popup!
@@ -522,7 +486,7 @@ function theme_location_cck_field_popup($variables) {
   $hide[] = 'map_link';
   $hide[] = 'name';
 
-  $markertitle = $field['widget']['label'];
+  $markertitle = $instance['label'];
   if (!empty($location['name'])) {
     $markertitle = $location['name'];
   }
