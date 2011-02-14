@@ -297,10 +297,10 @@ function location_latlon_rough_default($location = array()) {
     return NULL;
   }
 
-  $coords = db_select('zipcodes', 'z')
-    ->addField('z', 'latitude', 'lat')
-    ->addField('z', 'longitude', 'lon')
-    ->condition('country', $location['country'])
+  $query = db_select('zipcodes', 'z');
+  $query->addField('z', 'latitude', 'lat');
+  $query->addField('z', 'longitude', 'lon');
+  $coords = $query->condition('country', $location['country'])
     ->condition('zip', $location['postal_code'])
     ->execute()
     ->fetchAssoc();
