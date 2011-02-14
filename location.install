@@ -574,12 +574,12 @@ function location_update_5301() {
   // data, which is not nice but better than having no data at all when viewing
   // old revisions.
 
-  $query = db_select('node_revision', 'nr')
-    ->join('node_revision', 'nr2', 'nr.nid = nr2.nid')
-    ->join('location', 'l', "nr2.vid = l.eid AND l.type = 'node'")
-    ->addField('nr', 'nid')
-    ->addField('nr', 'vid')
-    ->addField('l', 'lid');
+  $query = db_select('node_revision', 'nr');
+  $query->join('node_revision', 'nr2', 'nr.nid = nr2.nid');
+  $query->join('location', 'l', "nr2.vid = l.eid AND l.type = 'node'");
+  $query->addField('nr', 'nid');
+  $query->addField('nr', 'vid');
+  $query->addField('l', 'lid');
 
   db_insert('location_instance')
     ->fields(array('nid', 'vid', 'lid'))
@@ -587,10 +587,10 @@ function location_update_5301() {
     ->execute();
 
   // Users is much simpler.
-  $query = db_select('location', 'l')
-    ->addField('l', 'eid')
-    ->addField('l', 'lid')
-    ->condition('type', 'user');
+  $query = db_select('location', 'l');
+  $query->addField('l', 'eid');
+  $query->addField('l', 'lid');
+  $query->condition('type', 'user');
 
   db_insert('location_instance')
     ->fields(array('uid', 'lid'))
@@ -599,11 +599,11 @@ function location_update_5301() {
 
   // Aug 18 2008:
   // Save everything else in genid.
-  $query = db_select('location', 'l')
-    ->addExpression("CONCAT(l.type, ':', l.eid)")
-    ->addField('l', 'lid')
-    ->condition('type', 'user', '<>')
-    ->condition('type', 'node', '<>');
+  $query = db_select('location', 'l');
+  $query->addExpression("CONCAT(l.type, ':', l.eid)");
+  $query->addField('l', 'lid');
+  $query->condition('type', 'user', '<>');
+  $query->condition('type', 'node', '<>');
 
   db_insert('location_instance')
     ->fields(array('genid', 'lid'))

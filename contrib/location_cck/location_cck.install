@@ -17,17 +17,13 @@ function location_cck_update_6301() {
   db_create_table('location_instance_tmp', $schema);
 
   // Populate the temporary table.
-  $join_select = db_select('location_instance', 'li')
-    ->addExpression("SUBSTRING_INDEX(genid, ':', -1)", 'genvid')
-    ->addField('li', 'lid')
-    ->addField('li', 'genid');
-  $query->join($join_select, 'l', 'n.vid = l.genvid');
+  $join_select = db_select('location_instance', 'li');
+  $join_select->addExpression("SUBSTRING_INDEX(genid, ':', -1)", 'genvid');
+  $join_select->fields('li', array('lid', 'genid'));
 
   $insert_select = db_select('node', 'n')
-    ->addField('n', 'nid')
-    ->addField('n', 'vid')
-    ->addField('l', 'genid')
-    ->addField('l', 'lid')
+    ->fields('n', array('nid', 'vid'))
+    ->fields('l', array('genid', 'lid'))
     ->join($join_select, 'l', 'n.vid = l.genvid');
 
   db_insert('location_instance_tmp')
@@ -41,10 +37,7 @@ function location_cck_update_6301() {
     ->execute();
 
   $insert_select = db_select('location_instance_tmp', 'lit')
-    ->addField('lit', 'nid')
-    ->addField('lit', 'vid')
-    ->addField('lit', 'genid')
-    ->addField('lit', 'lid');
+    ->fields('lit', array('nid', 'vid', 'genid', 'lid'));
 
   db_insert('location_instance')
     ->fields(array('nid', 'vid', 'genid', 'lid'))
