@@ -405,7 +405,7 @@ function location_views_proximity_get_location_field_options() {
     $fields = field_info_fields();
     foreach ($fields as $field) {
       if ($field['module'] == 'location_cck') {
-        $field_options[$field['field_name']] = t('CCK Location: @label (@name)', array('@label' => $field['widget']['label'], '@name' => $field['field_name']));
+        $field_options[$field['field_name']] = t('CCK Location: @name', array('@name' => $field['field_name']));
       }
     }
   }
