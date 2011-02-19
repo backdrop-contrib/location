@@ -1728,11 +1728,6 @@ function location_form($settings, $locations) {
     '#collapsed' => $settings['form']['collapsed'],
   );
 
-  // If there is only one form, hide the outer fieldset.
-  if ($settings['multiple']['max'] == 1) {
-    $form['#type'] = 'markup';
-  }
-
   for ($i = 0; $i < $numforms; $i++) {
     $required = FALSE;
     // Check if this is a required location.
