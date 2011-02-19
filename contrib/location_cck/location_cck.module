@@ -222,9 +222,17 @@ function location_cck_field_validate($entity_type, $entity, $field, $instance, $
  */
 function location_cck_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
   if ($entity_type == 'node') {
-    foreach ($items as $entity_id => $locations) {
-      foreach ($locations as $delta => $item) {
-        $items[$entity_id][$delta] = location_load_location($item['lid']);
+    foreach ($entities as $id => $entity) {
+      foreach ($items[$id] as $delta => $item) {
+        $location = array();
+        // Load the location if it exists.
+        // If we are previewing a new node it will not.
+        if (!empty($item['lid'])) {
+          $location = location_load_location($item['lid']);
+        }
+        // Combine the item with the location loaded from the database.
+        // This will allow $item to display in the case of previewing a node.
+        $items[$id][$delta] = array_merge($location, $item);
       }
     }
   }
@@ -291,7 +299,7 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
   switch ($display['type']) {
     case 'location_default':
       foreach ($items as $delta => $item) {
-        if (!empty($item['lid'])) {
+        if (!empty($item['lid']) || $entity->in_preview) {
           $element[$delta]['#theme'] = 'location';
           $element[$delta]['#location'] = $item;
           $element[$delta]['#hide'] = $hide;
@@ -301,7 +309,7 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
 
     case 'location_all':
       foreach ($items as $delta => $item) {
-        if (!empty($item['lid'])) {
+        if (!empty($item['lid']) || $entity->in_preview) {
           $element[$delta]['#theme'] = 'location_cck_field_all';
           $element[$delta]['#location'] = $item;
           $element[$delta]['#hide'] = $hide;
@@ -313,10 +321,12 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
 
     case 'location_map':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#theme'] = 'location_cck_field_map';
-        $element[$delta]['#locations'] = array($item);
-        $element[$delta]['#field'] = $field;
-        $element[$delta]['#instance'] = $instance;
+        if (!empty($item['lid']) || $entity->in_preview) {
+          $element[$delta]['#theme'] = 'location_cck_field_map';
+          $element[$delta]['#locations'] = array($item);
+          $element[$delta]['#field'] = $field;
+          $element[$delta]['#instance'] = $instance;
+        }
       }
       break;
 
@@ -392,12 +402,7 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
       '#location_settings' => $settings,
       '#default_value' => $location,
     );
-    // This is used to determine whether we are in a preview or not, because
-    // several pieces of code work differently when previewing.
-    $element['cck_preview_in_progress'] = array(
-      '#type' => 'value',
-      '#value' => TRUE,
-    );
+
     return $element;
   }
 }
