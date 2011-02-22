@@ -427,12 +427,6 @@ function _location_process_location($element) {
   }
 
   $element += element_info('fieldset');
-
-  // The element #value is split up between the location subfields and doesn't
-  // belong in the main element.  Remove it so we don't get strangel output
-  // in the location fieldset.
-  unset($element['#value']);
-
   return $element;
 }
 
