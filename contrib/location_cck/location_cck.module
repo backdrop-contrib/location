@@ -299,7 +299,7 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
   switch ($display['type']) {
     case 'location_default':
       foreach ($items as $delta => $item) {
-        if (!empty($item['lid']) || $entity->in_preview) {
+        if (!empty($item['lid']) || !empty($entity->in_preview)) {
           $element[$delta]['#theme'] = 'location';
           $element[$delta]['#location'] = $item;
           $element[$delta]['#hide'] = $hide;
@@ -309,7 +309,7 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
 
     case 'location_all':
       foreach ($items as $delta => $item) {
-        if (!empty($item['lid']) || $entity->in_preview) {
+        if (!empty($item['lid']) || !empty($entity->in_preview)) {
           $element[$delta]['#theme'] = 'location_cck_field_all';
           $element[$delta]['#location'] = $item;
           $element[$delta]['#hide'] = $hide;
@@ -321,7 +321,7 @@ function location_cck_field_formatter_view($entity_type, $entity, $field, $insta
 
     case 'location_map':
       foreach ($items as $delta => $item) {
-        if (!empty($item['lid']) || $entity->in_preview) {
+        if (!empty($item['lid']) || !empty($entity->in_preview)) {
           $element[$delta]['#theme'] = 'location_cck_field_map';
           $element[$delta]['#locations'] = array($item);
           $element[$delta]['#field'] = $field;
