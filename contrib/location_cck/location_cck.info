@@ -1,4 +1,3 @@
-; $Id$
 name = Location CCK
 description = Defines a Location field type.
 dependencies[] = location

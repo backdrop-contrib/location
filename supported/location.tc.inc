@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Turks and Caicos Islands
 

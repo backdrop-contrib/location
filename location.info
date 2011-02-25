@@ -1,4 +1,3 @@
-; $Id$
 name = Location
 package = Location
 description = The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.

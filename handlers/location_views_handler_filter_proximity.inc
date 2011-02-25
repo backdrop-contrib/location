@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * General proximity filter for location latitude/longitude.

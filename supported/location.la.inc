@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Lao People's Democratic Republic
 

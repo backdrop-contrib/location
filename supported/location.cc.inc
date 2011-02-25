@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Cocos (Keeling) Islands
 

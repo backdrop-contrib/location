@@ -1,4 +1,3 @@
-; $Id$
 name = Location Add Another
 description = Allows you to quickly add locations directly from a node without having to click 'edit' first.
 dependencies[] = location

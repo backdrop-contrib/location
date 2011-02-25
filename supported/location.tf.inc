@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // French Southern Territories
 

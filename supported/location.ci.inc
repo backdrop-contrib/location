@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Cote D'Ivoire
 

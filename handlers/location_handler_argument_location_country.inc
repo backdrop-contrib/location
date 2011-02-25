@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Argument handler to accept a country code or name.

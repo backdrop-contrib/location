@@ -1,4 +1,3 @@
-; $Id$
 name = Location Generate
 description = Bulk assign random latitude and longitudes to nodes.
 package = Development

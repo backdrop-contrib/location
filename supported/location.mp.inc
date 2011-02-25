@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Northern Mariana Islands
 

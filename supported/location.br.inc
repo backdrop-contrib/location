@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // This file contributed by Avi Alkalay <avi unix sh> to the
 // Location Drupal module, based on other files on same folder.

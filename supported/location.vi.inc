@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Virgin Islands, U. S.
 

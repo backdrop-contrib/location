@@ -1,10 +1,8 @@
-$Id$
 
 Note: This is currently broken and outdated.
 The location search api is not ready for location 3.
 
 
-$Id$
 
 This file describes the public API for the CivicSpace location system as defined by
  in the library implemented by "location.inc" and its supporting files.

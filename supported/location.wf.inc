@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Wallis and Futuna
 

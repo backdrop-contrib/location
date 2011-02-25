@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Solomon Islands
 

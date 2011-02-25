@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 function location_province_list_ca() {
   return array(

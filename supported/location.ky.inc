@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Cayman Islands
 

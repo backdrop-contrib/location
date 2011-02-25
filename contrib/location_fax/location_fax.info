@@ -1,4 +1,3 @@
-; $Id$
 name = Location Fax
 package = Location
 description = Allows you to add a fax number to a location.

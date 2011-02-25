@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Korea, Democratic People's Republic Of (North Korea)
 

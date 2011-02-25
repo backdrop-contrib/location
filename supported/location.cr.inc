@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Costa Rica
 

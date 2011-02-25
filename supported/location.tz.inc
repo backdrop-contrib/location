@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Tanzania, United Republic of
 

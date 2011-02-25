@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // British Indian Ocean Territory
 

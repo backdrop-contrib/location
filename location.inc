@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @defgroup Location Location: An API for working with locations.

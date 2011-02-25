@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // United States Minor Outlying Islands
 

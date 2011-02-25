@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Taiwan, Province of China
 

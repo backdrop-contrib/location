@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Holy See (Vatican City State)
 

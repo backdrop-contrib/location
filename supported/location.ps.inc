@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Palestinian Territory, Occupied
 

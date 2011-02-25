@@ -1,4 +1,3 @@
-$Id$
 
 Originally developed and implemented by:
   Ankur Rishi  (user name 'ankur':  http://drupal.org/user/11703 )

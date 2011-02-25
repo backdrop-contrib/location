@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Twiddle the province autocomplete whenever the user changes the country.

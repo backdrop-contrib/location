@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file search_result_location.tpl.php

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Iran, Islamic Republic Of
 
