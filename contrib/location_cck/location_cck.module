@@ -361,18 +361,7 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
 
     // Load location data for existing locations.
     if (isset($items[$delta]['lid']) && $items[$delta]['lid']) {
-      // Are we in a node preview?
-      // If we aren't, then we only have the lid, because that's all cck
-      // actually knows about internally. So, we have to pull in the location
-      // at this point.
-      if (empty($items[$delta]['cck_preview_in_progress'])) {
-        $location = location_load_location($items[$delta]['lid']);
-      }
-      else {
-        // Otherwise, the data was already populated and we're running
-        // off the form state.
-        $location = $items[$delta];
-      }
+      $location = location_load_location($items[$delta]['lid']);
     }
     // Load location data passed by cck.
     else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
