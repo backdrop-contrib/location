@@ -329,7 +329,7 @@ function _location_process_location($element) {
         '#markup' => $defaults['longitude'],
       );
       $source = t('Unknown');
-      switch($defaults['source']) {
+      switch ($defaults['source']) {
         case LOCATION_LATLON_USER_SUBMITTED:
           $source = t('User-submitted');
           break;
@@ -689,7 +689,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
           return array(
             '#type' => 'textfield',
             '#title' => t('State/Province'),
-            '#autocomplete_path' => 'location/autocomplete/'. $country,
+            '#autocomplete_path' => 'location/autocomplete/' . $country,
             '#default_value' => variable_get('location_use_province_abbreviation', 1) ? $obj : location_province_name($country, $obj),
             '#size' => 64,
             '#maxlength' => 64,
@@ -785,8 +785,8 @@ function location_geocoding_parameters_page($country_iso, $service) {
 
 function location_geocoding_parameters_form($form, &$form_state, $country_iso, $service) {
   location_load_country($country_iso);
-  $geocode_settings_form_function_specific = 'location_geocode_'. $country_iso .'_'. $service .'_settings';
-  $geocode_settings_form_function_general = $service .'_geocode_settings';
+  $geocode_settings_form_function_specific = 'location_geocode_' . $country_iso . '_' . $service . '_settings';
+  $geocode_settings_form_function_general = $service . '_geocode_settings';
   if (function_exists($geocode_settings_form_function_specific)) {
     return system_settings_form($geocode_settings_form_function_specific());
   }
@@ -961,7 +961,7 @@ function location_load_location($lid) {
 function _location_autocomplete($country, $string = '') {
   $counter = 0;
   $string   = strtolower($string);
-  $string   = '/^'. preg_quote($string) .'/';
+  $string   = '/^' . preg_quote($string) . '/';
   $matches  = array();
 
   if (strpos($country, ',') !== FALSE) {
@@ -1039,12 +1039,12 @@ function location_has_coordinates($location, $canonical = FALSE) {
 function location_invoke_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
   $return = array();
   foreach (module_implements('locationapi') as $name) {
-    $function = $name .'_locationapi';
+    $function = $name . '_locationapi';
     $result = $function($location, $op, $a3, $a4, $a5);
     if (isset($result) && is_array($result)) {
       $return = array_merge($return, $result);
     }
-    else if (isset($result)) {
+    elseif (isset($result)) {
       $return[] = $result;
     }
   }
@@ -1211,7 +1211,7 @@ function location_calc_difference($oldloc, $newloc, &$changes) {
       $location_changed = TRUE;
       continue;
     }
-    else if ($oldloc[$k] == $v) {
+    elseif ($oldloc[$k] == $v) {
       $changes[$k] = FALSE;
       // Exact match, no change.
       continue;
@@ -1444,7 +1444,6 @@ function location_dd_to_dms($coord) {
  */
 function theme_location_latitude_dms($variables) {
   $latitude = $variables['latitude'];
-
   $output = '';
   list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($latitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
@@ -1459,7 +1458,6 @@ function theme_location_latitude_dms($variables) {
 
 function theme_location_longitude_dms($variables) {
   $longitude = $variables['longitude'];
-
   $output = '';
   list($degrees, $minutes, $seconds, $negative) = location_dd_to_dms($longitude);
   $output .= "${degrees}° ${minutes}' ${seconds}\" ";
