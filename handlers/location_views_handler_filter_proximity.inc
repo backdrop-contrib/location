@@ -4,9 +4,8 @@
  * General proximity filter for location latitude/longitude.
  */
 class location_views_handler_filter_proximity extends views_handler_filter {
-  // This is always single, because of the distance field's possible dependency
-  // on it.
-  var $no_single = TRUE;
+  // This is always multiple, because we can have distance, units etc.
+  var $always_multiple = TRUE;
 
   function option_definition() {
     $options = parent::option_definition();
