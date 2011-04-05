@@ -103,7 +103,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
    *
    * The argument sent may be found at $this->argument.
    */
-  function query() {
+  function query($group_by = FALSE) {
     // Get and process argument.
     if ($this->options['type'] == 'postal') {
       foreach ($this->view->argument as $argument) {
