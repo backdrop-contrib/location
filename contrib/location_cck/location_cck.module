@@ -170,7 +170,6 @@ function location_cck_field_insert($entity_type, $entity, $field, $instance, $la
  */
 function location_cck_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($entity_type == 'node') {
-    dpm($langcode);
     if (!empty($items)) {
       // Store instances of locations by field name and vid.
       $criteria = array(
