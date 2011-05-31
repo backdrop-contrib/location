@@ -189,7 +189,7 @@ function google_geocode_settings() {
     );
   }
 
-  $country = arg(4);
+  $country = arg(5);
   if ($country) {
     $form['location_geocode_' . $country . '_google_accuracy_code'] = array(
       '#type' => 'select',
