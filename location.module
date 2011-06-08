@@ -1727,6 +1727,8 @@ function location_form($settings, $locations) {
     }
     $form[$i] = array(
       '#type' => 'location_element',
+      '#has_garbage_value' => TRUE,
+      '#value' => '',
       '#title' => t('Location #%number', array('%number' => $i + 1)),
       '#default_value' => isset($locations[$i]) ? $locations[$i] : NULL,
       '#location_settings' => $settings,

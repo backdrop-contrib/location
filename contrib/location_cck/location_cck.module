@@ -399,6 +399,8 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
 
     $element = array(
       '#type' => 'location_element',
+      '#has_garbage_value' => TRUE,
+      '#value' => '',
       '#title' => t($instance['label']),
       '#description' => t($instance['description']),
       '#required' => $instance['required'],
