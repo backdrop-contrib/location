@@ -477,7 +477,12 @@ function theme_location_cck_field_map($variables) {
     $map['longitude'] = $markers[0]['longitude'];
     $map['markers'] = $markers;
     $map['id'] = gmap_get_auto_mapid();
-    $content = theme('gmap', array('element' => array('#gmap_settings' => $map)));
+    // Render a map element.
+    $location_map = array(
+      '#type' => 'gmap',
+      '#gmap_settings' => $map,
+    );
+    $content = drupal_render($location_map);
   }
 
   return $content;
