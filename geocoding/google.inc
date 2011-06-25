@@ -55,7 +55,7 @@ function google_geocode_country_list() {
     $pos = strpos($region->content, 'geocoding:') + 11;
     $geocoding = substr($region->content, $pos, strpos($region->content, ',', $pos) - $pos);
     if (strpos($geocoding, "Yes") !== FALSE) {
-     $regionclean[] = htmlentities($region->title);
+     $regionclean[] = t(htmlentities($region->title));
     }
   }
 
@@ -73,11 +73,11 @@ function google_geocode_country_list() {
   $regex = "#[ (].*[)]#e";
   $cntryclean = preg_replace($regex, "", $countries);
   $countriesfixes = array_merge($cntryclean, array(
-    "hk" => "China",
-    "mo" => "China",
-    "pn" => "Pitcairn Islands",
-    "wf" => "Wallis Futuna",
-    "st" => "S&Atilde;&pound;o Tom&Atilde;&copy; and Pr&Atilde;&shy;ncipe",
+    "hk" => t("China"),
+    "mo" => t("China"),
+    "pn" => t("Pitcairn Islands"),
+    "wf" => t("Wallis Futuna"),
+    "st" => t("S&Atilde;&pound;o Tom&Atilde;&copy; and Pr&Atilde;&shy;ncipe"),
   ));
 
   // Compare new google data found to fixed country name values and return
