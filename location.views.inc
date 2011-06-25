@@ -472,6 +472,7 @@ function location_views_proximity_get_reference_location($view, $options) {
       }
       break;
     case 'static':
+    case 'latlon_gmap':
       $coordinates['latitude'] = (float) $options['latitude'];
       $coordinates['longitude'] = (float) $options['longitude'];
       break;
