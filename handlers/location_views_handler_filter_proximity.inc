@@ -227,7 +227,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
 
     if ($origin == 'latlon_gmap' && module_exists('gmap')) {
       // Bad things happen if we try to show a gmap in the views live preview.
-      if ($form_state['post']['live_preview']) {
+      if (!empty($form_state['view']->live_preview)) {
         $form[$key]['proximity_map'] = array(
           '#value' => t('Gmap location selection is not available during live preview.'),
           '#weight' => 0,
