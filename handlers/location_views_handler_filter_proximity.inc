@@ -229,13 +229,13 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       // Bad things happen if we try to show a gmap in the views live preview.
       if (!empty($form_state['view']->live_preview)) {
         $form[$key]['proximity_map'] = array(
-          '#value' => t('Gmap location selection is not available during live preview.'),
+          '#markup' => t('Gmap location selection is not available during live preview.'),
           '#weight' => 0,
         );
       }
       else {
         $form[$key]['proximity_map'] = array(
-          '#value' => gmap_set_location($this->options['expose']['gmap_macro'], $form[$key], array('latitude' => 'latitude', 'longitude' => 'longitude')),
+          '#markup' => gmap_set_location($this->options['expose']['gmap_macro'], $form[$key], array('latitude' => 'latitude', 'longitude' => 'longitude')),
           '#weight' => 0,
         );
       }
