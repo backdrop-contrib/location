@@ -3,7 +3,6 @@ package = Location
 description = Advanced search page for locations.
 dependencies[] = search
 dependencies[] = location
-dependencies[] = gmap
 core = 7.x
 files[] = location_search.module
 files[] = location_search.install
