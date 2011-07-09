@@ -523,10 +523,12 @@ function location_views_proximity_get_reference_location($view, $options) {
             $coordinates['longitude'] = (float) $tempnode->location['longitude'];
           }
           else {
-            $cck_location = $tempnode->$field_name;
-            if (isset($cck_location[0]['longitude']) && isset($cck_location[0]['latitude'])) {
-              $coordinates['latitude'] = (float) $cck_location[0]['latitude'];
-              $coordinates['longitude'] = (float) $cck_location[0]['longitude'];
+            if (isset($tempnode->$field_name)) {
+              $cck_location = $tempnode->$field_name;
+              if (isset($cck_location[0]['longitude']) && isset($cck_location[0]['latitude'])) {
+                $coordinates['latitude'] = (float) $cck_location[0]['latitude'];
+                $coordinates['longitude'] = (float) $cck_location[0]['longitude'];
+              }
             }
           }
         }
