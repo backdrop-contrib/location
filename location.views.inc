@@ -543,6 +543,18 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+    case 'distance_arg':
+      foreach ($view->argument as $argument) {
+        if ($argument->field == 'distance') {
+          list($coords, $search_distance) = explode('_', $view->args[$argument->position]);
+          list($lat, $lon) = explode(',', $coords);
+          break;
+        }
+      }
+      $coordinates['latitude'] = (float) $lat;
+      $coordinates['longitude'] = (float) $lon;
+      break;
+
   }
 
   return $coordinates;
