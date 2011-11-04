@@ -443,6 +443,8 @@ function _location_process_location($element, $form_state) {
   }
 
   $element += element_info('fieldset');
+  
+  drupal_alter('location_element', $element);
   return $element;
 }
 
