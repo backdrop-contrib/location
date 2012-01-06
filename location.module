@@ -1474,7 +1474,10 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
   if (!$inhibit_geocode) {
     // Have any of the fields possibly affecting geocoding changed?
     // Or, was the location previously user submitted but is no longer?
-    if ($changed['street'] || $changed['additional'] || $changed['city'] || $changed['province'] || $changed['country'] || $changed['postal_code'] || $location['source'] == LOCATION_LATLON_USER_SUBMITTED) {
+    if (  !empty($changed['street']) || !empty($changed['additional']) ||
+          !empty($changed['city']) || !empty($changed['province']) ||
+          !empty($changed['country']) || !empty($changed['postal_code']) ||
+          $location['source'] == LOCATION_LATLON_USER_SUBMITTED  ) {
 
       // Attempt exact geocoding.
       if ($data = location_latlon_exact($location)) {
