@@ -113,6 +113,7 @@ class LocationTestCase extends DrupalWebTestCase {
   function deleteNode($nid) {
     // Implemention taken from node_delete, with some assumptions regarding
     // function_exists removed.
+    module_enable(array('entity'));
     entity_delete('node', $nid);
 //    $node = node_load($nid);
 //    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);

@@ -74,7 +74,7 @@ class LocationCCKTest extends LocationTestCase {
         'fields[_add_new_field][type]' => 'location',
         'fields[_add_new_field][widget_type]' => 'location',
     );
-    $this->flattenPostData($form);
+    //$this->flattenPostData($form);
     $this->drupalPost('admin/structure/types/manage/' . $name . '/fields', $form, 'Save');
 
     $this->refreshVariables();
@@ -87,9 +87,9 @@ class LocationCCKTest extends LocationTestCase {
 
     );
 
-    $this->flattenPostData($form);
+    //$this->flattenPostData($form);
     $add = array('location_settings' => $add);
-    $this->flattenPostData($add);
+    //$this->flattenPostData($add);
 
     $this->drupalPost(NULL, $form, 'Save field settings');
 
