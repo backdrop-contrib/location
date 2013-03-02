@@ -84,14 +84,7 @@ class LocationCCKTest extends LocationTestCase {
     $defaults = $this->getLocationFieldDefaults();
 
     $form = array(
-      'required' => $required,
-      'multiple' => $multiple,
-      'location_settings' => array(
-        'form' => array(
-          'fields' => $defaults,
-        ),
-        // 'display'
-      ),
+
     );
 
     $this->flattenPostData($form);

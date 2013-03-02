@@ -7,6 +7,13 @@
 
 class LocationTestCase extends DrupalWebTestCase {
 
+
+  function setUp() {
+    parent::setUp('location', 'location_node', 'devel', 'entity');
+    $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
+    $this->drupalLogin($web_admin);
+  }
+  
   /**
    * Custom assertion -- will check each element of an array against a reference value.
    */
@@ -15,13 +22,13 @@ class LocationTestCase extends DrupalWebTestCase {
       $lower = $test - $epsilon;
       $upper = $test + $epsilon;
       if ($result[$k] < $lower || $result[$k] > $upper) {
-        $this->_assert('fail', $message ? $message : t('Value deviates by @amt, which is more than @maxdev.', array(
+        $this->assert('fail', $message ? $message : t('Value deviates by @amt, which is more than @maxdev.', array(
           '@amt' => abs($test - $result[$k]),
           '@maxdev' => $epsilon
         )), $group);
       }
       else {
-        $this->_assert('pass', $message ? $message : t('Value within expected margin.'), $group);
+        $this->assert('pass', $message ? $message : t('Value within expected margin.'), $group);
       }
     }
   }
