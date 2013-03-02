@@ -16,6 +16,7 @@ files[] = tests/cow.test
 files[] = tests/earth.test
 files[] = tests/google_geocoder.test
 files[] = tests/location_cck.test
+files[] = tests/location_cck2.test
 files[] = handlers/location_handler_argument_location_country.inc
 files[] = handlers/location_handler_argument_location_province.inc
 files[] = handlers/location_handler_argument_location_proximity.inc
