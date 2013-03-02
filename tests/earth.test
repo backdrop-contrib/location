@@ -18,7 +18,7 @@ class LocationEarthTest extends LocationTestCase {
   }
 
   function setUp() {
-    parent::setUp('location');
+    parent::setUp('location', 'location_node', 'devel', 'entity');
   }
 
   function testXYZ() {
