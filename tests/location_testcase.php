@@ -9,11 +9,12 @@ class LocationTestCase extends DrupalWebTestCase {
 
 
   function setUp() {
-    parent::setUp('location', 'location_node', 'devel', 'entity');
+    parent::setUp('location', 'devel', 'entity');
+    module_enable(array('location_node'));
     $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
     $this->drupalLogin($web_admin);
   }
-  
+
   /**
    * Custom assertion -- will check each element of an array against a reference value.
    */

@@ -95,21 +95,21 @@ class LocationCCKTest extends LocationTestCase {
 
     // @@@ This is stupid, but I don't know the api for pulling this stuff up.
     // @@@ _content_type_info() perhaps?
-    $result = db_query("SELECT global_settings FROM {content_node_field} WHERE field_name = 'field_:s' AND type = 'location'", array(':s' => $field_name));
-    $row = $result->fetch();
-    $settings = array();
-    $settings = unserialize($row->global_settings);
-    $settings = $settings['location_settings'];
-
-    $this->refreshVariables();
-
-    // Reset the schema again, if it was a multiple value field added,
-    // schema has a new table to worry about.
-    drupal_get_schema(NULL, TRUE);
-
-    // Reset the content type info in the context of the test framework.
-    // This took me way too long to figure out.
-    _content_type_info(TRUE);
+//    $result = db_query("SELECT global_settings FROM {content_node_field} WHERE field_name = 'field_:s' AND type = 'location'", array(':s' => $field_name));
+//    $row = $result->fetch();
+//    $settings = array();
+//    $settings = unserialize($row->global_settings);
+//    $settings = $settings['location_settings'];
+//
+//    $this->refreshVariables();
+//
+//    // Reset the schema again, if it was a multiple value field added,
+//    // schema has a new table to worry about.
+//    drupal_get_schema(NULL, TRUE);
+//
+//    // Reset the content type info in the context of the test framework.
+//    // This took me way too long to figure out.
+//    _content_type_info(TRUE);
 
     return $name;
   }
