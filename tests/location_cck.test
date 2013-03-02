@@ -23,7 +23,7 @@ class LocationCCKTest extends LocationTestCase {
    */
   var $content_type;
 
-  function getInfo() {
+public static function getInfo() {
     return array(
       'name' => t('Location CCK checks'),
       'description' => t('Test corner cases of the CCK Location module.'),

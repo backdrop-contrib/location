@@ -9,7 +9,7 @@ require_once drupal_get_path('module', 'location') . '/tests/location_testcase.p
 require_once drupal_get_path('module', 'location') . '/tests/geocoder_api_keys.inc';
 
 class LocationGoogleGeocoderTest extends LocationTestCase {
-  function getInfo() {
+public static function getInfo() {
     return array(
       'name' => t('Location Google Geocoder tests'),
       'description' => t('Test address mangling for the google geocoder.'),

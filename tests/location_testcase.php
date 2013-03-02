@@ -7,18 +7,18 @@
 
 class LocationTestCase extends DrupalWebTestCase {
 
-
-  function setUp() {
-    parent::setUp('location', 'devel');
-    module_enable(array('location_node'));
-    $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
-    $this->drupalLogin($web_admin);
-  }
+//
+//  function setUp() {
+//    parent::setUp('location', 'devel');
+//    module_enable(array('location_node'));
+//    $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
+//    $this->drupalLogin($web_admin);
+//  }
 
   /**
    * Custom assertion -- will check each element of an array against a reference value.
    */
-  function assertArrayEpsilon($result, $expected, $epsilon, $message = '', $group = 'Other') {
+  protected function assertArrayEpsilon($result, $expected, $epsilon, $message = '', $group = 'Other') {
     foreach ($expected as $k => $test) {
       $lower = $test - $epsilon;
       $upper = $test + $epsilon;
@@ -38,7 +38,7 @@ class LocationTestCase extends DrupalWebTestCase {
    * Get a set of location field defaults.
    * This will also enable collection on all parts of the location field.
    */
-  function getLocationFieldDefaults() {
+  protected function getLocationFieldDefaults() {
     // Get the (settable) defaults.
     $defaults = array();
     $d = location_invoke_locationapi($location, 'defaults');
@@ -59,7 +59,7 @@ class LocationTestCase extends DrupalWebTestCase {
   /**
    * Flatten a post settings array because drupalPost isn't smart enough to.
    */
-  function flattenPostData(&$edit) {
+  protected function flattenPostData(&$edit) {
     do {
       $edit_flattened = TRUE;
       foreach ($edit as $k => $v) {
@@ -74,7 +74,7 @@ class LocationTestCase extends DrupalWebTestCase {
     } while (!$edit_flattened);
   }
 
-  function addLocationContentType(&$settings, $add = array()) {
+  protected function addLocationContentType(&$settings, $add = array()) {
     // find a non-existent random type name.
 
     $name = strtolower($this->randomName(8));
@@ -110,10 +110,10 @@ class LocationTestCase extends DrupalWebTestCase {
   /**
    * Delete a node.
    */
-  function deleteNode($nid) {
+  protected function deleteNode($nid) {
     // Implemention taken from node_delete, with some assumptions regarding
     // function_exists removed.
-    entity_get_controller('node')->delete(array($nid));
+    node_delete($nid);
 //    $node = node_load($nid);
 //    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
 //    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
@@ -129,7 +129,7 @@ class LocationTestCase extends DrupalWebTestCase {
   /**
    * Order locations in a node by LID for testing repeatability purposes.
    */
-  function reorderLocations(&$node, $field = 'locations') {
+  protected function reorderLocations(&$node, $field = 'locations') {
     $locations = array();
     foreach ($node->{$field} as $location) {
       if ($location['lid']) {
@@ -156,7 +156,7 @@ class LocationTestCase extends DrupalWebTestCase {
    *   node properties, for example 'body' => 'Hello, world!'.
    * @return object Created node object.
    */
-  function drupalCreateNodeViaForm($values = array()) {
+  protected function drupalCreateNodeViaForm($values = array()) {
     $defaults = array(
       'type' => 'page',
       'title' => $this->randomName(8),
