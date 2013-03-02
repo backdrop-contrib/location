@@ -25,7 +25,7 @@ class LocationCCKTest extends LocationCCK2Test {
 
 public static function getInfo() {
     return array(
-      'name' => t('Location CCK checks'),
+      'name' => t('Location CCK checks(broken!!!)'),
       'description' => t('Test corner cases of the CCK Location module.'),
       'group' => t('Location'),
     );
