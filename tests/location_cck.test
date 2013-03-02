@@ -32,7 +32,7 @@ class LocationCCKTest extends LocationTestCase {
   }
 
   function setUp() {
-    parent::setUp('location', 'location_cck', 'devel', 'entity', 'field_ui');
+    parent::setUp('location', 'location_cck', 'devel', 'field_ui');
     $this->admin_user = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
     $this->normal_user = $this->drupalCreateUser(array('access content'));
 

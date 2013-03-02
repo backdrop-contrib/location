@@ -9,7 +9,7 @@ class LocationTestCase extends DrupalWebTestCase {
 
 
   function setUp() {
-    parent::setUp('location', 'devel', 'entity');
+    parent::setUp('location', 'devel');
     module_enable(array('location_node'));
     $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
     $this->drupalLogin($web_admin);
@@ -113,8 +113,7 @@ class LocationTestCase extends DrupalWebTestCase {
   function deleteNode($nid) {
     // Implemention taken from node_delete, with some assumptions regarding
     // function_exists removed.
-    module_enable(array('entity'));
-    entity_delete('node', $nid);
+    entity_get_controller($entity_type)->delete(array($nid));
 //    $node = node_load($nid);
 //    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
 //    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
