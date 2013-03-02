@@ -15,7 +15,10 @@ class LocationTestCase extends DrupalWebTestCase {
       $lower = $test - $epsilon;
       $upper = $test + $epsilon;
       if ($result[$k] < $lower || $result[$k] > $upper) {
-        $this->_assert('fail', $message ? $message : t('Value deviates by @amt, which is more than @maxdev.', array('@amt' => abs($test - $result[$k]), '@maxdev' => $epsilon)), $group);
+        $this->_assert('fail', $message ? $message : t('Value deviates by @amt, which is more than @maxdev.', array(
+          '@amt' => abs($test - $result[$k]),
+          '@maxdev' => $epsilon
+        )), $group);
       }
       else {
         $this->_assert('pass', $message ? $message : t('Value within expected margin.'), $group);
@@ -65,9 +68,8 @@ class LocationTestCase extends DrupalWebTestCase {
 
   function addLocationContentType(&$settings, $add = array()) {
     // find a non-existent random type name.
-    do {
-      $name = strtolower($this->randomName(3, 'type_'));
-    } while (node_get_types('type', $name));
+
+    $name = strtolower($this->randomName(8));
 
     // Get the (settable) defaults.
     $defaults = $this->getLocationFieldDefaults();
@@ -91,9 +93,9 @@ class LocationTestCase extends DrupalWebTestCase {
     $add = array('location_settings' => $add);
     $this->flattenPostData($add);
     $settings = array_merge($settings, $add);
-    $this->drupalPost('admin/content/types/add', $settings, 'Save content type');
+    $this->drupalPost('admin/structure/types/add', $settings, 'Save content type');
     $this->refreshVariables();
-    $settings = variable_get('location_settings_node_'. $name, array());
+    $settings = variable_get('location_settings_node_' . $name, array());
     return $name;
   }
 
@@ -103,17 +105,17 @@ class LocationTestCase extends DrupalWebTestCase {
   function deleteNode($nid) {
     // Implemention taken from node_delete, with some assumptions regarding
     // function_exists removed.
-
-    $node = node_load($nid);
-    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
-    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
-
-    // Call the node-specific callback (if any):
-    node_invoke($node, 'delete');
-    node_invoke_nodeapi($node, 'delete');
-
-    // Clear the page and block caches.
-    cache_clear_all();
+    entity_delete('node', $nid);
+//    $node = node_load($nid);
+//    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
+//    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
+//
+//    // Call the node-specific callback (if any):
+//    node_invoke($node, 'delete');
+//    node_invoke_nodeapi($node, 'delete');
+//
+//    // Clear the page and block caches.
+//    cache_clear_all();
   }
 
   /**
@@ -150,7 +152,7 @@ class LocationTestCase extends DrupalWebTestCase {
     $defaults = array(
       'type' => 'page',
       'title' => $this->randomName(8),
-     );
+    );
 
     $edit = ($values + $defaults);
 
@@ -164,10 +166,13 @@ class LocationTestCase extends DrupalWebTestCase {
     $type = $edit['type'];
     unset($edit['type']); // Only used in URL.
     $this->flattenPostData($edit); // Added by me.
-    $this->drupalPost('node/add/'. str_replace('_', '-', $type), $edit, t('Save'));
+    $this->drupalPost('node/add/' . str_replace('_', '-', $type), $edit, t('Save'));
 
     $node = node_load(array('title' => $edit['title']));
-    $this->assertRaw(t('@type %title has been created.', array('@type' => node_get_types('name', $node), '%title' => $edit['title'])), t('Node created successfully.'));
+    $this->assertRaw(t('@type %title has been created.', array(
+      '@type' => node_get_types('name', $node),
+      '%title' => $edit['title']
+    )), t('Node created successfully.'));
 
     return $node;
   }

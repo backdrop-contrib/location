@@ -32,8 +32,8 @@ class LocationCCKTest extends LocationTestCase {
   }
 
   function setUp() {
-    parent::setUp('location', 'content', 'location_cck', 'devel');
-    $this->admin_user = $this->drupalCreateUser(array('administer nodes', 'submit latitude/longitude', 'administer site configuration', 'access administration pages', 'administer content types'));
+    parent::setUp('location', 'location_cck', 'devel', 'entity', 'field_ui');
+    $this->admin_user = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
     $this->normal_user = $this->drupalCreateUser(array('access content'));
 
     $this->drupalLogin($this->admin_user);
@@ -50,9 +50,9 @@ class LocationCCKTest extends LocationTestCase {
     unset($add['cck_multiple']);
 
     // find a non-existent random type name.
-    do {
-      $name = strtolower($this->randomName(3, 'type_'));
-    } while (node_get_types('type', $name));
+
+    $name = strtolower($this->randomName(8));
+
 
     $form = array(
       'name' => $name,
@@ -63,21 +63,19 @@ class LocationCCKTest extends LocationTestCase {
     //$add = array('location_settings' => $add);
     //$this->flattenPostData($add);
     //$settings = array_merge($settings, $add);
-    $this->drupalPost('admin/content/types/add', $form, 'Save content type');
+    $this->drupalPost('admin/structure/types/add', $form, 'Save content type');
     $this->refreshVariables();
 
     $form = array(
-      '_add_new_field' => array(
-        'label' => 'Location',
-        'weight' => 10,
+        'fields[_add_new_field][label]' => 'Location',
+        //'weight' => 10,
 //        'hidden_name' => '_add_new_field',
-        'field_name' => $field_name,
-        'type' => 'location',
-        'widget_type' => 'location',
-      ),
+        'fields[_add_new_field][field_name]' => $field_name,
+        'fields[_add_new_field][type]' => 'location',
+        'fields[_add_new_field][widget_type]' => 'location',
     );
     $this->flattenPostData($form);
-    $this->drupalPost('admin/content/node-type/'. str_replace('_', '-', $name) .'/fields', $form, 'Save');
+    $this->drupalPost('admin/structure/types/manage/' . $name . '/fields', $form, 'Save');
 
     $this->refreshVariables();
     drupal_get_schema(NULL, TRUE);
@@ -104,8 +102,8 @@ class LocationCCKTest extends LocationTestCase {
 
     // @@@ This is stupid, but I don't know the api for pulling this stuff up.
     // @@@ _content_type_info() perhaps?
-    $result = db_query("SELECT global_settings FROM {content_node_field} WHERE field_name = 'field_%s' AND type = 'location'", $field_name);
-    $row = db_fetch_object($result);
+    $result = db_query("SELECT global_settings FROM {content_node_field} WHERE field_name = 'field_:s' AND type = 'location'", array(':s' => $field_name));
+    $row = $result->fetch();
     $settings = array();
     $settings = unserialize($row->global_settings);
     $settings = $settings['location_settings'];
@@ -140,7 +138,7 @@ class LocationCCKTest extends LocationTestCase {
           'street' => '48072 289th St.',
           'province' => 'SD',
           'country' => 'us',
-  //        'location_settings' => $settings,
+          //        'location_settings' => $settings,
         ),
       ),
     ));
@@ -309,7 +307,7 @@ class LocationCCKTest extends LocationTestCase {
       ),
     );
     $this->flattenPostData($changes);
-    $this->drupalPost('node/'. $node->nid .'/edit', $changes, 'Save');
+    $this->drupalPost('node/' . $node->nid . '/edit', $changes, 'Save');
 
     // Reload the node again.
     $node1 = node_load($node->nid, $node->vid, TRUE);
@@ -376,7 +374,7 @@ class LocationCCKTest extends LocationTestCase {
 //      ),
     );
     $this->flattenPostData($changes);
-    $this->drupalPost('node/'. $node->nid .'/edit', $changes, 'Save');
+    $this->drupalPost('node/' . $node->nid . '/edit', $changes, 'Save');
 
     // Reload the node again.
     $node1 = node_load($node->nid, $node->vid, TRUE);
@@ -416,12 +414,12 @@ class LocationCCKTest extends LocationTestCase {
       'field_loctest' => array(
         0 => array(
           // Update name.
-          'name' => $location1_name .'_CHANGE',
+          'name' => $location1_name . '_CHANGE',
         ),
       ),
     );
     $this->flattenPostData($changes);
-    $this->drupalPost('node/'. $node->nid .'/edit', $changes, 'Save');
+    $this->drupalPost('node/' . $node->nid . '/edit', $changes, 'Save');
 
     // Reload the node again.
     $node1 = node_load($node->nid, NULL, TRUE);
