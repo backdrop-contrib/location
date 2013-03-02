@@ -19,7 +19,7 @@ public static function getInfo() {
   }
 
   function setUp() {
-    parent::setUp('location', 'location_node', 'devel', 'entity');
+    parent::setUp('location', 'location_node', 'devel');
   }
 
   function testXYZ() {
