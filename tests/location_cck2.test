@@ -48,19 +48,20 @@ class LocationCCK2Test extends LocationTestCase {
     $this->drupalLogin($this->admin_user);
   }
 
-  protected function getTestContentName(){
+  protected function getTestContentName() {
     if (!self::$name) {
       $this->addLocationContentType2();
     }
     return self::$name;
   }
 
-  protected function getTestFieldName(){
+  protected function getTestFieldName() {
     if (!self::$field_name) {
       $this->addLocationContentType2();
     }
     return self::$field_name;
   }
+
   // @todo move this to __construct
   protected function addLocationContentType2(&$settings, $add = array()) {
 
@@ -117,6 +118,20 @@ class LocationCCK2Test extends LocationTestCase {
     $this->addLocationContentType2($settings, array());
     $this->assertTrue($this->getTestContentName(), t('Content type' . $this->getTestContentName() . ' created'));
 
+    // test node creation
+    $node2 = $this->drupalCreateNode(array(
+      'type' => $this->getTestContentName(),
+    ));
+// @todo remove debug
+//    $this->fail('<pre>' . print_r($node2, TRUE) . '</pre>', 'Debug');
+    $fieldname = 'field_' . $this->getTestFieldName();
+    $fielddata = $node2->$fieldname;
+    // @todo remove debug
+    $this->pass('<pre>' . print_r($node2->$fieldname, TRUE) . '</pre>', 'Debug');
+    $this->assertEqual('ua', $fielddata['und'][0]['country']);
+    $this->assertEqual(50, $fielddata['und'][0]['latitude']);
+    $this->assertEqual(30, $fielddata['und'][0]['longitude']);
+    $this->assertEqual('Kyiv', $fielddata['und'][0]['name']);
   }
 
 }
