@@ -303,7 +303,7 @@ function _location_process_location($element, $form_state) {
         $element[$field]['#weight'] = (int) $fsettings[$field]['weight'];
       }
     }
-    
+
     // If State/Province is using the select widget, update the element's options.
     if ($field == 'province' && $fsettings[$field]['widget'] == 'select') {
       // We are building the element for the first time
@@ -442,8 +442,15 @@ function _location_process_location($element, $form_state) {
     );
   }
 
-  $element += element_info('fieldset');
-  
+  $fieldset_info = element_info('fieldset');
+  $element += $fieldset_info;
+  $element['#process'] = array_merge($element['#process'], $fieldset_info['#process']);
+  if (isset($fieldset_info['#process'])) {
+    foreach ($fieldset_info['#process'] as $process) {
+      $element = $process($element, $form_state, $form_state['complete form']);
+    }
+  }
+
   drupal_alter('location_element', $element);
   return $element;
 }
@@ -500,7 +507,7 @@ function _location_process_location_settings(&$element) {
       '#default_value' => $defaults[$field]['collect'],
       '#options' => $options,
     );
-    
+
     $dummy = array();
     $widgets = location_invoke_locationapi($dummy, 'widget', $field);
     if (!empty($widgets)) {
@@ -510,7 +517,7 @@ function _location_process_location_settings(&$element) {
         '#options' => $widgets,
       );
     }
-    
+
     $temp = $defaults[$field]['default'];
     $element[$field]['default'] = location_invoke_locationapi($temp, 'field_expand', $field, 1, $defaults);
     $defaults[$field]['default'] = $temp;
@@ -557,7 +564,7 @@ function theme_location_settings($variables) {
     $row[] = array('data' => '', 'class' => array('location-settings-drag'));
     $row[] = drupal_render($element[$key]['name']);
     $row[] = drupal_render($element[$key]['collect']);
-    $row[] = !empty($element[$key]['widget']) ? drupal_render($element[$key]['widget']) : ''; 
+    $row[] = !empty($element[$key]['widget']) ? drupal_render($element[$key]['widget']) : '';
     $row[] = drupal_render($element[$key]['default']);
     $row[] = array('data' => drupal_render($element[$key]['weight']), 'class' => array('delta-order'));
 
@@ -659,8 +666,8 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
           }
         }
       }
-      
-      
+
+
 
       if (!empty($obj['locpick']) && is_array($obj['locpick'])) {
         // Can't specify just latitude or just longitude.
@@ -1086,7 +1093,7 @@ function _location_autocomplete($country, $string = '') {
 }
 
 /**
- * AJAX callback for the Country select form, for cases where the province list  
+ * AJAX callback for the Country select form, for cases where the province list
  * is also a select element and its options need to be updated. Uses the D7 Ajax
  * Framework to do the select list updating.
  *
@@ -1104,7 +1111,7 @@ function _location_country_ajax_callback($form, $form_state) {
     return $form['locations'][arg(3)]['province'];
   }
   elseif (isset($form[arg(2)][arg(3)][arg(4)])) {
-    return $form[arg(2)][arg(3)][arg(4)]['province']; 
+    return $form[arg(2)][arg(3)][arg(4)]['province'];
   }
 }
 
@@ -1520,8 +1527,8 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
   // collected through the form, set them to whatever the postal code data
   // says they should be.
   if (!empty($location['postal_code'])) {
-    if (  empty($location['city']) || 
-          empty($location['province']) || 
+    if (  empty($location['city']) ||
+          empty($location['province']) ||
           empty($location['location_settings']['form']['fields']['city']['collect']) ||
           empty($location['location_settings']['form']['fields']['province']['collect'])
        ) {
@@ -1646,7 +1653,7 @@ function template_preprocess_location(&$variables) {
   // Map link.
   $variables['map_link'] = '';
   if (!empty($location['map_link'])) {
-    // Do not use $location for generating the map link, since it will 
+    // Do not use $location for generating the map link, since it will
     // not contain the country if that field is hidden.
     $variables['map_link'] = location_map_link($variables['location']);
   }
@@ -1837,15 +1844,24 @@ function location_form($settings, $locations) {
   // locations. (Less if we'll hit 'max' first.)
   $numforms = min($numloc + $settings['multiple']['add'], $settings['multiple']['max']);
 
-  $form = array(
-    '#type' => 'fieldset',
-    '#title' => format_plural($numforms, 'Location', 'Locations'),
-    '#tree' => TRUE,
-    '#attributes' => array('class' => array('locations')),
-    '#weight' => $settings['form']['weight'],
-    '#collapsible' => $settings['form']['collapsible'],
-    '#collapsed' => $settings['form']['collapsed'],
-  );
+  if ($settings['multiple']['max'] == 1 || $settings['multiple']['add'] == 1) {
+    $form = array(
+      '#prefix' => '<div class="location-wrapper">',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+      '#weight' => $settings['form']['weight'],
+    );
+  } else {
+    $form = array(
+      '#type' => 'fieldset',
+      '#title' => format_plural($numforms, 'Location', 'Locations'),
+      '#tree' => TRUE,
+      '#attributes' => array('class' => array('locations')),
+      '#weight' => $settings['form']['weight'],
+      '#collapsible' => $settings['form']['collapsible'],
+      '#collapsed' => $settings['form']['collapsed'],
+    );
+  }
 
   for ($i = 0; $i < $numforms; $i++) {
     $required = FALSE;
@@ -1869,8 +1885,8 @@ function location_form($settings, $locations) {
     $form[0]['#title'] = t('Location');
     // If the user had configured the form for a single location, inherit
     // the collapsible / collapsed settings.
-    $form[0]['#collapsible'] = $form['#collapsible'];
-    $form[0]['#collapsed'] = $form['#collapsed'];
+    $form[0]['#collapsible'] = $settings['form']['collapsible'];
+    $form[0]['#collapsed'] = $settings['form']['collapsed'];
   }
 
   return $form;
