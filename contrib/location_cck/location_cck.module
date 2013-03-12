@@ -470,7 +470,7 @@ function theme_location_cck_field_all($variables) {
  * multiple values in the same map.
  */
 function theme_location_cck_formatter_combined($variables) {
-  $location = $variables['element'];
+  $element = $variables['element'];
 
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $locations = $element['#items'];
