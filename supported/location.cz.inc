@@ -19,6 +19,39 @@ function location_province_list_cz() {
     'ZL' => "Zlin Region (Zlinsky kraj)");
 }
 
+
+function location_map_link_cz_providers() {
+	return array(
+			'google' => array(
+					'name' => 'Google Maps',
+					'url' => 'http://maps.google.cz',
+					'tos' => 'http://www.google.cz/help/terms_maps.html',
+			),
+	);
+}
+
+function location_map_link_cz_default_providers() {
+	return array('google');
+}
+
+function location_map_link_cz_google($location = array()) {
+	$query_params = array();
+
+	foreach (array('street', 'city', 'postal_code', 'country') as $field) {
+		if (isset($location[$field])) {
+			$query_params[] = $location[$field];
+		}
+	}
+
+	if (count($query_params)) {
+		return ('http://maps.google.cz?q='. urlencode(implode(', ', $query_params)));
+	}
+	else {
+		return NULL;
+	}
+}
+
+
 /**
  * Returns minimum and maximum latitude and longitude needed to create a bounding box.
  */
