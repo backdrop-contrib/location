@@ -46,7 +46,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       'dist' => t('Proximity (Circular)'),
     );
   }
-  
+
   function expose_options() {
     parent::expose_options();
     $this->options['expose']['gmap_macro'] = array('default' => '[gmap ]');
@@ -151,6 +151,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('postal')),
       '#weight' => 4,
+      '#attributes' => array(
+        'class' => array('location_auto_country'),
+      ),
     );
 
     $form['value']['php_code'] = array(
