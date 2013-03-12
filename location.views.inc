@@ -579,6 +579,18 @@ function location_views_proximity_get_reference_location($view, $options) {
       $coordinates['latitude'] = (float) $lat;
       $coordinates['longitude'] = (float) $lon;
       break;
+    case 'geoip':
+      if (module_exists('geoip')) {
+        if ($geoip_location = geoip_city()) { // intentional assignment of $geoip
+          $coordinates['latitude'] = $geoip_location->latitude;
+          $coordinates['longitude'] = $geoip_location->longitude;
+        }
+      }
+      else if ($options['latitude'] && $options['longitude']) {
+        $coordinates['latitude'] = (float) $options['latitude'];
+        $coordinates['longitude'] = (float) $options['longitude'];
+      }
+      break;
 
   }
 
