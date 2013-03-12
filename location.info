@@ -11,6 +11,7 @@ files[] = location.inc
 files[] = location.token.inc
 files[] = location.views.inc
 files[] = location.views_default.inc
+files[] = location.migrate.inc
 files[] = tests/location_testcase.php
 files[] = tests/cow.test
 files[] = tests/earth.test
