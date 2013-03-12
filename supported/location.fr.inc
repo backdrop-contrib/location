@@ -4,7 +4,7 @@
 
 function location_province_list_fr() {
   return array(
-   
+
     'A01' => "Ain (01)",
     'A02' => "Aisne (02)",
     'A03' => "Allier (03)",
@@ -21,7 +21,7 @@ function location_province_list_fr() {
     'A14' => "Calvados (14)",
     'A15' => "Cantal (15)",
     'A16' => "Charente (16)",
-    'A17' => "Charente-Maritime (17)", 
+    'A17' => "Charente-Maritime (17)",
     'A18' => "Cher (18)",
     'A19' => "Correze (19)",
     'A21' => "Cote-d'Or (21)",
@@ -108,6 +108,7 @@ function location_province_list_fr() {
     'C75' => "Mayotte (976)",
   );
 }
+
 function location_map_link_fr_providers() {
   return array(
     'google' => array(
@@ -132,7 +133,7 @@ function location_map_link_fr_google($location = array()) {
   }
 
   if (count($query_params)) {
-    return ('http://maps.google.fr/?q='. urlencode(implode(', ', $query_params)));
+    return ('http://maps.google.fr/?q=' . urlencode(implode(', ', $query_params)));
   }
   else {
     return NULL;
