@@ -156,6 +156,13 @@ function location_element_info() {
 }
 
 /**
+ * Implements hook_flush_caches().
+ */
+function location_flush_caches() {
+  return array('cache_location');
+}
+
+/**
  * Theme function to fixup location elements.
  * @ingroup themable
  */
