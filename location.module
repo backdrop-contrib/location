@@ -669,10 +669,10 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
     case 'validate':
       if (!empty($obj['country'])) {
-        if (!empty($obj['province']) && $obj['province'] != 'xx') {
-          $provinces = location_get_provinces($obj['country']);
+        if (!empty($obj['province']) && !empty($obj['province']['#value'])) {
+          $provinces = location_get_provinces($obj['country']['#value']);
           $found = FALSE;
-          $p = strtoupper($obj['province']);
+          $p = strtoupper($obj['province']['#value']);
           foreach ($provinces as $k => $v) {
             if ($p == strtoupper($k) || $p == strtoupper($v)) {
               $found = TRUE;
@@ -680,7 +680,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
             }
           }
           if (!$found) {
-            form_error($a3['province'], t('The specified province was not found in the specified country.'));
+            form_error($obj['province'], t('The specified province was not found in the specified country.'));
           }
         }
       }
@@ -1572,8 +1572,7 @@ function _location_geo_logic(&$location, $changed, $filled, $inhibit_geocode = F
  * Perform validation against a location fieldset.
  */
 function location_element_validate($element, &$form_state) {
-  // @@@ TODO -- future API change -- Send $form_state as param 0 so implementations can set values.
-  location_invoke_locationapi($element['#value'], 'validate', $element);
+  location_invoke_locationapi($element, 'validate');
 }
 
 /**
