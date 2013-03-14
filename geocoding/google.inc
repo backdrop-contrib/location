@@ -117,15 +117,8 @@ function google_geocode_location($location = array()) {
     usleep($delay * 1000);
   }
 
-  if (function_exists('gmap_get_key')) {
-    $key = gmap_get_key();
-  }
-  else {
-    $key = variable_get('location_geocode_google_apikey', '');
-  }
-
   $query = array(
-    'gl' => $location['country'],
+    'region' => $location['country'],
     'address' => _google_geocode_flatten($location),
     'sensor' => 'false', // Required by TOS.
   );
@@ -136,11 +129,12 @@ function google_geocode_location($location = array()) {
   ));
 
   $http_reply = drupal_http_request($url);
+  $delay_trigger = TRUE;
   $data = json_decode($http_reply->data);
 
   $status_code = $data->status;
   if ($status_code != 'OK') {
-    watchdog('location', 'Google geocoding returned status code: %status_code', array('%status_code' => $data->status));
+    watchdog('location', 'Google geocoding returned status code: %status_code for the query url: %url', array('%status_code' => $data->status, '%url' => $url));
     return NULL;
   }
   $location = $data->results[0]->geometry->location;
@@ -211,7 +205,7 @@ function _google_geocode_flatten($location = array()) {
 
   if (!empty($location['city'])) {
     if (!empty($address)) {
-      $address .= ' ';
+      $address .= ', ';
     }
 
     $address .= $location['city'];
@@ -219,7 +213,7 @@ function _google_geocode_flatten($location = array()) {
 
   if (!empty($location['province'])) {
     if (!empty($address)) {
-      $address .= ' ';
+      $address .= ', ';
     }
 
     // @@@ Fix this!
@@ -234,14 +228,14 @@ function _google_geocode_flatten($location = array()) {
 
   if (!empty($location['postal_code'])) {
     if (!empty($address)) {
-      $address .= ' ';
+      $address .= ', ';
     }
     $address .= $location['postal_code'];
   }
 
   if (!empty($location['country'])) {
     if (!empty($address)) {
-      $address .= ' ';
+      $address .= ', ';
     }
     $address .= $location['country'];
   }
