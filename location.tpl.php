@@ -3,11 +3,13 @@
     <?php if (!empty($name)): ?>
       <span class="fn"><?php print $name; ?></span>
     <?php endif; ?>
-    <?php if (!empty($street)): ?>
+    <?php if (!empty($street) || !empty($additional)): ?>
       <div class="street-address">
         <?php print $street; ?>
         <?php if (!empty($additional)): ?>
-          <?php print ' ' . $additional; ?>
+          <span class="additional">
+            <?php print ' ' . $additional; ?>
+          </span>
         <?php endif; ?>
       </div>
     <?php endif; ?>
