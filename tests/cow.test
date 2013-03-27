@@ -154,7 +154,7 @@ public static function getInfo() {
     // Reload second node.
     $node2 = node_load($node2->nid, NULL, TRUE);
 
-    $this->assertNotEqual($node->nid, $node2->nid, t('Ensuring nodes are seperate'));
+    $this->assertNotEqual($node->nid, $node2->nid, t('Ensuring nodes are separate'));
     $this->assertEqual($node->locations[0]['lid'], $node2->locations[0]['lid'], t('Testing shared location'));
 
     $this->deleteNode($node->nid);
