@@ -5,7 +5,7 @@
  * Tests for location_cck.module.
  */
 
-require_once drupal_get_path('module', 'location') . '/tests/location_testcase.php';
+require_once drupal_get_path('module', 'location') . '/tests/location_testcase.test';
 
 class LocationCCK2Test extends LocationTestCase {
   /**

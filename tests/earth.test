@@ -6,7 +6,7 @@
  */
 
 require_once drupal_get_path('module', 'location') . '/earth.inc';
-require_once drupal_get_path('module', 'location') . '/tests/location_testcase.php';
+require_once drupal_get_path('module', 'location') . '/tests/location_testcase.test';
 
 
 class LocationEarthTest extends LocationTestCase {

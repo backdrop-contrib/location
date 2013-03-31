@@ -5,7 +5,7 @@
  * Location saving test.
  */
 
-require_once drupal_get_path('module', 'location') . '/tests/location_testcase.php';
+require_once drupal_get_path('module', 'location') . '/tests/location_testcase.test';
 require_once drupal_get_path('module', 'location') . '/tests/geocoder_api_keys.inc';
 
 class LocationGoogleGeocoderTest extends LocationTestCase {
