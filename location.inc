@@ -42,14 +42,20 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
 
   location_load_country($location['country']);
 
-  $default_func = 'location_map_link_'. $location['country'] .'_default_providers';
-  $providers_func = 'location_map_link_'. $location['country'] .'_providers';
-  $providers = function_exists($providers_func) ? $providers_func() : array();
-  $selected_providers = variable_get('location_map_link_'. $location['country'], function_exists($default_func) ? $default_func() : array());
+  $default_func = 'location_map_link_' . $location['country'] . '_default_providers';
+  $providers_func = 'location_map_link_' . $location['country'] . '_providers';
+  // Merge the global providers with country specific ones so that countries
+  // can add to or override the defaults.
+  $providers = function_exists($providers_func) ? array_merge(location_map_link_providers(), $providers_func()) : location_map_link_providers();
+  // Default providers will be taken from the country specific default providers
+  // function if it exists, otherwise it will use the global function.
+  $selected_providers = variable_get('location_map_link_'. $location['country'], function_exists($default_func) ? $default_func() : location_map_link_default_providers());
 
   $links = array();
   foreach ($selected_providers as $mapper) {
     $link_func = 'location_map_link_'. $location['country'] .'_'. $mapper;
+    // If there is no country function try for a global one.
+    $link_func = function_exists($link_func) ? $link_func : 'location_map_link_' . $mapper;
     if (function_exists($link_func)) {
       if ($link = $link_func($location)) {
         $links[] = '<a href="'. $link .'"'. (variable_get('location_maplink_external', 0) ? ' '. variable_get('location_maplink_external_method', 'target="_blank"') : '') .'>'. $providers[$mapper]['name'] .'</a>';
@@ -58,6 +64,79 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
   }
   if (count($links)) {
     return '<div class="location map-link">'. t($link_text) . implode($links, ", ") .'</div>';
+  }
+  else {
+    return NULL;
+  }
+}
+
+/**
+ * Provide default map link providers.
+ * By implementing location_map_link_COUNTRYCODE_providers, individual
+ * countries can add to this (they will be merged so this default can also be
+ * overridden using those functions).
+ *
+ * @return
+ *   An array where
+ *    - the key is the a descriptive key for the provider.
+ *      The key is also used in the function name of the function that
+ *      generates the map links for that provider. For example, a key of
+ *      'google' means the name of the function that builds a link to a map
+ *      Google Maps would be 'location_map_link_google', or
+ *      'location_map_link_COUNTRYCODE_google' for country overrides.
+ *    - the value is itself an array with 3 key/value pairs:
+ *      - 'name' => points to the name of the mapping service.  For 'google',
+ *        this would be 'Google Maps'
+ *      - 'url' => the url of the main page of the mapping service.  For
+ *        'google', this would be 'http://maps.google.com'
+ *      - 'tos' => the url of the page that explains the map providers Terms of
+ *        Service, or Terms of Use. For 'google', this would be
+ *        'http://www.google.com/help/terms_local.html'
+ */
+function location_map_link_providers() {
+  return array(
+    'google' => array(
+      'name' => 'Google Maps',
+      'url' => 'http://maps.google.com',
+      'tos' => 'http://www.google.com/help/terms_local.html',
+    ),
+  );
+}
+
+/**
+ * Provide the default map link providers.
+ * This can be overridden by implementing
+ * location_map_link_COUNTRYCODE_default_providers for a given country.
+ *
+ * @return
+ *   An array of values that work as keys to the array returned by
+ *   location_map_link_providers (and country versions of that function).
+ *   The idea is that if the administrator of the site has not yet had a chance
+ *   to visit the "Map Links" subtab on the location module's settings page,
+ *   that we can provide deep-linking to a relatively safe default.
+ *   By 'relatively safe', we mean that the Terms Of Service of the provider
+ *   of the maps are flexible enough for most parties.
+ *
+ *   For example, in the case of the U.S., 'google' has relatively flexible
+ *   Terms Of Service, whereas Yahoo! Maps and MapQuest have more restrictive
+ *   Terms Of Service.
+ *
+ */
+function location_map_link_default_providers() {
+  return array('google');
+}
+
+function location_map_link_google($location = array()) {
+  $query_params = array();
+
+  foreach (array('street', 'city', 'province', 'postal_code', 'country') as $field) {
+    if (isset($location[$field])) {
+      $query_params[] = $location[$field];
+    }
+  }
+
+  if (count($query_params)) {
+    return ('http://maps.google.com?q='. urlencode(implode(", ", $query_params)));
   }
   else {
     return NULL;

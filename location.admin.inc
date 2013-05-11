@@ -125,12 +125,16 @@ function location_map_link_options_form($form, &$form_state) {
     $mapping_options = array();
     $provider_function = 'location_map_link_'. $country_iso .'_providers';
     $default_provider_function = 'location_map_link_'. $country_iso .'_default_providers';
-    $checked = variable_get('location_map_link_'. $country_iso, function_exists($default_provider_function) ? $default_provider_function() : array());
-    //print "Calling provider function $provider_function";
-    if (function_exists($provider_function)) {
-      foreach ($provider_function() as $name => $details) {
-        $mapping_options[$name] = '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)';
-      }
+
+    // Default providers will be taken from the country specific default providers
+    // function if it exists, otherwise it will use the global function.
+    $checked = variable_get('location_map_link_'. $country_iso, function_exists($default_provider_function) ? $default_provider_function() : location_map_link_default_providers());
+
+    // Merge the global providers with country specific ones so that countries
+    // can add to or override the defaults.
+    $providers = function_exists($provider_function) ? array_merge(location_map_link_providers(), $provider_function()) : location_map_link_providers();
+    foreach ($providers as $name => $details) {
+      $mapping_options[$name] = '<a href="'. $details['url'] .'">'. $details['name'] .'</a> (<a href="'. $details['tos'] .'">Terms of Use</a>)';
     }
 
     if (count($mapping_options)) {
