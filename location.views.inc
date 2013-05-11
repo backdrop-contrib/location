@@ -580,15 +580,20 @@ function location_views_proximity_get_reference_location($view, $options) {
       $coordinates['longitude'] = (float) $lon;
       break;
     case 'geoip':
-      if (module_exists('geoip')) {
+      $coordinates['latitude'] = (float) $options['latitude'];
+      $coordinates['longitude'] = (float) $options['longitude'];
+      if (module_exists('smart_ip')) {
+        if (isset($_SESSION['smart_ip']['location']['latitude']) &&
+          isset($_SESSION['smart_ip']['location']['longitude'])) {
+          $coordinates['latitude'] = (float) $_SESSION['smart_ip']['location']['latitude'];
+          $coordinates['longitude'] = (float) $_SESSION['smart_ip']['location']['longitude'];
+        }
+      }
+      elseif (module_exists('geoip')) {
         if ($geoip_location = geoip_city()) { // intentional assignment of $geoip
           $coordinates['latitude'] = $geoip_location->latitude;
           $coordinates['longitude'] = $geoip_location->longitude;
         }
-      }
-      else if ($options['latitude'] && $options['longitude']) {
-        $coordinates['latitude'] = (float) $options['latitude'];
-        $coordinates['longitude'] = (float) $options['longitude'];
       }
       break;
 

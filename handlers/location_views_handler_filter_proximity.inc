@@ -86,13 +86,13 @@ class location_views_handler_filter_proximity extends views_handler_filter {
         'nid_arg' => t("Node's Latitude / Longitude from views nid argument"),
         'uid_arg' => t("User's Latitude / Longitude from views uid argument"),
       ),
-      '#description' => t('This will be the way the latitude/longitude of origin is determined.  If this filter is exposed, this will determine the default values. NOTE: The PHP code, nid argument and uid argument options will not be available when the filter is exposed and the use of map is only available when the filter is exposed.  To use the visitor\'s IP address, you must have the geoip module with the MaxMind GeoLiteCity installed.'),
+      '#description' => t('This will be the way the latitude/longitude of origin is determined.  If this filter is exposed, this will determine the default values. NOTE: The PHP code, nid argument and uid argument options will not be available when the filter is exposed and the use of map is only available when the filter is exposed.  To use the visitor\'s IP address, you must have a supported geolocation module installed.'),
       '#default_value' => $this->options['origin'] ? $this->options['origin'] : 'user',
     );
     if (module_exists('gmap')) {
       $form['origin']['#options']['latlon_gmap'] = t('Latitude / Longitude input (use map)');
     }
-    if (module_exists('geoip')) {
+    if (module_exists('geoip') || module_exists('smart_ip')) {
       $form['origin']['#options']['geoip'] = t("IP Address of visitor (fall back to static if unset)");
     }
 
