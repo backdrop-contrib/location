@@ -116,6 +116,12 @@ function location_views_data() {
       'left_field' => 'lid',
       'field' => 'lid',
     ),
+    // Location links to taxonomy_term_data through location_instance via lid.
+    'taxonomy_term_data' => array(
+      'left_table' => 'location_instance',
+      'left_field' => 'lid',
+      'field' => 'lid',
+    ),
     // Location links to users through location_instance via lid.
     'users' => array(
       'left_table' => 'location_instance',
@@ -388,6 +394,10 @@ function location_views_data() {
       'left_field' => 'vid',
       'field' => 'vid',
     ),
+    'taxonomy_term_data' => array(
+      'left_field' => 'tid',
+      'field' => 'vid',
+    ),
   );
 
 
@@ -401,6 +411,11 @@ function location_views_data() {
     'left_table' => 'location_instance',
     'left_field' => 'vid',
     'field' => 'vid',
+  );
+  $data['taxonomy_term_data']['table']['join']['location'] = array(
+    'left_table' => 'location_instance',
+    'left_field' => 'vid',
+    'field' => 'tid',
   );
   $data['users']['table']['join']['location'] = array(
     'left_table' => 'location_instance',
