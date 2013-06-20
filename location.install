@@ -16,10 +16,10 @@ function location_uninstall() {
   variable_del('location_locpick_macro');
 
   // Delete geocoder settings.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_geocode_%'")->fetchCol();
-  foreach ($result as $var) {
-    variable_del($var);
-  }
+  db_delete('variable')
+    ->condition('name', db_like('location_geocode_') . '%', 'LIKE')
+    ->execute();
+  cache_clear_all('variables', 'cache_bootstrap');
 }
 
 /**
