@@ -109,7 +109,7 @@ function location_node_node_view($node, $view_mode) {
   else {
     if (variable_get('location_display_location', 1) && !empty($node->locations)) {
       if (isset($settings['display']['teaser']) && isset($settings['display']['full'])) {
-        if (($view_mode == 'teaser' && $settings['display']['teaser']) || ($view_mode == 'full' && $settings['display']['full'])) {
+        if (($view_mode == 'teaser' && $settings['display']['teaser']) || (in_array($view_mode, array('full', 'search_index')) && $settings['display']['full'])) {
           $node->content['locations'] = location_display($settings, $node->locations);
         }
       }
