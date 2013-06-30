@@ -515,8 +515,11 @@ function location_views_proximity_get_reference_location($view, $options) {
       break;
     case 'static':
     case 'latlon_gmap':
-      $coordinates['latitude'] = (float) $options['latitude'];
-      $coordinates['longitude'] = (float) $options['longitude'];
+      // Validate actual values
+      if ( !empty( $options['latitude'] ) && !empty( $options['longitude'] ) ) {
+        $coordinates['latitude'] = (float) $options['latitude'];
+        $coordinates['longitude'] = (float) $options['longitude'];
+      }
       break;
     case 'tied':
       if (!empty($view->filter)) {
