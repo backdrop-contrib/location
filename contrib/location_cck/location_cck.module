@@ -152,6 +152,7 @@ function location_cck_field_schema($field) {
  * Implement hook_field_insert().
  */
 function location_cck_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  $criteria = array();
   if ($entity_type == 'node') {
     if (!empty($items)) {
       // Store instances of locations by field name and vid.
@@ -179,6 +180,7 @@ function location_cck_field_insert($entity_type, $entity, $field, $instance, $la
  * Implement hook_field_update().
  */
 function location_cck_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  $criteria = array();
   if ($entity_type == 'node') {
     if (!empty($items)) {
       // Store instances of locations by field name and vid.
