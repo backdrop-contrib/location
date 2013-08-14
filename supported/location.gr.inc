@@ -60,11 +60,13 @@ function location_map_link_gr_google($location = array()) {
 }
 
 function location_map_link_gr_providers() {
-  return array('google' => array('name' => 'Google Maps', 'url' => 'http://www.google.com/help/terms_maps.html'));
+  return array('google' => array(
+    'name' => 'Google Maps',
+    'url' => 'http://maps.google.gr',
+    'tos' => 'http://www.google.gr/help/terms_maps.html')
+  );
 }
-
 
 function location_map_link_gr_default_providers() {
   return array('google');
 }
-
