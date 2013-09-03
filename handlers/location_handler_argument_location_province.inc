@@ -23,7 +23,7 @@ class location_handler_argument_location_province extends views_handler_argument
     );
   }
 
-  function query() {
+  function query($group_by = FALSE) {
     $this->ensure_my_table();
     if (!empty($this->options['break_phrase'])) {
       if ($this->argument != '') {
