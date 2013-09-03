@@ -34,7 +34,7 @@ function location_province_list_cn() {
     '63' => "Qinghai",
     '64' => "Ningxia",
     '65' => "Xinjiang",
-    '71' => "Taiwan",
+    '71' => "Chinese Taipei",
     '91' => "Xianggang",
     '92' => "Aomen",
     '97' => "Chongqing",
