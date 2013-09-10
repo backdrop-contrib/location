@@ -522,7 +522,11 @@ function location_province_list_us() {
                'MP' => 'Northern Mariana Islands',
                'PW' => 'Palau',
                'PR' => 'Puerto Rico',
-               'VI' => 'Virgin Islands'
+               'VI' => 'Virgin Islands',
+
+               'AA' => 'Armed Forces Americas',
+               'AE' => 'Armed Forces Europe',
+               'AP' => 'Armed Forces Pacific',
               );
 }
 
