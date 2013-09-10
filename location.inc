@@ -606,6 +606,9 @@ function location_province_code($country = 'us', $province = 'xx') {
 
   $p = strtoupper($province);
   foreach ($country as $c) {
+    if ($c == 'xx') {
+      return $province;
+    }
     $provinces = location_get_provinces($c);
     foreach ($provinces as $k => $v) {
       if ($p == strtoupper($k) || $p == strtoupper($v)) {
