@@ -560,7 +560,7 @@ function location_views_proximity_get_reference_location($view, $options) {
       break;
     case 'nid_arg':
       if ($nodehandler = $view->display_handler->get_handler('argument', $options['nid_arg'])) {
-        $nid = $nodehandler->get_value();
+        $nid = $nodehandler->get_value(NULL);
         if ($nid && is_numeric($nid) && $tempnode = node_load($nid)) {
           $field_name = $options['nid_loc_field'];
           if ($field_name == 'node') {
