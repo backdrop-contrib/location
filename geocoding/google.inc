@@ -120,6 +120,7 @@ function google_geocode_location($location = array()) {
   $query = array(
     'region' => $location['country'],
     'address' => _google_geocode_flatten($location),
+    'components' => _google_geocode_get_components($location),
     'sensor' => 'false', // Required by TOS.
   );
 
@@ -241,4 +242,50 @@ function _google_geocode_flatten($location = array()) {
   }
 
   return $address;
+}
+
+/**
+ * Gets a components string to pass to the google geocode API.
+ *
+ * This is required to get more accurate results because sometimes when passing
+ * in a small piece of information, like a country code only, it could also
+ * match a different part of an address for another country as the highest
+ * match.
+ *
+ * See https://developers.google.com/maps/documentation/geocoding/#ComponentFiltering
+ * for details.
+ *
+ * @param array $location
+ *   A location array.
+ *
+ * @return string
+ *   A components string formatted as per the docs page linked to above.
+ */
+function _google_geocode_get_components($location = array()) {
+  // Check if its a valid address
+  if (empty($location)) {
+    return '';
+  }
+
+  $components = array();
+  if (!empty($location['city'])) {
+    $components[] = 'locality:' . $location['city'];
+  }
+  if (!empty($location['province'])) {
+    // @@@ Fix this!
+    if (!empty($location['country']) && substr($location['province'], 0, 3) == $location['country'] . '-') {
+      $components[] = 'administrative_area:' . substr($location['province'], 3);
+    }
+    else {
+      $components[] = 'administrative_area:' . $location['province'];
+    }
+  }
+  if (!empty($location['postal_code'])) {
+    $components[] = 'postal_code:' . $location['postal_code'];
+  }
+  if (!empty($location['country'])) {
+    $components[] = 'country:' . $location['country'];
+  }
+
+  return implode('|', $components);
 }
