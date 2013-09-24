@@ -14,7 +14,7 @@ function location_province_list_ca() {
     'SK' => 'Saskatchewan',
     'NT' => 'Northwest Territories',
     'NU' => 'Nunavut',
-    'YT' => 'Yukon Territory',
+    'YT' => 'Yukon',
   );
 }
 
@@ -32,7 +32,7 @@ function location_province_list_numeric_ca() {
     '010' => 'Saskatchewan',
     '011' => 'Northwest Territories',
     '012' => 'Nunavut',
-    '013' => 'Yukon Territory',
+    '013' => 'Yukon',
   );
 }
 
