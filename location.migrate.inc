@@ -2,6 +2,23 @@
 /**
  * @file
  * Migrate integration.
+ */
+
+/**
+ * Implements hook_migrate_api().
+ */
+function location_migrate_api() {
+  $api = array(
+    'api' => 2,
+    'field handlers' => array(
+      'MigrateLocationFieldHandler',
+    ),
+  );
+
+  return $api;
+}
+
+ /*
  *
  * Primary value passed to this field is the is_primary value (boolean)
  * but can be overwritten with subfields.

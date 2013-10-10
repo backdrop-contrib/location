@@ -238,17 +238,6 @@ function location_views_api() {
 }
 
 /**
- * Implements hook_migrate_api().
- */
-function location_migrate_api() {
-  $api = array(
-    'api' => 2,
-  );
-
-  return $api;
-}
-
-/**
  * Implements hook_ctools_plugin_directory().
  */
 function location_ctools_plugin_directory($module, $plugin) {
