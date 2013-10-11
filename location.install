@@ -281,6 +281,27 @@ function location_schema() {
     'primary key' => array('cid'),
   );
 
+  //New location country table (needed for sorting
+  $schema['location_country'] = array(
+    'description' => 'Country data managed by location.module.',
+    'fields' => array(
+      'code' => array(
+        'description' => 'Primary Key: Two letter ISO Country Code',
+        'type' => 'char',
+        'length' => 2,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Full Country Name ',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('code'),
+  );
+
   return $schema;
 }
 
@@ -1286,3 +1307,24 @@ function location_update_7301() {
   return;
 }
 
+/**
+ * Adds the Country code to name table "location_country".  It is created from the included array country array.
+ */
+function location_update_7302() {
+  //Create the new table
+  $schema = location_schema() ;
+  db_create_table('location_country', $schema['location_country']);
+
+  //Fill it.
+  $sql = 'INSERT INTO {location_country} (code, name) VALUES ';
+  $sql2 = '';
+  $countries = location_get_iso3166_list();
+  foreach($countries as $code => $name){
+    $variables = array();
+
+    $variables[] = $code;
+    $variables[] = $name;
+    $sql2 = "('$code', '$name')";
+    db_query($sql . $sql2);
+  }
+}

@@ -71,6 +71,9 @@ function location_views_handlers() {
       'location_handler_sort_location_distance' => array(
         'parent' => 'views_handler_sort',
       ),
+      'location_handler_sort_location_country' => array(
+        'parent' => 'views_handler_sort',
+      ),
 //      'location_handler_relationship_location_distance' => array(
 //        'parent' => 'views_handler_relationship',
 //      ),
@@ -279,8 +282,7 @@ function location_views_data() {
       'handler' => 'location_handler_filter_location_country',
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
-      // TODO: needs handler to sort by name, not code
+      'handler' => 'location_handler_sort_location_country',
     ),
   );
 
