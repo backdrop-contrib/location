@@ -213,8 +213,8 @@ function location_cck_field_delete($entity_type, $entity, $field, $instance, $la
 
     // Use the CCK storage to figure out the vids that need to be deleted,
     // and clean up all the applicable references.
-   // $db_info = content_database_info($field);
-  //  $result = db_query('SELECT vid FROM {' . $db_info['table'] . '} WHERE nid = :nid', array(':nid' => $node->nid));
+    // $db_info = content_database_info($field);
+    //  $result = db_query('SELECT vid FROM {' . $db_info['table'] . '} WHERE nid = :nid', array(':nid' => $node->nid));
     $result = db_query('SELECT vid FROM {node_revision} WHERE nid = :nid', array(':nid' => $entity->nid));
     foreach ($result as $row) {
       $genid = 'cck:' . $field['field_name'] . ':' . $row->vid;
@@ -403,33 +403,35 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
       $location = location_load_location($items[$delta]['lid']);
     }
     // Load location data passed by cck.
-    else if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
+    else {
+      if (isset($items[$delta]) && is_array($items[$delta]) && !empty($items[$delta])) {
 
-      // Initialize empty location.
-      $location = location_empty_location($settings);
-      foreach ($items[$delta] as $k => $v) {
-        $location[$k] = $v;
-      }
-      // We can't trust that CCK is giving us the right information.
-      // It can't tell us whether $items is defaults or multistep values.
-      // Location *needs* the defaults to match the initial field values,
-      // so we re-calculate the defaults here and stash them into the settings.
-      // @@@ There is still a bug here!
-      // If you go back and edit something, and you hadn't set a location the
-      // first time, CCK fails to set up the defaults properly!
-      // I'm just going to leave it like that for now, because I don't know how
-      // to work around it.
-      $temp = NULL; //content_default_value($form, $form_state, $field, 0);
-      if (is_array($temp) && isset($temp[$delta]) && is_array($temp[$delta])) {
-        foreach ($temp[$delta] as $k => $v) {
-          $settings['form']['fields'][$k]['default'] = $v;
+        // Initialize empty location.
+        $location = location_empty_location($settings);
+        foreach ($items[$delta] as $k => $v) {
+          $location[$k] = $v;
         }
-      }
+        // We can't trust that CCK is giving us the right information.
+        // It can't tell us whether $items is defaults or multistep values.
+        // Location *needs* the defaults to match the initial field values,
+        // so we re-calculate the defaults here and stash them into the settings.
+        // @@@ There is still a bug here!
+        // If you go back and edit something, and you hadn't set a location the
+        // first time, CCK fails to set up the defaults properly!
+        // I'm just going to leave it like that for now, because I don't know how
+        // to work around it.
+        $temp = NULL; //content_default_value($form, $form_state, $field, 0);
+        if (is_array($temp) && isset($temp[$delta]) && is_array($temp[$delta])) {
+          foreach ($temp[$delta] as $k => $v) {
+            $settings['form']['fields'][$k]['default'] = $v;
+          }
+        }
 //      unset($location['location_settings']);
 //      unset($location['locpick']);
-    }
-    else {
-      $location = location_empty_location($settings);
+      }
+      else {
+        $location = location_empty_location($settings);
+      }
     }
 
     $element = array(
@@ -463,7 +465,11 @@ function location_cck_field_is_empty($item, $field) {
  */
 function theme_location_cck_field_all($variables) {
   $content = theme('location', array('location' => $variables['location'], 'hide' => $variables['hide']));
-  $content .= theme_location_cck_field_map(array('locations' => array($variables['location']), 'field' => $variables['field'], 'instance' => $variables['instance']));
+  $content .= theme_location_cck_field_map(array(
+    'locations' => array($variables['location']),
+    'field' => $variables['field'],
+    'instance' => $variables['instance']
+  ));
   return $content;
 }
 
@@ -500,7 +506,7 @@ function theme_location_cck_field_map($variables) {
         'latitude' => $location['latitude'],
         'longitude' => $location['longitude'],
         'markername' => $markername,
-        'offset' => $count-1,
+        'offset' => $count - 1,
         'text' => theme('location_cck_field_popup', array('location' => $location, 'instance' => $instance)),
       );
     }
@@ -540,7 +546,7 @@ function theme_location_cck_field_popup($variables) {
   if (!empty($location['name'])) {
     $markertitle = $location['name'];
   }
-  return '<h4>'. $markertitle .'</h4>'. theme('location', array('location' => $location, 'hide' => $hide));
+  return '<h4>' . $markertitle . '</h4>' . theme('location', array('location' => $location, 'hide' => $hide));
 }
 
 /**

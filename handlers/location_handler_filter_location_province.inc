@@ -20,6 +20,7 @@ class location_handler_filter_location_province extends views_handler_filter {
 //    $options = $this->operator_options('short');
 //    return (!empty($this->options['exposed']) ? t('exposed') : $options[$this->operator]);
   }
+
   function has_extra_options() {
     return TRUE;
   }
@@ -43,12 +44,12 @@ class location_handler_filter_location_province extends views_handler_filter {
       $ac = implode(',', $ac);
     }
     if ($this->options['type'] == 'textfield') {
-      drupal_add_js(drupal_get_path('module', 'location') .'/location_autocomplete.js');
+      drupal_add_js(drupal_get_path('module', 'location') . '/location_autocomplete.js');
 
       $form['value'] = array(
         '#type' => 'textfield',
         '#title' => t('State/Province'),
-        '#autocomplete_path' => 'location/autocomplete/'. $ac,
+        '#autocomplete_path' => 'location/autocomplete/' . $ac,
         '#default_value' => $this->value,
         '#size' => 64,
         '#maxlength' => 64,
@@ -59,21 +60,23 @@ class location_handler_filter_location_province extends views_handler_filter {
 
       // Let location_autocomplete.js find the correct fields to attach.
       if ($this->location_country_identifier) {
-        $form['value']['#attributes']['class'] .= ' location_auto_join_'. $this->location_country_identifier;
+        $form['value']['#attributes']['class'] .= ' location_auto_join_' . $this->location_country_identifier;
       }
     }
-    else if ($this->options['type'] == 'select') {
-      $provinces = location_get_provinces($ac);
-      $form['value'] = array(
-        '#type' => 'select',
-        '#title' => t('State/Province'),
-        '#options' => $provinces,
-        '#default_value' => -1,
-      	'#multiple' => isset($this->options['expose']['multiple']) ? $this->options['expose']['multiple'] : FALSE
-      );
+    else {
+      if ($this->options['type'] == 'select') {
+        $provinces = location_get_provinces($ac);
+        $form['value'] = array(
+          '#type' => 'select',
+          '#title' => t('State/Province'),
+          '#options' => $provinces,
+          '#default_value' => -1,
+          '#multiple' => isset($this->options['expose']['multiple']) ? $this->options['expose']['multiple'] : FALSE
+        );
 
-     }
-   }
+      }
+    }
+  }
 
   function operator_options() {
     if ($this->options['expose']['single']) {

@@ -65,7 +65,7 @@ function location_map_link_cn_google($location = array()) {
   }
 
   if (count($query_params)) {
-    return ('http://maps.google.com.hk?q='. urlencode(implode(', ', $query_params)));
+    return ('http://maps.google.com.hk?q=' . urlencode(implode(', ', $query_params)));
   }
   else {
     return NULL;

@@ -263,7 +263,7 @@ function location_map_link_gb_google($location = array()) {
   }
 
   if (count($query_params)) {
-    return ('http://maps.google.co.uk?q='. urlencode(implode(', ', $query_params)));
+    return ('http://maps.google.co.uk?q=' . urlencode(implode(', ', $query_params)));
   }
   else {
     return NULL;

@@ -41,10 +41,12 @@ function location_taxonomy_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'taxonomy_form_term') {
     if (isset($form['vid']) && is_array($form['vid'])) {
       $vid = $form['vid']['#value'];
-    } elseif (isset($form['#vocabulary']->vid)) {
+    }
+    elseif (isset($form['#vocabulary']->vid)) {
       $vid = $form['#vocabulary']->vid;
-    } else {
-      return false;
+    }
+    else {
+      return FALSE;
     }
     $settings = variable_get('location_taxonomy_' . $vid, FALSE);
     if ($settings && $settings['multiple']['max']) {

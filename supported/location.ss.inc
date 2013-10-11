@@ -3,16 +3,18 @@
 // South Sudan
 
 function location_province_list_ss() {
-  return array('EC' => "Central Equatoria",
-	'EE' => "Eastern Equatoria",
-	'JG' => "Jonglei",
-	'LK' => "Lakes",
-	'BN' => "Northern Bahr el-Ghazal",
-	'UY' => "Unity",
-	'NU' => "Upper Nile",
-	'WR' => "Warrap",
-	'BW' => "Western Bahr el-Ghazal",
-	'EW' => "Western Equatoria");
+  return array(
+    'EC' => "Central Equatoria",
+    'EE' => "Eastern Equatoria",
+    'JG' => "Jonglei",
+    'LK' => "Lakes",
+    'BN' => "Northern Bahr el-Ghazal",
+    'UY' => "Unity",
+    'NU' => "Upper Nile",
+    'WR' => "Warrap",
+    'BW' => "Western Bahr el-Ghazal",
+    'EW' => "Western Equatoria"
+  );
 }
 
 /**

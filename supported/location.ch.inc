@@ -62,7 +62,7 @@ function location_map_link_ch_google($location = array()) {
   }
 
   if (count($query_params)) {
-    return ('http://maps.google.ch?q='. urlencode(implode(', ', $query_params)));
+    return ('http://maps.google.ch?q=' . urlencode(implode(', ', $query_params)));
   }
   else {
     return NULL;
@@ -97,7 +97,7 @@ function _location_driving_directions_link_ch_search($location_a, $location_b) {
       $query_params_b[] = $location_b[$field];
     }
   }
-  return 'http://route.search.ch/?route=' . urlencode(implode(' ', $query_params_a) . ' to ' .implode(' ', $query_params_b));
+  return 'http://route.search.ch/?route=' . urlencode(implode(' ', $query_params_a) . ' to ' . implode(' ', $query_params_b));
 }
 
 /**

@@ -18,28 +18,28 @@ function location_migrate_api() {
   return $api;
 }
 
- /*
- *
- * Primary value passed to this field is the is_primary value (boolean)
- * but can be overwritten with subfields.
- *
- * Subfields are used to specify all the other values:
- *  'street'
- *  'additional',
- *  'city',
- *  'province',
- *  'postal_code',
- *  'country',
- *  'is_primary',
- *  'latitude',
- *  'longitude'
- *
- * @code
- *   $this->addFieldMapping('field_location_dest')->defaultValue('TRUE');
- *   $this->addFieldMapping('field_location_dest:street', 'field_source_address_1');
- *   $this->addFieldMapping('field_location_dest:city', 'field_source_city');
- * @endcode
- */
+/*
+*
+* Primary value passed to this field is the is_primary value (boolean)
+* but can be overwritten with subfields.
+*
+* Subfields are used to specify all the other values:
+*  'street'
+*  'additional',
+*  'city',
+*  'province',
+*  'postal_code',
+*  'country',
+*  'is_primary',
+*  'latitude',
+*  'longitude'
+*
+* @code
+*   $this->addFieldMapping('field_location_dest')->defaultValue('TRUE');
+*   $this->addFieldMapping('field_location_dest:street', 'field_source_address_1');
+*   $this->addFieldMapping('field_location_dest:city', 'field_source_city');
+* @endcode
+*/
 class MigrateLocationFieldHandler extends MigrateFieldHandler {
 
   public function __construct() {
@@ -74,7 +74,7 @@ class MigrateLocationFieldHandler extends MigrateFieldHandler {
   }
 
   public function prepare($entity, array $field_info, array $instance, array $values) {
-    $migration   = Migration::currentMigration();
+    $migration = Migration::currentMigration();
     $destination = $migration->getDestination();
 
     $arguments = array();

@@ -43,7 +43,7 @@ function location_map_link_nl_google($location = array()) {
   }
 
   if (count($query_params)) {
-    return ('http://maps.google.nl?q='. urlencode(implode(', ', $query_params)));
+    return ('http://maps.google.nl?q=' . urlencode(implode(', ', $query_params)));
   }
   else {
     return NULL;
