@@ -18,7 +18,7 @@ function location_province_list_in() {
     'KA' => "Karnataka",
     'KL' => "Kerala",
     'MP' => "Madhya Pradesh",
-    'MM' => "Maharashtra",
+    'MH' => "Maharashtra",
     'MN' => "Manipur",
     'ML' => "Meghalaya",
     'MZ' => "Mizoram",
