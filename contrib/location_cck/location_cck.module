@@ -549,60 +549,90 @@ function theme_location_cck_field_popup($variables) {
   return '<h4>' . $markertitle . '</h4>' . theme('location', array('location' => $location, 'hide' => $hide));
 }
 
-/**
- * Implements hook_token_list().
- */
-function location_cck_token_list($type = 'all') {
-  if ($type == 'field') {
-    $tokens = array();
-
-    $fields = location_field_names(TRUE);
-    // @@@ We really need to rethink fields in location..
-    unset($fields['locpick']);
-    foreach ($fields as $k => $v) {
-      $tokens['location'][$k] = $v;
-    }
-
-    return $tokens;
-  }
-}
 
 /**
- * Implements hook_token_values().
+ * Implements hook_token_info().
  */
-function location_cck_token_values($type, $object = NULL) {
-  if ($type == 'field') {
-    $tokens = array();
-    $item = $object[0];
-    if ($item['lid']) {
-      // If the location exists, we need to set up the tokens.
+ function location_cck_token_info() {
+   $info = array();
+   
+   // Load all available fields.
+   $entities = field_info_field_map();
+   
+   // Loop through our fields and remove all but location types.
+   foreach ($entities as $key => $value) {
+     if ($value['type'] != 'location') {
+       unset($entities[$key]);
+     }
+   }
 
-      $location = array(
-        // There is no way to find out which elements to hide because $item does not contain
-        // the 'location_settings' element, so for now, just set it to be an empty array.
-        // See http://drupal.org/node/463618 for more infomation.
-        'hide' => array(),
-        'location' => location_load_location($item['lid']),
+   // If we have location fields available, setup our tokens.
+   if(sizeof($entities)) {
+     // Get the available location field names.
+     $fields = location_field_names(TRUE);
+
+     // Loop through the location fields and setup tokens.
+     foreach ($entities as $key => $value) {
+      
+      $info['tokens']['node'][$key] = array(
+        'name' => t('Location field: !field', array('!field' => $key)),
+        'description' => t('Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.', array('!field' => $key)),
+        'type' => $key,
       );
+     
+       $info['types'][$key] = array(
+        'name' => t('Location field: !field', array('!field' => $key)),
+        'description' => t('Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.', array('!field' => $key)),
+        'needs-data' => 'node',
+       );
+       
+       foreach ($fields as $field_key => $field_value) {
+         $info['tokens'][$key][$field_key . ":?"] = array(
+          'name' => t($field_value),
+          'description' => t($field_value)
+         );
+       }
+       
+     }
+   }
 
-      // @@@ This is rather silly, but I can't think of anything better at the moment.
-      $variables = array('location' => $location);
-      template_preprocess_location($variables);
+   return $info;
+ }
+ 
+/**
+ * Implements hook_tokens().
+ */
+function location_cck_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  // Setup our replacements array.
+  $replacements = array();
 
-      $fields = location_field_names(TRUE);
-      // @@@ We really need to rethink fields in location..
-      unset($fields['locpick']);
-      foreach ($fields as $k => $v) {
-        if (isset($location[$k])) {
-          $tokens[$k] = $location[$k];
-        }
-        else {
-          $tokens[$k] = '';
-        }
+  // Make sure we have a node.
+  if(isset($data['entity_type']) && $data['entity_type'] == 'node') {
+
+    $node = $data['entity'];
+
+    // Get the available fields from the location module.
+    $available = location_field_names(TRUE);
+
+    // Loop through the tokens.
+    foreach ($tokens as $name => $original) {
+      // Break our token into an array to use later.
+      $fields = explode(':', $name);
+      $entity = $fields[0];
+      $field = $fields[1];
+      // Allow for a position at the end of the token. If no position is given
+      // default it to the first element.
+      $position = (isset($fields[2]) && is_numeric($fields[2]) ? $fields[2] : 0);
+
+      // If the token is in the $available, replace it.
+      if($available[$field]) {
+        $replacements[$original] = (isset($node->{$entity}[LANGUAGE_NONE][$position][$field]) ? $node->{$entity}[LANGUAGE_NONE][$position][$field] : '');
       }
-    }
-    return $tokens;
+    }  
   }
+
+  return $replacements;
+
 }
 
 /**
