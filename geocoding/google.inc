@@ -218,19 +218,12 @@ function _google_geocode_flatten($location = array()) {
     $address .= $location['city'];
   }
 
-  if (!empty($location['province'])) {
+  // Using province short code regularlyy gives no results.
+  if (!empty($location['province_name'])) {
     if (!empty($address)) {
       $address .= ', ';
     }
-
-    // @@@ Fix this!
-    if (substr($location['province'], 0, 3) == $location['country'] . '-') {
-      $address .= substr($location['province'], 3);
-      watchdog('Location', 'BUG: Country found in province attribute.');
-    }
-    else {
-      $address .= $location['province'];
-    }
+    $address .= $location['province_name'];
   }
 
   if (!empty($location['postal_code'])) {
@@ -277,14 +270,8 @@ function _google_geocode_get_components($location = array()) {
   if (!empty($location['city'])) {
     $components[] = 'locality:' . $location['city'];
   }
-  if (!empty($location['province'])) {
-    // @@@ Fix this!
-    if (!empty($location['country']) && substr($location['province'], 0, 3) == $location['country'] . '-') {
-      $components[] = 'administrative_area:' . substr($location['province'], 3);
-    }
-    else {
-      $components[] = 'administrative_area:' . $location['province'];
-    }
+  if (!empty($location['province_name'])) {
+    $components[] = 'administrative_area:' . $location['province_name'];
   }
   if (!empty($location['postal_code'])) {
     $components[] = 'postal_code:' . $location['postal_code'];
