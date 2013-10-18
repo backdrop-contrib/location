@@ -64,7 +64,7 @@ function location_map_link_gr_google($location = array()) {
 function location_map_link_gr_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.gr',
       'tos' => 'http://www.google.gr/help/terms_maps.html'
     )

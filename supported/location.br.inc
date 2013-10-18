@@ -46,7 +46,7 @@ function location_province_list_br() {
 function location_map_link_br_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.com.br',
       'tos' => 'http://maps.google.com/intl/pt-BR/help/terms_maps.html',
     ),

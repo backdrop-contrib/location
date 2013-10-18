@@ -96,7 +96,7 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
 function location_map_link_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.com',
       'tos' => 'http://www.google.com/help/terms_local.html',
     ),

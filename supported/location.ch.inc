@@ -41,7 +41,7 @@ function location_map_link_ch_providers() {
       'tos' => 'http://map.search.ch/terms.html',
     ),
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.ch',
       'tos' => 'http://www.google.ch/help/terms_maps.html',
     ),

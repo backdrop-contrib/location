@@ -31,7 +31,7 @@ function location_province_list_pt() {
 function location_map_link_pt_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.pt',
       'tos' => 'http://www.google.pt/help/terms_maps.html',
     ),

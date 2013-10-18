@@ -37,7 +37,7 @@ function location_bounds_be() {
 function location_map_link_be_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.be/',
       'tos' => 'http://maps.google.be/help/terms_maps.html',
     ),

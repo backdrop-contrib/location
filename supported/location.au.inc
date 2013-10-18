@@ -209,7 +209,7 @@ function location_map_link_au_mapquest($location = array()) {
 function location_map_link_au_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.com',
       'tos' => 'http://www.google.com/help/terms_local.html'
     ),

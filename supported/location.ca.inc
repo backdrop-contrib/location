@@ -184,7 +184,7 @@ function location_map_link_ca_mapquest($location = array()) {
 function location_map_link_ca_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.ca',
       'tos' => 'http://www.google.ca/help/terms_local.html'
     ),

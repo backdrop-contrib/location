@@ -95,7 +95,7 @@ function google_geocode_country_list() {
  */
 function google_geocode_info() {
   return array(
-    'name' => 'Google Maps',
+    'name' => t('Google Maps'),
     'url' => 'http://maps.google.com',
     'tos' => 'http://www.google.com/help/terms_local.html',
     'general' => TRUE,

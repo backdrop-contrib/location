@@ -110,7 +110,7 @@ function location_province_list_fr() {
 function location_map_link_fr_providers() {
   return array(
     'google' => array(
-      'name' => 'Google Maps',
+      'name' => t('Google Maps'),
       'url' => 'http://maps.google.fr/',
       'tos' => 'http://maps.google.fr//help/terms_maps.html',
     ),
