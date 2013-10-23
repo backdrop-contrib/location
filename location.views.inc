@@ -535,6 +535,15 @@ function location_views_proximity_get_reference_location($view, $options) {
           }
         }
       }
+      // If at this stage we don't have coordinates then check for a distance contextual filter
+      if (!count($coordinates) && !empty($view->argument)) {
+        foreach ($view->argument as $argument) {
+          if ($argument->table == 'location' && $argument->field == 'distance') {
+            $coordinates['latitude'] = (float) $argument->value['latitude'];
+            $coordinates['longitude'] = (float) $argument->value['longitude'];
+          }
+        }
+      }
       break;
     case 'postal':
     case 'postal_default':
