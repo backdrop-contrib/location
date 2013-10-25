@@ -164,6 +164,17 @@ function location_cck_field_insert($entity_type, $entity, $field, $instance, $la
       location_save_locations($items, $criteria);
     }
   }
+  elseif ($entity_type == 'user') {
+    if (!empty($items)) {
+      // Store instances of locations by field name and vid.
+      $criteria = array(
+        'genid' => 'cck:' . $field['field_name'] . ':' . $entity->uid,
+        'vid' => $entity->uid,
+        'uid' => $entity->uid,
+      );
+      location_save_locations($items, $criteria);
+    }
+  }
   elseif (!empty($items)) {
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     // Store instances of locations by field name and vid.
@@ -188,6 +199,17 @@ function location_cck_field_update($entity_type, $entity, $field, $instance, $la
         'genid' => 'cck:' . $field['field_name'] . ':' . $entity->vid,
         'vid' => $entity->vid,
         'nid' => $entity->nid,
+      );
+      location_save_locations($items, $criteria);
+    }
+  }
+  elseif ($entity_type == 'user') {
+    if (!empty($items)) {
+      // Store instances of locations by field name and vid.
+      $criteria = array(
+        'genid' => 'cck:' . $field['field_name'] . ':' . $entity->uid,
+        'vid' => $entity->uid,
+        'uid' => $entity->uid,
       );
       location_save_locations($items, $criteria);
     }
@@ -222,6 +244,11 @@ function location_cck_field_delete($entity_type, $entity, $field, $instance, $la
       location_save_locations($locs, array('genid' => $genid));
     }
   }
+  elseif ($entity_type == 'user') {
+    $genid = 'cck:' . $field['field_name'] . ':' . $entity->uid;
+    $locs = array();
+    location_save_locations($locs, array('genid' => $genid));
+  }
   else {
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $genid = 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id;
@@ -236,6 +263,11 @@ function location_cck_field_delete($entity_type, $entity, $field, $instance, $la
 function location_cck_field_delete_revision($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($entity_type == 'node') {
     $genid = 'cck:' . $field['field_name'] . ':' . $entity->vid;
+    $locs = array();
+    location_save_locations($locs, array('genid' => $genid));
+  }
+  elseif ($entity_type == 'user') {
+    $genid = 'cck:' . $field['field_name'] . ':' . $entity->uid;
     $locs = array();
     location_save_locations($locs, array('genid' => $genid));
   }
