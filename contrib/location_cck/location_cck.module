@@ -649,7 +649,7 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
     // Loop through the tokens.
     foreach ($tokens as $name => $original) {
       // Break our token into an array to use later.
-      $fields = explode(':', $name);
+      $fields = explode(':', str_replace(array('[', ']'), '', $original));
       $entity = $fields[0];
       $field = $fields[1];
       // Allow for a position at the end of the token. If no position is given
@@ -657,7 +657,7 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
       $position = (isset($fields[2]) && is_numeric($fields[2]) ? $fields[2] : 0);
 
       // If the token is in the $available, replace it.
-      if($available[$field]) {
+      if(array_key_exists($field, $available) && $available[$field]) {
         $replacements[$original] = (isset($node->{$entity}[LANGUAGE_NONE][$position][$field]) ? $node->{$entity}[LANGUAGE_NONE][$position][$field] : '');
       }
     }  
