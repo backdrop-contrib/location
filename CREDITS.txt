@@ -8,5 +8,5 @@ Old maintainers of the module:
   Rebecca White (user name 'bec' http://drupal.org/user/81067)
 
 Current module maintainer
-  Andriy Podanenko (user name 'podarok' https://drupal.org/user/116002
+  Andriy Podanenko (user name 'podarok' https://drupal.org/user/116002)
   
