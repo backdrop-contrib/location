@@ -651,7 +651,7 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
       // Break our token into an array to use later.
       $fields = explode(':', str_replace(array('[', ']'), '', $original));
       $entity = $fields[0];
-      $field = $fields[1];
+      $field = (isset($fields[1])) ? $fields[1] : NULL;
       // Allow for a position at the end of the token. If no position is given
       // default it to the first element.
       $position = (isset($fields[2]) && is_numeric($fields[2]) ? $fields[2] : 0);
