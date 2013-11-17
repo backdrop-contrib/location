@@ -599,7 +599,7 @@ function location_views_proximity_get_reference_location($view, $options) {
     case 'uid_arg':
       if ($userhandler = $view->display_handler->get_handler('argument', $options['uid_arg'])) {
         $uid = $userhandler->get_value();
-        if ($uid && is_numeric($uid) && $tempuser = user_load(array('uid' => $uid))) {
+        if ($uid && is_numeric($uid) && $tempuser = user_load($uid)) {
           $coordinates['latitude'] = (float) $tempuser->location['latitude'];
           $coordinates['longitude'] = (float) $tempuser->location['longitude'];
         }
