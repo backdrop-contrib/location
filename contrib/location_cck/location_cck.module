@@ -40,7 +40,7 @@ function location_cck_theme() {
 function location_cck_field_info() {
   return array(
     'location' => array(
-      'label' => t('Location'),
+      'label' => t('Location', array(), array('context' => 'geolocation')),
       'description' => t('Store a location.module location.'),
       'settings' => array(),
       'instance_settings' => array(),
@@ -121,7 +121,7 @@ function location_cck_field_settings($op, $field) {
         'base' => 'location',
         'field' => 'lid',
         'handler' => 'views_handler_relationship',
-        'label' => t('Location'), // @@@ Some sort of better name?
+        'label' => t('Location', array(), array('context' => 'geolocation')), // @@@ Some sort of better name?
       );
       return $data;
   }

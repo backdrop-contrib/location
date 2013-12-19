@@ -255,7 +255,7 @@ function _location_process_location($element, $form_state) {
   $element['#tree'] = TRUE;
 
   if (!isset($element['#title'])) {
-    $element['#title'] = t('Location');
+    $element['#title'] = t('Location', array(), array('context' => 'geolocation'));
   }
   if (empty($element['#location_settings'])) {
     $element['#location_settings'] = array();
@@ -1934,7 +1934,7 @@ function location_form($settings, $locations) {
 
   // Tidy up the form in the single location case.
   if ($numforms == 1) {
-    $form[0]['#title'] = t('Location');
+    $form[0]['#title'] = t('Location', array(), array('context' => 'geolocation'));
     // If the user had configured the form for a single location, inherit
     // the collapsible / collapsed settings.
     $form[0]['#collapsible'] = $settings['form']['collapsible'];
