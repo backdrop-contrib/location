@@ -1315,16 +1315,13 @@ function location_update_7302() {
   $schema = location_schema() ;
   db_create_table('location_country', $schema['location_country']);
 
-  //Fill it.
-  $sql = 'INSERT INTO {location_country} (code, name) VALUES ';
-  $sql2 = '';
   $countries = location_get_iso3166_list();
   foreach($countries as $code => $name){
-    $variables = array();
-
-    $variables[] = $code;
-    $variables[] = $name;
-    $sql2 = "('$code', '$name')";
-    db_query($sql . $sql2);
+    db_insert('location_country')
+    ->fields(array(
+      'code' => $code,
+      'name' => $name,
+    ))
+    ->execute();
   }
 }
