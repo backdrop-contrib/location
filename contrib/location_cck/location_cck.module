@@ -169,7 +169,6 @@ function location_cck_field_insert($entity_type, $entity, $field, $instance, $la
       // Store instances of locations by field name and vid.
       $criteria = array(
         'genid' => 'cck:' . $field['field_name'] . ':' . $entity->uid,
-        'vid' => $entity->uid,
         'uid' => $entity->uid,
       );
       location_save_locations($items, $criteria);
@@ -208,7 +207,6 @@ function location_cck_field_update($entity_type, $entity, $field, $instance, $la
       // Store instances of locations by field name and vid.
       $criteria = array(
         'genid' => 'cck:' . $field['field_name'] . ':' . $entity->uid,
-        'vid' => $entity->uid,
         'uid' => $entity->uid,
       );
       location_save_locations($items, $criteria);
