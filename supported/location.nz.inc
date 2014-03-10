@@ -99,7 +99,7 @@ function location_latlon_rough_nz($location = array()) {
 
   $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 4, '0', STR_PAD_LEFT), 0, 4));
 
-  if ($row = db_fetch_object($result)) {
+  if ($row = $result->fetch()) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
   }
   else {
@@ -126,7 +126,7 @@ function location_latlon_rough_nz($location = array()) {
  */
 function _location_latlon_postalcode_nz($location = array()) {
   $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 4, "0", STR_PAD_LEFT));
-  if ($row = db_fetch_object($res)) {
+  if ($row = $res->fetch()) {
     return array(
       'lat' => $row->latitude,
       'lon' => $row->longitude,
