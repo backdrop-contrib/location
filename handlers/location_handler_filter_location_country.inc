@@ -124,7 +124,7 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
 
       if (isset($value)) {
         $this->value = $value;
-        if (empty($this->always_multiple) && empty($this->options['expose']['multiple'])) {
+        if (empty($this->always_multiple) && empty($this->options['expose']['multiple']) && !is_array($value)) {
           $this->value = array($value);
         }
       }
