@@ -545,12 +545,14 @@ function _location_supported_countries() {
  */
 function location_get_provinces($country = 'us') {
   $provinces = & drupal_static(__FUNCTION__, array());
+  //Current language
+  $lang_code = $GLOBALS['language']->language;
 
   location_standardize_country_code($country);
   if (isset($provinces[$country])) {
     return $provinces[$country];
   }
-  if ($cache = cache_get("provinces:$country", 'cache_location')) {
+  if ($cache = cache_get("provinces:$country:$lang_code", 'cache_location')) {
     $provinces[$country] = $cache->data;
     return $provinces[$country];
   }
@@ -558,7 +560,7 @@ function location_get_provinces($country = 'us') {
   $func = 'location_province_list_' . $country;
   if (function_exists($func)) {
     $provinces[$country] = $func();
-    cache_set("provinces:$country", $provinces[$country], 'cache_location');
+    cache_set("provinces:$country:$lang_code", $provinces[$country], 'cache_location');
     return $provinces[$country];
   }
   return array();
