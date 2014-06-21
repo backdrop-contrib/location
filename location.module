@@ -129,7 +129,7 @@ function location_help($path, $arg) {
         '@admin-settings-location' => url('admin/config/content/location'),
         '@external-http-cvs-drupal-org' => 'http://cvs.drupal.org/viewcvs/drupal/contributions/modules/location/database/'
       )) . '</ul>';
-      $output .= '<p>' . t('For more information please read the configuration and customization handbook <a href="@location">Location page</a>.', array('@location' => 'http://www.drupal.org/handbook/modules/location/')) . '</p>';
+      $output .= '<p>' . t('For more information read the configuration and customization handbook <a href="@location">Location page</a>.', array('@location' => 'http://www.drupal.org/handbook/modules/location/')) . '</p>';
       return $output;
   }
 }
@@ -344,7 +344,7 @@ function _location_process_location($element, $form_state) {
       $provinces = location_get_provinces($country);
       // The submit handler expects to find the full province name, not the
       // abbreviation. The select options should reflect this expectation.
-      $element[$field]['#options'] = array('' => t('Please select'), 'xx' => t('NOT LISTED')) + $provinces;
+      $element[$field]['#options'] = array('' => t('Select'), 'xx' => t('NOT LISTED')) + $provinces;
     }
   }
 
@@ -801,7 +801,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
               // Options are defined once during hook_element implementation.
               // @see _location_process_location
-              // $options = array_merge(array('' => t('Please select'), 'xx' => t('NOT LISTED')), location_get_provinces($country));
+              // $options = array_merge(array('' => t('Select'), 'xx' => t('NOT LISTED')), location_get_provinces($country));
               if (!empty($settings['#parents'])) {
                 $wrapper_suffix = '-' . implode('-', $settings['#parents']);
               }
@@ -845,7 +845,7 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
           }
           else {
             $options = array_merge(array(
-              '' => t('Please select'),
+              '' => t('Select'),
               'xx' => t('NOT LISTED')
             ), location_get_iso3166_list());
             if (!empty($settings['#parents'])) {
@@ -1165,7 +1165,7 @@ function _location_country_ajax_callback($form, $form_state) {
   elseif (isset($form[arg(2)][arg(3)][arg(4)])) {
     if (isset($form[arg(2)][arg(3)][arg(4)]['#entity_type']) && $form[arg(2)][arg(3)][arg(4)]['#entity_type'] == 'field_collection_item') {
       $selected_country_value = $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['country']['#value'];
-      $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['province']['#options'] = array('' => t('Please select'), 'xx' => t('NOT LISTED')) + location_get_provinces($selected_country_value);
+      $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['province']['#options'] = array('' => t('Select'), 'xx' => t('NOT LISTED')) + location_get_provinces($selected_country_value);
       return $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['province'];
     }
     return $form[arg(2)][arg(3)][arg(4)]['province'];

@@ -57,7 +57,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
         'mbr' => t('Rectangular Proximity'),
       ),
       '#default_value' => $this->options['search_method'],
-      '#description' => t('Method of determining proximity. Please note that Circular Proximity does not work with Decimal degrees.'),
+      '#description' => t('Method of determining proximity. Note that Circular Proximity does not work with Decimal degrees.'),
     );
   }
 
