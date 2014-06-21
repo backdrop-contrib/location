@@ -120,9 +120,25 @@ function google_geocode_location($location = array()) {
   $query = array(
     'region' => $location['country'],
     'address' => _google_geocode_flatten($location),
-    'components' => _google_geocode_get_components($location),
     'sensor' => 'false', // Required by TOS.
   );
+  if (!empty($location['country'])) {
+    // If we have only a country code and nothing else,
+    // pass in country component so that google doesn't mistake the country
+    // code for some other short code, like administrative area.
+    $filtered_location = array_filter($location, function($a) {
+      // Handle locpick & settings arrays.
+      // No actual location data should be in an array.
+      if (is_array($a)) {
+        return FALSE;
+      }
+      return is_string($a) ? trim($a) : $a;
+    });
+    if (count($filtered_location) == 1) {
+      $query['components'] = _google_geocode_get_components($filtered_location);
+    }
+  }
+
   $key = variable_get('location_geocode_google_apikey', '');
   if (empty($key) && function_exists('gmap_get_key')) {
     $key = gmap_get_key();
