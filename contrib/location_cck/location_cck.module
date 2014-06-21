@@ -646,17 +646,32 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
 
     // Loop through the tokens.
     foreach ($tokens as $name => $original) {
-      // Break our token into an array to use later.
-      $fields = explode(':', str_replace(array('[', ']'), '', $original));
-      $entity = $fields[0];
-      $field = (isset($fields[1])) ? $fields[1] : NULL;
+      // Break token into an array.
+      $pieces = explode(':', str_replace(array('[', ']'), '', $original));
+
+      // Must have entity, field, and item to be a location cck token.
+      if (count($pieces) < 3) {
+        continue;
+      }
+      $entity = $pieces[0];
+      $field = $pieces[1];
+
+      $field_info = field_info_field($field);
+
+      // Make sure this is a field and it is a location field.
+      if (isset($field_info) && $field_info['type'] != 'location') {
+        continue;
+      }
+
+      $item = $pieces[2];
+
       // Allow for a position at the end of the token. If no position is given
       // default it to the first element.
-      $position = (isset($fields[2]) && is_numeric($fields[2]) ? $fields[2] : 0);
+      $position = (isset($pieces[3]) && is_numeric($pieces[3]) ? $pieces[3] : 0);
 
       // If the token is in the $available, replace it.
-      if(array_key_exists($field, $available) && $available[$field]) {
-        $replacements[$original] = (isset($node->{$entity}[LANGUAGE_NONE][$position][$field]) ? $node->{$entity}[LANGUAGE_NONE][$position][$field] : '');
+      if(array_key_exists($item, $available) && $available[$item]) {
+        $replacements[$original] = (isset($node->{$field}[LANGUAGE_NONE][$position][$item]) ? $node->{$field}[LANGUAGE_NONE][$position][$item] : '');
       }
     }  
   }
