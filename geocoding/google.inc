@@ -70,7 +70,7 @@ function google_geocode_country_list() {
   // if google adds countries that don't match the Drupal API list for whatever
   // reason.
   $countries = location_get_iso3166_list();
-  $regex = "#[ (].*[)]#e";
+  $regex = "#[ (].*[)]#";
   $cntryclean = preg_replace($regex, "", $countries);
   $countriesfixes = array_merge($cntryclean, array(
     "hk" => t("China"),
