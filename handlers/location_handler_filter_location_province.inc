@@ -60,7 +60,7 @@ class location_handler_filter_location_province extends views_handler_filter {
 
       // Let location_autocomplete.js find the correct fields to attach.
       if ($this->location_country_identifier) {
-        $form['value']['#attributes']['class'] .= ' location_auto_join_' . $this->location_country_identifier;
+        $form['value']['#attributes']['class'][] = 'location_auto_join_' . $this->location_country_identifier;
       }
     }
     else {
