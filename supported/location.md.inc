@@ -38,7 +38,7 @@ function location_province_list_md() {
     'SR' => "Soroca",
     'ST' => "Strășeni",
     'SD' => "Șoldănești",
-    'SV' => "Șoldănești",
+    'SV' => "Ștefan Vodă",
     'TR' => "Taraclia",
     'TL' => "Telenești",
     'TS' => "Tiraspol",
