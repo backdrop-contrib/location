@@ -345,6 +345,7 @@ function _location_process_location($element, $form_state) {
       // The submit handler expects to find the full province name, not the
       // abbreviation. The select options should reflect this expectation.
       $element[$field]['#options'] = array('' => t('Select'), 'xx' => t('NOT LISTED')) + $provinces;
+      $element[$field]['#validated'] = TRUE;
     }
   }
 
