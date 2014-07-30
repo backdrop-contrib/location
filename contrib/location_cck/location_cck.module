@@ -659,7 +659,7 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
       $field_info = field_info_field($field);
 
       // Make sure this is a field and it is a location field.
-      if (isset($field_info) && $field_info['type'] != 'location') {
+      if (!isset($field_info) || isset($field_info) && $field_info['type'] != 'location') {
         continue;
       }
 
