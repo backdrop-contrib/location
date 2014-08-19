@@ -1,19 +1,19 @@
 <?php
 
 /**
- * License clarification:
- *
- * On Feb 13, 2005, in message <Pine.LNX.4.58.0502131827510.5072@server1.LFW.org>,
- * the creator of these routines, Ka-Ping Yee, authorized these routines to be
- * distributed under the GPL.
- */
-
-/**
  * @file
  * Trigonometry for calculating geographical distances.
  * All function arguments and return values measure distances in metres
  * and angles in degrees.  The ellipsoid model is from the WGS-84 datum.
  * Ka-Ping Yee, 2003-08-11
+ */
+
+/**
+ * License clarification:
+ *
+ * On Feb 13, 2005, in message <Pine.LNX.4.58.0502131827510.5072@server1.LFW.org>,
+ * the creator of these routines, Ka-Ping Yee, authorized these routines to be
+ * distributed under the GPL.
  */
 
 //$earth_radius_semimajor = 6378137.0;
@@ -167,7 +167,8 @@ function earth_latitude_range($longitude, $latitude, $distance) {
   $minlat = $lat - $angle;
   $maxlat = $lat + $angle;
   $rightangle = pi() / 2;
-  if ($minlat < -$rightangle) { // wrapped around the south pole
+  // Wrapped around the south pole.
+  if ($minlat < -$rightangle) {
     $overshoot = -$minlat - $rightangle;
     $minlat = -$rightangle + $overshoot;
     if ($minlat > $maxlat) {
@@ -175,7 +176,8 @@ function earth_latitude_range($longitude, $latitude, $distance) {
     }
     $minlat = -$rightangle;
   }
-  if ($maxlat > $rightangle) { // wrapped around the north pole
+  // Wrapped around the north pole.
+  if ($maxlat > $rightangle) {
     $overshoot = $maxlat - $rightangle;
     $maxlat = $rightangle - $overshoot;
     if ($maxlat < $minlat) {
