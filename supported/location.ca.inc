@@ -59,10 +59,13 @@ function location_latlon_rough_ca($location = array()) {
     return NULL;
   }
 
-  $row = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = :country AND zip = :zip", array(
-    ':country' => $location['country'],
-    ':zip' => $location['postal_code']
-  ))->fetchObject();
+  $row = db_query(
+    "SELECT latitude, longitude FROM {zipcodes} WHERE country = :country AND zip = :zip",
+    array(
+      ':country' => $location['country'],
+      ':zip' => $location['postal_code']
+    )
+  )->fetchObject();
 
   if ($row) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
@@ -94,10 +97,13 @@ function location_latlon_rough_ca($location = array()) {
  */
 function location_get_postalcode_data_ca($location = array()) {
   // Now we pad the thing and query.
-  $row = db_query("SELECT * FROM {zipcodes} where country = :country AND zip = :zip", array(
-    ':country' => $location['country'],
-    ':zip' => $location['postal_code']
-  ))->fetchObject();
+  $row = db_query(
+    "SELECT * FROM {zipcodes} where country = :country AND zip = :zip",
+    array(
+      ':country' => $location['country'],
+      ':zip' => $location['postal_code']
+    )
+  )->fetchObject();
   if ($row) {
     return array(
       'lat' => $row->latitude,
@@ -136,6 +142,7 @@ function location_map_link_ca_yahoo($location = array()) {
     $get_query .= 'csz=' . _location_ca_yahoo_csz_get_field($location) . '&amp;';
   }
   $get_query .= 'country=' . urlencode($location['country']);
+
   return ('http://ca.maps.yahoo.com/maps_result' . $get_query);
 }
 
@@ -334,6 +341,7 @@ function _location_ca_yahoo_csz_get_field($location) {
       return urlencode($location['province']);
     }
   }
+
   return '';
 }
 
@@ -357,10 +365,13 @@ function location_geocode_ca_geocoder_settings() {
     '#size' => 64,
     '#maxlength' => 128,
     '#default_value' => variable_get('location_geocode_ca_geocoder_apikey', ''),
-    '#description' => t('In order to use the Geocoder.ca API geocoding web-service, if you are a commercial entity or wish to use the service without attribution, you will need a Geocoder API Key.  You can obtain one at the !sign_up_link for the !geocoder_api.', array(
-      '!sign_up_link' => '<a href="http://geocoder.ca/?register=1">sign-up page</a>',
-      '!geocoder_api' => '<a href="http://geocoder.ca/?premium_api=1">Geocoder API</a>'
-    ))
+    '#description' => t(
+      'In order to use the Geocoder.ca API geocoding web-service, if you are a commercial entity or wish to use the service without attribution, you will need a Geocoder API Key.  You can obtain one at the !sign_up_link for the !geocoder_api.',
+      array(
+        '!sign_up_link' => '<a href="http://geocoder.ca/?register=1">sign-up page</a>',
+        '!geocoder_api' => '<a href="http://geocoder.ca/?premium_api=1">Geocoder API</a>'
+      )
+    )
   );
 
   return $form;
@@ -410,6 +421,7 @@ function location_geocode_ca_geocoder($location = array()) {
 
     if (preg_match('/<longt>(.*)<\/longt>/', $http_reply->data, $lon_match)) {
       $latlon['lon'] = $lon_match[1];
+
       return $latlon;
     }
     else {

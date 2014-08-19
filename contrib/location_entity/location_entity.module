@@ -39,6 +39,7 @@ function location_entity_field_verbatim_get($item, array $options, $name, $entit
   if (isset($item[$name]) && !empty($item[$name])) {
     return $item[$name];
   }
+
   return NULL;
 }
 

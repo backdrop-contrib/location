@@ -446,6 +446,7 @@ function location_views_proximity_get_location_field_options() {
       }
     }
   }
+
   return $field_options;
 }
 
@@ -480,6 +481,7 @@ function location_views_proximity_get_argument_options($view) {
       }
     }
   }
+
   return array($nid_argument_options, $uid_argument_options);
 }
 
@@ -536,7 +538,10 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       // If at this stage we don't have coordinates then check for a distance contextual filter
-      if (!count($coordinates) && !empty($view->argument) && !empty($argument->value['latitude']) && !empty($argument->value['longitude'])) {
+      if (!count(
+          $coordinates
+        ) && !empty($view->argument) && !empty($argument->value['latitude']) && !empty($argument->value['longitude'])
+      ) {
         foreach ($view->argument as $argument) {
           if ($argument->table == 'location' && $argument->field == 'distance') {
             $coordinates['latitude'] = (float) $argument->value['latitude'];

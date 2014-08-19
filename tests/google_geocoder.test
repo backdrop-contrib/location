@@ -38,20 +38,22 @@ class LocationGoogleGeocoderTest extends LocationTestCase {
 
     $location1_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'name' => $location1_name,
-          'location_settings' => $settings,
-          'street' => '1600 Amphitheatre Parkway',
-          'city' => 'Mountain View',
-          'province' => 'CA',
-          'postal_code' => '94043',
-          'country' => 'us',
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'name' => $location1_name,
+            'location_settings' => $settings,
+            'street' => '1600 Amphitheatre Parkway',
+            'city' => 'Mountain View',
+            'province' => 'CA',
+            'postal_code' => '94043',
+            'country' => 'us',
+          ),
         ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node2 = node_load($node->nid, NULL, TRUE);

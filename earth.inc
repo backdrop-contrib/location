@@ -57,6 +57,7 @@ function earth_radius($latitude = 37.9) {
 
   $x = cos($lat) / earth_radius_semimajor();
   $y = sin($lat) / earth_radius_semiminor();
+
   return 1 / (sqrt($x * $x + $y * $y));
 }
 
@@ -76,6 +77,7 @@ function earth_xyz($longitude, $latitude, $height = 0) {
   $x = ($radius + $height) * $coslat * $coslong;
   $y = ($radius + $height) * $coslat * $sinlong;
   $z = ($radius * (1 - earth_eccentricity_sq()) + $height) * $sinlat;
+
   return array($x, $y, $z);
 }
 
@@ -95,6 +97,7 @@ function earth_distance($longitude1, $latitude1, $longitude2, $latitude2) {
   $cosangle = cos($lat1) * cos($lat2) *
     (cos($long1) * cos($long2) + sin($long1) * sin($long2)) +
     sin($lat1) * sin($lat2);
+
   return acos($cosangle) * $radius;
 }
 
@@ -119,6 +122,7 @@ function earth_distance_sql($longitude, $latitude, $tbl_alias = '') {
   $coslat = cos($lat);
   $sinlong = sin($long);
   $sinlat = sin($lat);
+
   return "(COALESCE(ACOS($coslat*COS(RADIANS({$tbl_alias}latitude))*($coslong*COS(RADIANS({$tbl_alias}longitude)) + $sinlong*SIN(RADIANS({$tbl_alias}longitude))) + $sinlat*SIN(RADIANS({$tbl_alias}latitude))), 0.00000)*$radius)";
 }
 
@@ -149,6 +153,7 @@ function earth_longitude_range($longitude, $latitude, $distance) {
   if ($maxlong > pi()) {
     $maxlong = $maxlong - pi() * 2;
   }
+
   return array(rad2deg($minlong), rad2deg($maxlong));
 }
 
@@ -178,6 +183,7 @@ function earth_latitude_range($longitude, $latitude, $distance) {
     }
     $maxlat = $rightangle;
   }
+
   return array(rad2deg($minlat), rad2deg($maxlat));
 }
 

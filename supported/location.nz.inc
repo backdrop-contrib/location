@@ -97,7 +97,11 @@ function location_latlon_rough_nz($location = array()) {
     return NULL;
   }
 
-  $result = db_query("SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'", $location['country'], substr(str_pad($location['postal_code'], 4, '0', STR_PAD_LEFT), 0, 4));
+  $result = db_query(
+    "SELECT latitude, longitude FROM {zipcodes} WHERE country = '%s' AND zip = '%s'",
+    $location['country'],
+    substr(str_pad($location['postal_code'], 4, '0', STR_PAD_LEFT), 0, 4)
+  );
 
   if ($row = $result->fetch()) {
     return array('lat' => $row->latitude, 'lon' => $row->longitude);
@@ -125,7 +129,11 @@ function location_latlon_rough_nz($location = array()) {
  *
  */
 function _location_latlon_postalcode_nz($location = array()) {
-  $res = db_query("SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'", $location['country'], str_pad($location['postal_code'], 4, "0", STR_PAD_LEFT));
+  $res = db_query(
+    "SELECT * FROM {zipcodes} where country = '%s' AND zip = '%s'",
+    $location['country'],
+    str_pad($location['postal_code'], 4, "0", STR_PAD_LEFT)
+  );
   if ($row = $res->fetch()) {
     return array(
       'lat' => $row->latitude,
@@ -181,7 +189,10 @@ function _location_latlon_exact_nz_geocoder($location = array()) {
     if (isset($location['postal_code'])) {
       $location_string = $location['street'] . ' ' . $location['postal_code'];
     }
-    elseif (isset($location['city']) && isset($location['province']) && trim($location['city']) != '' && trim($location['province'])) {
+    elseif (isset($location['city']) && isset($location['province']) && trim($location['city']) != '' && trim(
+        $location['province']
+      )
+    ) {
       $location_string = $location['street'] . ', ' . $location['city'] . ', ' . $location['province'];
     }
     else { // else geocoder.us won't do bidness with you!
@@ -194,9 +205,13 @@ function _location_latlon_exact_nz_geocoder($location = array()) {
 
   $result = xmlrpc('http://rpc.geocoder.us/service/xmlrpc', 'geocode', $location_string);
 
-  if (is_array($result) && is_array($result[0]) && isset($result[0]['lat']) && is_numeric($result[0]['lat']) && isset($result[0]['long']) && is_numeric($result[0]['long'])) {
+  if (is_array($result) && is_array($result[0]) && isset($result[0]['lat']) && is_numeric(
+      $result[0]['lat']
+    ) && isset($result[0]['long']) && is_numeric($result[0]['long'])
+  ) {
     return array('lat' => $result[0]['lat'], 'lon' => $result[0]['long']);
   }
+
   return NULL;
 }
 
@@ -215,6 +230,7 @@ function location_map_link_nz_yahoo($location = array()) {
     $get_query .= 'csz=' . _location_nz_yahoo_csz_get_field($location) . '&amp;';
   }
   $get_query .= 'country=' . urlencode($location['country']);
+
   return ('http://maps.yahoo.com/maps_result' . $get_query);
 }
 
@@ -336,17 +352,23 @@ function location_geocode_nz_yahoo_settings() {
     '#size' => 64,
     '#maxlength' => 128,
     '#default_value' => variable_get('location_geocode_nz_yahoo_appid', 'YahooDemo'),
-    '#description' => t('Unless you are using this site to test and develop, you will need to obtain a Yahoo! Web Services Application ID from the %network_link.  If you are using for development and testing purposes, you can use \'YahooDemo\' as your AppID.  When getting an Application ID from Yahoo!, be sure to review the %usage_policy.', array(
-      '%network_link' => '<a href="http://api.search.yahoo.com/webservices/register_application">Yahoo! Developer Network</a>',
-      '%usage_policy' => '<a href="http://developer.yahoo.com/usagePolicy/index.html">usage policy</a>'
-    ))
+    '#description' => t(
+      'Unless you are using this site to test and develop, you will need to obtain a Yahoo! Web Services Application ID from the %network_link.  If you are using for development and testing purposes, you can use \'YahooDemo\' as your AppID.  When getting an Application ID from Yahoo!, be sure to review the %usage_policy.',
+      array(
+        '%network_link' => '<a href="http://api.search.yahoo.com/webservices/register_application">Yahoo! Developer Network</a>',
+        '%usage_policy' => '<a href="http://developer.yahoo.com/usagePolicy/index.html">usage policy</a>'
+      )
+    )
   );
 
   return $form;
 }
 
 function location_geocode_nz_yahoo($location = array()) {
-  $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=" . variable_get('location_geocode_nz_yahoo_appid', "YahooDemo") . "&location=";
+  $service_url = "http://api.local.yahoo.com/MapsService/V1/geocode?appid=" . variable_get(
+      'location_geocode_nz_yahoo_appid',
+      "YahooDemo"
+    ) . "&location=";
 
   $address = location_address2singleline($location);
 
@@ -515,6 +537,7 @@ function _location_nz_yahoo_csz_get_field($location) {
       return urlencode($location['state']);
     }
   }
+
   return '';
 }
 

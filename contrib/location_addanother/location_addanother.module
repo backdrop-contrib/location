@@ -10,7 +10,11 @@
  * Implements hook_node_view().
  */
 function location_addanother_node_view($node, $view_mode) {
-  if (variable_get('location_addanother_' . $node->type, 0) && count($node->locations) < variable_get('location_maxnum_' . $node->type, 0) && $view_mode == 'full' && node_access('update', $node)) {
+  if (variable_get('location_addanother_' . $node->type, 0) && count($node->locations) < variable_get(
+      'location_maxnum_' . $node->type,
+      0
+    ) && $view_mode == 'full' && node_access('update', $node)
+  ) {
     $addanother_form = drupal_get_form('location_addanother_form', $node);
     $node->content['location_addanother'] = array(
       '#type' => 'markup',
@@ -59,6 +63,7 @@ function location_addanother_form($form, &$form_state, &$node) {
     '#value' => t('Add location'),
     '#weight' => 50,
   );
+
   return $form;
 }
 
@@ -69,8 +74,17 @@ function location_addanother_form_validate($form, &$form_state) {
   $location = $form_state['values']['location'];
   $node = node_load($location['nid']);
   unset($location['nid']);
-  if (!(variable_get('location_addanother_' . $node->type, 0) && count($node->locations) < variable_get('location_maxnum_' . $node->type, 0) && node_access('update', $node))) {
-    form_set_error('location', t("You don't have permission to add a location to this node, or the node has the maximum number of locations already."));
+  if (!(variable_get('location_addanother_' . $node->type, 0) && count($node->locations) < variable_get(
+      'location_maxnum_' . $node->type,
+      0
+    ) && node_access('update', $node))
+  ) {
+    form_set_error(
+      'location',
+      t(
+        "You don't have permission to add a location to this node, or the node has the maximum number of locations already."
+      )
+    );
   }
 }
 

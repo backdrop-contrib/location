@@ -8,6 +8,7 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
   function option_definition() {
     $options = parent::option_definition();
     $options['operator'] = array('default' => 'in');
+
     return $options;
   }
 
@@ -89,8 +90,10 @@ class location_handler_filter_location_country extends views_handler_filter_in_o
       foreach ($this->options['value'] as $value) {
         $reduced_options[$value] = $this->value_options[$value];
       }
+
       return $reduced_options;
     }
+
     return $this->get_value_options();
   }
 

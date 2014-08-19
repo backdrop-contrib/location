@@ -78,7 +78,9 @@ function location_cck_field_settings_form($field, $instance, $has_data) {
       '#title' => t('GMap Macro'),
       '#rows' => 2,
       '#maxlength' => 500,
-      '#description' => t('A macro to be used as a base map for this field.  This map will be recentered on the location, so the center is not that important.'),
+      '#description' => t(
+        'A macro to be used as a base map for this field.  This map will be recentered on the location, so the center is not that important.'
+      ),
       '#default_value' => !empty($field['settings']['gmap_macro']) ? $field['settings']['gmap_macro'] : '[gmap ]',
     );
     $options = gmap_get_marker_titles();
@@ -123,6 +125,7 @@ function location_cck_field_settings($op, $field) {
         'handler' => 'views_handler_relationship',
         'label' => t('Location', array(), array('context' => 'geolocation')), // @@@ Some sort of better name?
       );
+
       return $data;
   }
 }
@@ -348,6 +351,7 @@ function location_cck_field_formatter_info() {
       'field types' => array('location'),
     );
   }
+
   return $info;
 }
 
@@ -487,6 +491,7 @@ function location_cck_field_is_empty($item, $field) {
   if (location_is_empty($item, $fields)) {
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -495,11 +500,14 @@ function location_cck_field_is_empty($item, $field) {
  */
 function theme_location_cck_field_all($variables) {
   $content = theme('location', array('location' => $variables['location'], 'hide' => $variables['hide']));
-  $content .= theme_location_cck_field_map(array(
-    'locations' => array($variables['location']),
-    'field' => $variables['field'],
-    'instance' => $variables['instance']
-  ));
+  $content .= theme_location_cck_field_map(
+    array(
+      'locations' => array($variables['location']),
+      'field' => $variables['field'],
+      'instance' => $variables['instance']
+    )
+  );
+
   return $content;
 }
 
@@ -512,6 +520,7 @@ function theme_location_cck_formatter_combined($variables) {
 
   $field = content_fields($element['#field_name'], $element['#type_name']);
   $locations = $element['#items'];
+
   return theme_location_cck_field_map(array('locations' => $locations, 'field' => $field));
 }
 
@@ -566,7 +575,9 @@ function theme_location_cck_field_popup($variables) {
   $location = $variables['location'];
   $instance = $variables['instance'];
 
-  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(array_filter($field['location_settings']['display']['hide'])) : array();
+  $hide = (isset($field['location_settings']['display']['hide'])) ? array_keys(
+    array_filter($field['location_settings']['display']['hide'])
+  ) : array();
   // Don't use a map link in a popup!
   // We're making the name into a title.
   $hide[] = 'map_link';
@@ -576,6 +587,7 @@ function theme_location_cck_field_popup($variables) {
   if (!empty($location['name'])) {
     $markertitle = $location['name'];
   }
+
   return '<h4>' . $markertitle . '</h4>' . theme('location', array('location' => $location, 'hide' => $hide));
 }
 
@@ -583,52 +595,58 @@ function theme_location_cck_field_popup($variables) {
 /**
  * Implements hook_token_info().
  */
- function location_cck_token_info() {
-   $info = array();
-   
-   // Load all available fields.
-   $entities = field_info_field_map();
-   
-   // Loop through our fields and remove all but location types.
-   foreach ($entities as $key => $value) {
-     if ($value['type'] != 'location') {
-       unset($entities[$key]);
-     }
-   }
+function location_cck_token_info() {
+  $info = array();
 
-   // If we have location fields available, setup our tokens.
-   if(sizeof($entities)) {
-     // Get the available location field names.
-     $fields = location_field_names(TRUE);
+  // Load all available fields.
+  $entities = field_info_field_map();
 
-     // Loop through the location fields and setup tokens.
-     foreach ($entities as $key => $value) {
-      
+  // Loop through our fields and remove all but location types.
+  foreach ($entities as $key => $value) {
+    if ($value['type'] != 'location') {
+      unset($entities[$key]);
+    }
+  }
+
+  // If we have location fields available, setup our tokens.
+  if (sizeof($entities)) {
+    // Get the available location field names.
+    $fields = location_field_names(TRUE);
+
+    // Loop through the location fields and setup tokens.
+    foreach ($entities as $key => $value) {
+
       $info['tokens']['node'][$key] = array(
         'name' => t('Location field: !field', array('!field' => $key)),
-        'description' => t('Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.', array('!field' => $key)),
+        'description' => t(
+          'Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.',
+          array('!field' => $key)
+        ),
         'type' => $key,
       );
-     
-       $info['types'][$key] = array(
+
+      $info['types'][$key] = array(
         'name' => t('Location field: !field', array('!field' => $key)),
-        'description' => t('Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.', array('!field' => $key)),
+        'description' => t(
+          'Tokens for the field: !field. Replace the "?" with the delta you want. Defaults to delta 0.',
+          array('!field' => $key)
+        ),
         'needs-data' => 'node',
-       );
-       
-       foreach ($fields as $field_key => $field_value) {
-         $info['tokens'][$key][$field_key . ":?"] = array(
+      );
+
+      foreach ($fields as $field_key => $field_value) {
+        $info['tokens'][$key][$field_key . ":?"] = array(
           'name' => t($field_value),
           'description' => t($field_value)
-         );
-       }
-       
-     }
-   }
+        );
+      }
 
-   return $info;
- }
- 
+    }
+  }
+
+  return $info;
+}
+
 /**
  * Implements hook_tokens().
  */
@@ -637,7 +655,7 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
   $replacements = array();
 
   // Make sure we have a node.
-  if(isset($data['entity_type']) && $data['entity_type'] == 'node') {
+  if (isset($data['entity_type']) && $data['entity_type'] == 'node') {
 
     $node = $data['entity'];
 
@@ -670,10 +688,10 @@ function location_cck_tokens($type, $tokens, array $data = array(), array $optio
       $position = (isset($pieces[3]) && is_numeric($pieces[3]) ? $pieces[3] : 0);
 
       // If the token is in the $available, replace it.
-      if(array_key_exists($item, $available) && $available[$item]) {
+      if (array_key_exists($item, $available) && $available[$item]) {
         $replacements[$original] = (isset($node->{$field}[LANGUAGE_NONE][$position][$item]) ? $node->{$field}[LANGUAGE_NONE][$position][$item] : '');
       }
-    }  
+    }
   }
 
   return $replacements;
@@ -716,5 +734,6 @@ function location_cck_field_views_data($field) {
       }
     }
   }
+
   return $data;
 }

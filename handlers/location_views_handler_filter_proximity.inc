@@ -68,7 +68,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#type' => 'checkbox',
       '#title' => t("Allow choice of user location"),
       '#default_value' => $this->options['expose']['user_location_choose'],
-      '#description' => t("If checked and using a user location origin, the user will be able to choose which of their locations to use.  Otherwise their first location will be used."),
+      '#description' => t(
+        "If checked and using a user location origin, the user will be able to choose which of their locations to use.  Otherwise their first location will be used."
+      ),
     );
   }
 
@@ -86,7 +88,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
         'nid_arg' => t("Node's Latitude / Longitude from views nid argument"),
         'uid_arg' => t("User's Latitude / Longitude from views uid argument"),
       ),
-      '#description' => t('This will be the way the latitude/longitude of origin is determined.  If this filter is exposed, this will determine the default values. NOTE: The PHP code, nid argument and uid argument options will not be available when the filter is exposed and the use of map is only available when the filter is exposed.  To use the visitor\'s IP address, you must have a supported geolocation module installed.'),
+      '#description' => t(
+        'This will be the way the latitude/longitude of origin is determined.  If this filter is exposed, this will determine the default values. NOTE: The PHP code, nid argument and uid argument options will not be available when the filter is exposed and the use of map is only available when the filter is exposed.  To use the visitor\'s IP address, you must have a supported geolocation module installed.'
+      ),
       '#default_value' => $this->options['origin'] ? $this->options['origin'] : 'user',
     );
     if (module_exists('gmap')) {
@@ -165,7 +169,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#default_value' => $this->value['php_code'],
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('php')),
-      '#description' => t("Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."),
+      '#description' => t(
+        "Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."
+      ),
       '#weight' => 5,
     );
 
@@ -177,7 +183,11 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#title' => t('Node ID argument to use'),
       '#options' => $nid_argument_options,
       '#default_value' => $this->value['nid_arg'],
-      '#description' => empty($nid_argument_options) ? t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID."),
+      '#description' => empty($nid_argument_options) ? t(
+          "Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID. You must have added arguments to the view to use this option."
+        ) : t(
+          "Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID."
+        ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
       '#weight' => 6,
@@ -187,7 +197,9 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#title' => t('Location to use'),
       '#options' => $nid_loc_field_options,
       '#default_value' => $this->value['nid_loc_field'],
-      '#description' => t("Select which of the node's locations to use as the origin.  Either the node locations or a CCK location field.  If the location supports multiple entries the first one will be used."),
+      '#description' => t(
+        "Select which of the node's locations to use as the origin.  Either the node locations or a CCK location field.  If the location supports multiple entries the first one will be used."
+      ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
       '#weight' => 7,
@@ -197,7 +209,11 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       '#title' => t('User ID argument to use'),
       '#options' => $uid_argument_options,
       '#default_value' => $this->value['uid_arg'],
-      '#description' => empty($uid_argument_options) ? t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID."),
+      '#description' => empty($uid_argument_options) ? t(
+          "Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID. You must have added arguments to the view to use this option."
+        ) : t(
+          "Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID."
+        ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('uid_arg')),
       '#weight' => 8,
@@ -243,10 +259,14 @@ class location_views_handler_filter_proximity extends views_handler_filter {
       }
       else {
         $form[$key]['proximity_map'] = array(
-          '#markup' => gmap_set_location($this->options['expose']['gmap_macro'], $form[$key], array(
-            'latitude' => 'latitude',
-            'longitude' => 'longitude'
-          )),
+          '#markup' => gmap_set_location(
+            $this->options['expose']['gmap_macro'],
+            $form[$key],
+            array(
+              'latitude' => 'latitude',
+              'longitude' => 'longitude'
+            )
+          ),
           '#weight' => 0,
         );
       }
@@ -323,7 +343,10 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     $lat = $coordinates['latitude'];
     $lon = $coordinates['longitude'];
 
-    $distance_meters = _location_convert_distance_to_meters($this->value['search_distance'], $this->value['search_units']);
+    $distance_meters = _location_convert_distance_to_meters(
+      $this->value['search_distance'],
+      $this->value['search_units']
+    );
     $latrange = earth_latitude_range($lon, $lat, $distance_meters);
     $lonrange = earth_longitude_range($lon, $lat, $distance_meters);
 
@@ -335,16 +358,24 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     else {
       $where = "$this->table_alias.latitude > :minlat AND $this->table_alias.latitude < :maxlat AND $this->table_alias.longitude > :minlon AND $this->table_alias.longitude < :maxlon";
     }
-    $this->query->add_where_expression($this->options['group'], $where, array(
-      ':minlat' => $latrange[0],
-      ':maxlat' => $latrange[1],
-      ':minlon' => $lonrange[0],
-      ':maxlon' => $lonrange[1]
-    ));
+    $this->query->add_where_expression(
+      $this->options['group'],
+      $where,
+      array(
+        ':minlat' => $latrange[0],
+        ':maxlat' => $latrange[1],
+        ':minlon' => $lonrange[0],
+        ':maxlon' => $lonrange[1]
+      )
+    );
 
     if ($this->operator == 'dist') {
       // Add radius check.
-      $this->query->add_where_expression($this->options['group'], earth_distance_sql($lon, $lat, $this->table_alias) . ' < :distance', array(':distance' => $distance_meters));
+      $this->query->add_where_expression(
+        $this->options['group'],
+        earth_distance_sql($lon, $lat, $this->table_alias) . ' < :distance',
+        array(':distance' => $distance_meters)
+      );
     }
   }
 }

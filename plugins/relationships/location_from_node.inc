@@ -121,7 +121,9 @@ function location_location_from_node_settings_form($form, &$form_state) {
       '#type' => 'select',
       '#options' => $offset_options,
       '#default_value' => isset($conf['location_node_offset']) ? $conf['location_node_offset'] : 0,
-      '#description' => t('If the nodes that will be used for this relationship have multiple locations, select which location you want to use.'),
+      '#description' => t(
+        'If the nodes that will be used for this relationship have multiple locations, select which location you want to use.'
+      ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('radio:relationship[relationship_settings][location_type]' => array('location_node')),
       '#weight' => 4,
@@ -152,7 +154,9 @@ function location_location_from_node_settings_form($form, &$form_state) {
         '#type' => 'select',
         '#options' => $offset_options,
         '#default_value' => isset($conf['location_cck_field_offset']) ? $conf['location_cck_field_offset'] : 0,
-        '#description' => t('If the nodes that will be used for this relationship have multiple locations, select which location you want to use.'),
+        '#description' => t(
+          'If the nodes that will be used for this relationship have multiple locations, select which location you want to use.'
+        ),
         '#process' => array('ctools_dependent_process'),
         '#dependency' => array('radio:relationship[relationship_settings][location_type]' => array('location_cck')),
         '#weight' => 7,

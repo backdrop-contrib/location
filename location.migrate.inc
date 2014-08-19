@@ -40,6 +40,7 @@ function location_migrate_api() {
 *   $this->addFieldMapping('field_location_dest:city', 'field_source_city');
 * @endcode
 */
+
 class MigrateLocationFieldHandler extends MigrateFieldHandler {
 
   public function __construct() {

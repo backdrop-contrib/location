@@ -4,7 +4,6 @@
  * @file
  * Province field handler.
  */
-
 class location_handler_field_location_street extends views_handler_field {
 
   function construct() {
@@ -17,6 +16,7 @@ class location_handler_field_location_street extends views_handler_field {
   function option_definition() {
     $options = parent::option_definition();
     $options['style'] = array('default' => 'both');
+
     return $options;
   }
 
@@ -45,6 +45,7 @@ class location_handler_field_location_street extends views_handler_field {
         $parts[] = check_plain($values->{$this->aliases['additional']});
       }
     }
+
     // @@@ Better theming?
     return implode('<br />', $parts);
   }

@@ -4,7 +4,7 @@
 
 function location_province_list_md() {
   return array(
-    'C'  => "Chișinău",
+    'C' => "Chișinău",
     'AN' => "Anenii Noi",
     'BS' => "Basarabeasca",
     'BE' => "Bender",

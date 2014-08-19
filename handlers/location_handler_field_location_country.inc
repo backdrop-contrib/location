@@ -4,12 +4,12 @@
  * @file
  * Country field handler.
  */
-
 class location_handler_field_location_country extends views_handler_field {
 
   function option_definition() {
     $options = parent::option_definition();
     $options['style'] = array('default' => 'name');
+
     return $options;
   }
 

@@ -4,7 +4,6 @@
  * @file
  * Coordinates sort handler.
  */
-
 class location_handler_sort_location_distance extends views_handler_sort {
 
   function option_definition() {
@@ -18,6 +17,7 @@ class location_handler_sort_location_distance extends views_handler_sort {
     $options['nid_arg'] = array('default' => '');
     $options['nid_loc_field'] = array('default' => 'node');
     $options['uid_arg'] = array('default' => '');
+
     return $options;
   }
 
@@ -40,7 +40,9 @@ class location_handler_sort_location_distance extends views_handler_sort {
         'nid_arg' => t("Node's Latitude / Longitude from views nid argument"),
         'uid_arg' => t("User's Latitude / Longitude from views uid argument"),
       ),
-      '#description' => t("This will be the way the latitude/longitude of origin is determined. When using the user's latitude / longitude, if a user has multiple locations the first will be used."),
+      '#description' => t(
+        "This will be the way the latitude/longitude of origin is determined. When using the user's latitude / longitude, if a user has multiple locations the first will be used."
+      ),
       '#default_value' => $this->options['origin'],
     );
     $form['latitude'] = array(
@@ -82,7 +84,9 @@ class location_handler_sort_location_distance extends views_handler_sort {
       '#default_value' => $this->options['php_code'],
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('php')),
-      '#description' => t("Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."),
+      '#description' => t(
+        "Enter PHP code that returns a latitude/longitude.  Do not use &lt;?php ?&gt;. You must return only an array with float values set for the 'latitude' and 'longitude' keys."
+      ),
     );
 
     list($nid_argument_options, $uid_argument_options) = location_views_proximity_get_argument_options($this->view);
@@ -93,7 +97,11 @@ class location_handler_sort_location_distance extends views_handler_sort {
       '#title' => t('Node ID argument to use'),
       '#options' => $nid_argument_options,
       '#default_value' => $this->options['nid_arg'],
-      '#description' => empty($nid_argument_options) ? t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID."),
+      '#description' => empty($nid_argument_options) ? t(
+          "Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID. You must have added arguments to the view to use this option."
+        ) : t(
+          "Select which of the view's arguments to use as the node ID.  The latitude / longitude of the first location of that node will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that node ID."
+        ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
     );
@@ -102,7 +110,9 @@ class location_handler_sort_location_distance extends views_handler_sort {
       '#title' => t('Location to use'),
       '#options' => $nid_loc_field_options,
       '#default_value' => $this->options['nid_loc_field'],
-      '#description' => t("Select which of the node's locations to use as the origin.  Either the node locations or a CCK location field.  If the location supports multiple entries the first one will be used."),
+      '#description' => t(
+        "Select which of the node's locations to use as the origin.  Either the node locations or a CCK location field.  If the location supports multiple entries the first one will be used."
+      ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('nid_arg')),
     );
@@ -111,7 +121,11 @@ class location_handler_sort_location_distance extends views_handler_sort {
       '#title' => t('User ID argument to use'),
       '#options' => $uid_argument_options,
       '#default_value' => $this->options['uid_arg'],
-      '#description' => empty($uid_argument_options) ? t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID. You must have added arguments to the view to use this option.") : t("Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID."),
+      '#description' => empty($uid_argument_options) ? t(
+          "Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID. You must have added arguments to the view to use this option."
+        ) : t(
+          "Select which of the view's arguments to use as the user ID.  The latitude / longitude of the first location of that user will be used as the origin. Use the 'Global: Null' argument if you don't want to also restrict results to that user ID."
+        ),
       '#process' => array('ctools_dependent_process'),
       '#dependency' => array('edit-options-origin' => array('uid_arg')),
     );
@@ -147,7 +161,12 @@ class location_handler_sort_location_distance extends views_handler_sort {
       // This is done exactly the same as the field version.
       // Views is ok with us redefining the formula for a field.
       // If ANYTHING differs in the configuration, we will use a new alias.
-      $this->query->add_orderby(NULL, earth_distance_sql($coordinates['longitude'], $coordinates['latitude'], $this->table_alias), $this->options['order'], $alias);
+      $this->query->add_orderby(
+        NULL,
+        earth_distance_sql($coordinates['longitude'], $coordinates['latitude'], $this->table_alias),
+        $this->options['order'],
+        $alias
+      );
     }
   }
 }

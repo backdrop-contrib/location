@@ -109,10 +109,13 @@ function location_node_node_view($node, $view_mode) {
   else {
     if (variable_get('location_display_location', 1) && !empty($node->locations)) {
       if (isset($settings['display']['teaser']) && isset($settings['display']['full'])) {
-        if (($view_mode == 'teaser' && $settings['display']['teaser']) || (in_array($view_mode, array(
-          'full',
-          'search_index'
-        )) && $settings['display']['full'])
+        if (($view_mode == 'teaser' && $settings['display']['teaser']) || (in_array(
+              $view_mode,
+              array(
+                'full',
+                'search_index'
+              )
+            ) && $settings['display']['full'])
         ) {
           $node->content['locations'] = location_display($settings, $node->locations);
         }
@@ -213,11 +216,21 @@ function location_node_form_node_type_form_alter(&$form, &$form_state, $form_id)
  */
 function location_node_settings_validate($form, &$form_state) {
   if (!empty($form_state['values']['location_settings']['multiple']['max']) && empty($form_state['values']['location_settings']['multiple']['add'])) {
-    form_error($form['location_settings']['multiple']['add'], t("You must have at least one empty location form enabled if you are going to allow locations to be submitted for nodes of this content type. If you don't intend to allow locations to be submitted for nodes of this content type, set the maximum number of locations allowed for this content type to 0."));
+    form_error(
+      $form['location_settings']['multiple']['add'],
+      t(
+        "You must have at least one empty location form enabled if you are going to allow locations to be submitted for nodes of this content type. If you don't intend to allow locations to be submitted for nodes of this content type, set the maximum number of locations allowed for this content type to 0."
+      )
+    );
   }
   elseif ($form_state['values']['location_settings']['multiple']['max'] > 0) {
     if ($form_state['values']['location_settings']['multiple']['add'] > $form_state['values']['location_settings']['multiple']['max']) {
-      form_error($form['location_settings']['multiple']['add'], t("You can't show more empty location forms than the maximum number of locations allowed for this content type."));
+      form_error(
+        $form['location_settings']['multiple']['add'],
+        t(
+          "You can't show more empty location forms than the maximum number of locations allowed for this content type."
+        )
+      );
     }
   }
 }
@@ -230,8 +243,14 @@ function _location_node_type_save_submit($form, &$form_state) {
 
   // @@@ Backwards compatibility variables.
   // There are a few places in contrib where these variables are checked.
-  variable_set('location_maxnum_' . $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['max']);
-  variable_set('location_defaultnum_' . $form_state['values']['type'], $form_state['values']['location_settings']['multiple']['add']);
+  variable_set(
+    'location_maxnum_' . $form_state['values']['type'],
+    $form_state['values']['location_settings']['multiple']['max']
+  );
+  variable_set(
+    'location_defaultnum_' . $form_state['values']['type'],
+    $form_state['values']['location_settings']['multiple']['add']
+  );
 
   // Prevent the "normal" submit handler from stomping our variable.
   unset($form_state['values']['location_settings']);
@@ -258,6 +277,7 @@ function location_node_content_extra_fields($type_name) {
       'description' => t('Node Locations module form.'),
       'weight' => $weight,
     );
+
     return $extra;
   }
 }
@@ -299,5 +319,6 @@ function location_node_node_locations_enabled($type) {
   if (!empty($settings) && isset($settings['multiple']['max']) && !empty($settings['multiple']['max'])) {
     return TRUE;
   }
+
   return FALSE;
 }

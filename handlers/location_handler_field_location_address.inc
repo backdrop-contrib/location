@@ -4,12 +4,12 @@
  * @file
  * Field handler to display a complete address.
  */
-
 class location_handler_field_location_address extends views_handler_field {
 
   function option_definition() {
     $options = parent::option_definition();
     $options['hide'] = array('default' => array());
+
     return $options;
   }
 

@@ -84,6 +84,7 @@ class LocationCCKTest extends LocationCCK2Test {
 
     $form = array();
     $this->drupalPost(NULL, $form, 'Save field settings');
+
     return $name;
   }
 

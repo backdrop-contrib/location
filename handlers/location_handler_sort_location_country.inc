@@ -5,6 +5,7 @@ class location_handler_sort_location_country extends views_handler_sort {
   function option_definition() {
     $options = parent::option_definition();
     $options['country_sort'] = array('default' => 'name');
+
     return $options;
   }
 

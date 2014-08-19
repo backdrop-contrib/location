@@ -12,6 +12,7 @@ class location_handler_filter_location_province extends views_handler_filter {
     $options = parent::option_definition();
     $options['operator'] = array('default' => 'is');
     $options['type'] = array('default' => 'textfield');
+
     return $options;
   }
 
@@ -116,6 +117,7 @@ class location_handler_filter_location_province extends views_handler_filter {
       $country = variable_get('location_default_country', 'us');
     }
     $this->location_country = $country;
+
     return $country;
   }
 

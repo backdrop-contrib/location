@@ -52,6 +52,7 @@ class LocationCCK2Test extends LocationTestCase {
     if (!self::$name) {
       $this->addLocationContentType2();
     }
+
     return self::$name;
   }
 
@@ -59,6 +60,7 @@ class LocationCCK2Test extends LocationTestCase {
     if (!self::$field_name) {
       $this->addLocationContentType2();
     }
+
     return self::$field_name;
   }
 
@@ -119,9 +121,11 @@ class LocationCCK2Test extends LocationTestCase {
     $this->assertTrue($this->getTestContentName(), t('Content type' . $this->getTestContentName() . ' created'));
 
     // test node creation
-    $node2 = $this->drupalCreateNode(array(
-      'type' => $this->getTestContentName(),
-    ));
+    $node2 = $this->drupalCreateNode(
+      array(
+        'type' => $this->getTestContentName(),
+      )
+    );
 // @todo remove debug
 //    $this->fail('<pre>' . print_r($node2, TRUE) . '</pre>', 'Debug');
     $fieldname = 'field_' . $this->getTestFieldName();

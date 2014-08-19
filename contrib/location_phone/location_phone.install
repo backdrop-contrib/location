@@ -39,9 +39,11 @@ function location_phone_schema() {
 function location_phone_install() {
   // Change weight.
   db_update('system')
-    ->fields(array(
-      'weight' => 1,
-    ))
+    ->fields(
+      array(
+        'weight' => 1,
+      )
+    )
     ->condition('name', 'location_phone')
     ->condition('type', 'module')
     ->execute();
@@ -98,9 +100,11 @@ function location_phone_update_5301() {
 function location_phone_update_5302() {
   // Change weight.
   db_update('system')
-    ->fields(array(
-      'weight' => 1,
-    ))
+    ->fields(
+      array(
+        'weight' => 1,
+      )
+    )
     ->condition('name', 'location_phone')
     ->condition('type', 'module')
     ->execute();
@@ -110,11 +114,16 @@ function location_phone_update_5302() {
  * Drupal 6 updates.
  */
 function location_phone_update_6301() {
-  db_change_field('location_phone', 'phone', 'phone', array(
-    'description' => 'Phone number',
-    'type' => 'varchar',
-    'length' => 31,
-    'not null' => TRUE,
-    'default' => '',
-  ));
+  db_change_field(
+    'location_phone',
+    'phone',
+    'phone',
+    array(
+      'description' => 'Phone number',
+      'type' => 'varchar',
+      'length' => 31,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
 }

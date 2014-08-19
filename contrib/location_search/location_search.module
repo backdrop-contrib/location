@@ -75,6 +75,7 @@ function location_search_search_reset() {
 function location_search_search_status() {
   $total = db_query('SELECT COUNT(lid) FROM {location}')->fetchField();
   $remaining = db_query('SELECT COUNT(lid) FROM {location_search_work}')->fetchField();
+
   return array('remaining' => $remaining, 'total' => $total);
 }
 
@@ -197,7 +198,11 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
   foreach ($lids as $lid) {
     $loc = location_load_location($lid);
 
-    $result = db_query('SELECT nid, uid, genid FROM {location_instance} WHERE lid = :lid', array(':lid' => $lid), array('fetch' => PDO::FETCH_ASSOC));
+    $result = db_query(
+      'SELECT nid, uid, genid FROM {location_instance} WHERE lid = :lid',
+      array(':lid' => $lid),
+      array('fetch' => PDO::FETCH_ASSOC)
+    );
     $instance_links = array();
     foreach ($result as $row) {
       $instance_links[] = $row;
@@ -210,6 +215,7 @@ function location_search_search_execute($keys = NULL, $conditions = NULL) {
     );
 
   }
+
   return $results;
 }
 
@@ -265,12 +271,17 @@ function location_search_add_access_control(&$query) {
     // If we pass in the subselect query object then when the pager query is
     // run later on the node_access alterations don't get applied to the
     // subselect. So instead we pass in the array result set.
-    $query->condition(db_or()
-      ->condition('li.uid', 0, '<>')
-      ->condition(db_and()
-        ->condition('li.nid', 0, '<>')
-        ->condition('n.nid', $subselect->execute()->fetchCol(), 'IN')));
+    $query->condition(
+      db_or()
+        ->condition('li.uid', 0, '<>')
+        ->condition(
+          db_and()
+            ->condition('li.nid', 0, '<>')
+            ->condition('n.nid', $subselect->execute()->fetchCol(), 'IN')
+        )
+    );
   }
+
   return TRUE;
 }
 
@@ -370,7 +381,11 @@ function location_search_form_alter(&$form, &$form_state, $form_id) {
         $map_fields['address'] = 'locpick_address';
       }
       if (module_exists('gmap')) {
-        $form['advanced']['proximity']['map']['#value'] = gmap_set_location(variable_get('location_search_map_macro', '[gmap |behavior=+collapsehack]'), $form['advanced']['proximity'], $map_fields);
+        $form['advanced']['proximity']['map']['#value'] = gmap_set_location(
+          variable_get('location_search_map_macro', '[gmap |behavior=+collapsehack]'),
+          $form['advanced']['proximity'],
+          $map_fields
+        );
       }
     }
 
@@ -395,7 +410,11 @@ function location_search_validate($form, &$form_state) {
     $keys = search_expression_insert($keys, 'country', $values['country']);
 
     if (!empty($values['province'])) {
-      $keys = search_expression_insert($keys, 'province', location_province_code($values['country'], $values['province']));
+      $keys = search_expression_insert(
+        $keys,
+        'province',
+        location_province_code($values['country'], $values['province'])
+      );
     }
   }
 
@@ -404,7 +423,11 @@ function location_search_validate($form, &$form_state) {
   }
 
   if (!empty($values['latitude']) && !empty($values['longitude']) && !empty($values['distance'])) {
-    $keys = search_expression_insert($keys, 'from', $values['latitude'] . ',' . $values['longitude'] . ',' . $values['distance'] . ',' . $values['units']);
+    $keys = search_expression_insert(
+      $keys,
+      'from',
+      $values['latitude'] . ',' . $values['longitude'] . ',' . $values['distance'] . ',' . $values['units']
+    );
   }
 
   if (!empty($keys)) {
@@ -440,9 +463,11 @@ function location_search_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = N
       ->condition('lid', $obj['lid'])
       ->execute();
     db_insert('location_search_work')
-      ->fields(array(
-        'lid' => $obj['lid'],
-      ))
+      ->fields(
+        array(
+          'lid' => $obj['lid'],
+        )
+      )
       ->execute();
   }
   if ($op == 'delete') {

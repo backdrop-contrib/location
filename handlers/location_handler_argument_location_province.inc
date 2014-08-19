@@ -8,6 +8,7 @@ class location_handler_argument_location_province extends views_handler_argument
   function option_definition() {
     $options = parent::option_definition();
     $options['break_phrase'] = array('default' => FALSE);
+
     return $options;
   }
 
@@ -62,6 +63,7 @@ class location_handler_argument_location_province extends views_handler_argument
     foreach ($values as $value) {
       $title .= location_province_name($country, $value) . ", ";
     }
+
     return substr($title, 0, -2);
   }
 

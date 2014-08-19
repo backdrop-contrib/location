@@ -44,15 +44,17 @@ class CowInstanceTest extends LocationTestCase {
 
     $location1_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'name' => $location1_name,
-          'location_settings' => $settings,
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'name' => $location1_name,
+            'location_settings' => $settings,
+          ),
         ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node2 = node_load($node->nid, NULL, TRUE);
@@ -66,18 +68,20 @@ class CowInstanceTest extends LocationTestCase {
 
     $location1_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'locpick' => array(
-            'user_latitude' => '44.25',
-            'user_longitude' => '-10.25',
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'locpick' => array(
+              'user_latitude' => '44.25',
+              'user_longitude' => '-10.25',
+            ),
+            'location_settings' => $settings,
           ),
-          'location_settings' => $settings,
         ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node2 = node_load($node->nid, NULL, TRUE);
@@ -93,23 +97,25 @@ class CowInstanceTest extends LocationTestCase {
     $location2_name = $this->randomName();
     $location3_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'name' => $location1_name,
-          'location_settings' => $settings,
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'name' => $location1_name,
+            'location_settings' => $settings,
+          ),
+          1 => array(
+            'name' => $location2_name,
+            'location_settings' => $settings,
+          ),
+          2 => array(
+            'name' => $location3_name,
+            'location_settings' => $settings,
+          ),
         ),
-        1 => array(
-          'name' => $location2_name,
-          'location_settings' => $settings,
-        ),
-        2 => array(
-          'name' => $location3_name,
-          'location_settings' => $settings,
-        ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node2 = node_load($node->nid, NULL, TRUE);
@@ -117,9 +123,21 @@ class CowInstanceTest extends LocationTestCase {
     $this->assertEqual($location1_name, $node2->locations[0]['name'], t('Testing multi location 1/3'));
     $this->assertEqual($location2_name, $node2->locations[1]['name'], t('Testing multi location 2/3'));
     $this->assertEqual($location3_name, $node2->locations[2]['name'], t('Testing multi location 3/3'));
-    $this->assertNotEqual($node2->locations[0]['lid'], $node2->locations[1]['lid'], t('Ensuring location id uniqueness'));
-    $this->assertNotEqual($node2->locations[1]['lid'], $node2->locations[2]['lid'], t('Ensuring location id uniqueness'));
-    $this->assertNotEqual($node2->locations[2]['lid'], $node2->locations[0]['lid'], t('Ensuring location id uniqueness'));
+    $this->assertNotEqual(
+      $node2->locations[0]['lid'],
+      $node2->locations[1]['lid'],
+      t('Ensuring location id uniqueness')
+    );
+    $this->assertNotEqual(
+      $node2->locations[1]['lid'],
+      $node2->locations[2]['lid'],
+      t('Ensuring location id uniqueness')
+    );
+    $this->assertNotEqual(
+      $node2->locations[2]['lid'],
+      $node2->locations[0]['lid'],
+      t('Ensuring location id uniqueness')
+    );
   }
 
   function testSharedLocation() {
@@ -128,15 +146,17 @@ class CowInstanceTest extends LocationTestCase {
 
     $location1_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'name' => $location1_name,
-          'location_settings' => $settings,
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'name' => $location1_name,
+            'location_settings' => $settings,
+          ),
         ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node = node_load($node->nid, NULL, TRUE);
@@ -144,12 +164,14 @@ class CowInstanceTest extends LocationTestCase {
     // Get the full location
     $location = $node->locations[0];
 
-    $node2 = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        '0' => $location,
-      ),
-    ));
+    $node2 = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          '0' => $location,
+        ),
+      )
+    );
 
     // Reload second node.
     $node2 = node_load($node2->nid, NULL, TRUE);
@@ -162,7 +184,11 @@ class CowInstanceTest extends LocationTestCase {
     // Force another reload.
     $node2 = node_load($node2->nid, NULL, TRUE);
 
-    $this->assertEqual($node2->locations[0]['lid'], $location['lid'], t('Ensuring shared location is not prematurely garbage collected'));
+    $this->assertEqual(
+      $node2->locations[0]['lid'],
+      $location['lid'],
+      t('Ensuring shared location is not prematurely garbage collected')
+    );
 
     $this->deleteNode($node2->nid);
 
@@ -184,19 +210,21 @@ class CowInstanceTest extends LocationTestCase {
     $location2_name = $this->randomName();
     $location3_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array( // First
-          'name' => $location1_name,
-          'location_settings' => $settings,
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array( // First
+            'name' => $location1_name,
+            'location_settings' => $settings,
+          ),
+          1 => array( // Second
+            'name' => $location2_name,
+            'location_settings' => $settings,
+          ),
         ),
-        1 => array( // Second
-          'name' => $location2_name,
-          'location_settings' => $settings,
-        ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node = node_load($node->nid, NULL, TRUE);
@@ -226,16 +254,27 @@ class CowInstanceTest extends LocationTestCase {
     $this->reorderLocations($node2);
 
     $this->assertEqual(count($node1->locations), 2, t('Ensuring second revision did not affect first revision'));
-    $this->assertEqual($node->locations[0]['lid'], $node1->locations[0]['lid'], t('Ensuring second revision did not affect first revision'));
-    $this->assertEqual($node->locations[1]['lid'], $node1->locations[1]['lid'], t('Ensuring second revision did not affect first revision'));
+    $this->assertEqual(
+      $node->locations[0]['lid'],
+      $node1->locations[0]['lid'],
+      t('Ensuring second revision did not affect first revision')
+    );
+    $this->assertEqual(
+      $node->locations[1]['lid'],
+      $node1->locations[1]['lid'],
+      t('Ensuring second revision did not affect first revision')
+    );
 
     $this->assertEqual(count($node2->locations), 2, t('Ensuring second revision does not have stealth locations'));
 
     // Delete first revision.
-    db_query("DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid", array(
-      ':nid' => $node1->nid,
-      ':vid' => $node1->vid
-    ));
+    db_query(
+      "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid",
+      array(
+        ':nid' => $node1->nid,
+        ':vid' => $node1->vid
+      )
+    );
     $this->assertFalse(node_revision_delete($node1->vid));
 
 // @todo fixme
@@ -262,15 +301,17 @@ class CowInstanceTest extends LocationTestCase {
 
     $location1_name = $this->randomName();
 
-    $node = $this->drupalCreateNode(array(
-      'type' => $location_type,
-      'locations' => array(
-        0 => array(
-          'name' => $location1_name,
-          'location_settings' => $settings,
+    $node = $this->drupalCreateNode(
+      array(
+        'type' => $location_type,
+        'locations' => array(
+          0 => array(
+            'name' => $location1_name,
+            'location_settings' => $settings,
+          ),
         ),
-      ),
-    ));
+      )
+    );
 
     // Reload the node.
     $node = node_load($node->nid, NULL, TRUE);

@@ -11,9 +11,11 @@
 function location_addanother_install() {
   // Change weight so we execute after location.
   db_update('system')
-    ->fields(array(
-      'weight' => 1,
-    ))
+    ->fields(
+      array(
+        'weight' => 1,
+      )
+    )
     ->condition('name', 'location_addanother')
     ->condition('type', 'module')
     ->execute();

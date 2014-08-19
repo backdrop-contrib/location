@@ -57,6 +57,7 @@ function location_context_create_location($empty, $data = NULL, $conf = FALSE) {
     $context->data = $data;
     $context->title = $data['city'];
     $context->argument = $data['lid'];
+
     return $context;
   }
 }
@@ -72,6 +73,7 @@ function location_context_location_convert_list() {
   $fields = location_field_names();
   $fields['country_name'] = t('Country name');
   $fields['province_name'] = t('State/Province name');
+
   return $fields;
 }
 

@@ -45,12 +45,15 @@ function location_map_link_dk_findvej($location = array()) {
     return url('http://findvej.dk/' . $location['street'] . ',' . $location['city']);
   }
   elseif (location_has_coordinates($location)) {
-    return url('http://findvej.dk/', array(
-      'query' => array(
-        'latitude' => $location['latitude'],
-        'longitude' => $location['longitude'],
+    return url(
+      'http://findvej.dk/',
+      array(
+        'query' => array(
+          'latitude' => $location['latitude'],
+          'longitude' => $location['longitude'],
+        )
       )
-    ));
+    );
   }
   else {
     return NULL;

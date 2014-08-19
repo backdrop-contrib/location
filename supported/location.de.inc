@@ -41,6 +41,7 @@ function location_map_link_de($location = array(), $hide = array()) {
   if ($link = _location_map_link_de_suchen($location)) {
     $map_links['suchen'] = $link;
   }
+
   return $map_links;
 }
 
@@ -61,6 +62,7 @@ function _location_map_link_de_suchen($location = array()) {
 //    $query_parts[] = $location['number'];
 //  }
   $get_query .= urlencode(implode(', ', $query_parts));
+
   return ('http://www.suchen.de/lokalmap' . $get_query);
 }
 
@@ -220,6 +222,7 @@ function theme_location_de($location = array(), $hide = array()) {
     $output .= '</div></div>';
 
   }
+
   return $output;
 }
 
@@ -248,10 +251,13 @@ function location_get_postalcode_data_de($location = array()) {
   }
 
   // Now we pad the thing and query.
-  $row = db_query("SELECT * FROM {zipcodes} where country = :country AND zip = :zip", array(
-    ':country' => $location['country'],
-    ':zip' => str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT)
-  ))->fetchObject();
+  $row = db_query(
+    "SELECT * FROM {zipcodes} where country = :country AND zip = :zip",
+    array(
+      ':country' => $location['country'],
+      ':zip' => str_pad($location['postal_code'], 5, "0", STR_PAD_LEFT)
+    )
+  )->fetchObject();
   if ($row) {
     return array(
       'lat' => $row->latitude,

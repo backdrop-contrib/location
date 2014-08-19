@@ -80,5 +80,6 @@ function _location_rss_item($location, $mode = 'simple') {
         break;
     }
   }
+
   return $ret;
 }

@@ -16,6 +16,7 @@ class location_handler_argument_location_country extends views_handler_argument 
     if (empty($value)) {
       return t('Unknown');
     }
+
     return location_country_name($value);
   }
 }

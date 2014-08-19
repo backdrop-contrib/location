@@ -98,7 +98,10 @@ function location_user_user_delete($account) {
 function location_user_user_view($account, $view_mode, $langcode) {
   global $user;
 
-  if ((($user->uid == $account->uid) && user_access('view own user location')) || user_access('administer users') || user_access('view all user locations') || user_access('administer user locations')) {
+  if ((($user->uid == $account->uid) && user_access('view own user location')) || user_access(
+      'administer users'
+    ) || user_access('view all user locations') || user_access('administer user locations')
+  ) {
     if (variable_get('location_display_location', 1) && isset($account->locations) && count($account->locations)) {
       $settings = variable_get('location_settings_user', array());
       $account->content['locations'] = location_display($settings, $account->locations);
@@ -115,7 +118,10 @@ function location_user_form_user_profile_form_alter(&$form, &$form_state, $form_
 
   if ($form['#user_category'] == 'account') {
     $account = $form['#user'];
-    if ((($user->uid == $account->uid) && user_access('set own user location')) || user_access('administer user locations')) {
+    if ((($user->uid == $account->uid) && user_access('set own user location')) || user_access(
+        'administer user locations'
+      )
+    ) {
       $settings = variable_get('location_settings_user', array());
       $form['locations'] = location_form($settings, $account->locations);
     }

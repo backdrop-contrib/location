@@ -4,12 +4,12 @@
  * @file
  * Latitude field handler.
  */
-
 class location_views_handler_field_latitude extends views_handler_field {
 
   function option_definition() {
     $options = parent::option_definition();
     $options['style'] = array('default' => 'dms');
+
     return $options;
   }
 
