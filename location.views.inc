@@ -74,14 +74,6 @@ function location_views_handlers() {
       'location_handler_sort_location_country' => array(
         'parent' => 'views_handler_sort',
       ),
-//      'location_handler_relationship_location_distance' => array(
-//        'parent' => 'views_handler_relationship',
-//      ),
-
-//      'location_handler_field_location_coordinates_user' => array(
-//        'parent' => 'views_handler_field',
-//      ),
-
     ),
   );
 }
@@ -139,10 +131,11 @@ function location_views_data() {
   // lid
   $data['location']['lid'] = array(
     'title' => t('Lid'),
-    'help' => t('The location ID of the location.'), // The help that appears on the UI,
+    // The help that appears on the UI.
+    'help' => t('The location ID of the location.'),
     // Information for displaying the lid
     'field' => array(
-      'handler' => 'views_handler_field', // @@@
+      'handler' => 'views_handler_field',
       'click sortable' => TRUE,
     ),
     // Information for accepting a lid as an argument
@@ -318,7 +311,8 @@ function location_views_data() {
     'title' => t('Coordinates'),
     'help' => t("The coordinates of the selected location in 'lat, long' format."),
     'field' => array(
-      'field' => 'latitude', // The handler adds the longitude.
+      // The handler adds the longitude.
+      'field' => 'latitude',
       'handler' => 'location_views_handler_field_coordinates',
       'click sortable' => FALSE,
     ),
@@ -339,32 +333,8 @@ function location_views_data() {
     ),
     'filter' => array(
       'handler' => 'location_views_handler_filter_proximity',
-    ),
-//    'relationship' => array(
-//      'handler' => 'location_handler_relationship_location_distance',
-//    ),
+    )
   );
-
-//  $data['location']['coordinates_user'] = array(
-//    'title' => t('Coordinates of logged-on user'),
-//    'help' => t('This will contain the coordinates of the logged-on user.'),
-//    'field' => array(
-//      'handler' => 'location_handler_field_location_coordinates_user',
-//      'click sortable' => FALSE,
-//    ),
-//  );
-
-  /*
-        'latitude' => array(
-          'name' => t('Latitude'),
-          'sortable' => TRUE,
-        ),
-        'longitude' => array(
-          'name' => t('Longitude'),
-          'sortable' => TRUE,
-        ),
-  */
-
 
   $data['location']['address'] = array(
     'title' => t('Address'),
@@ -375,7 +345,6 @@ function location_views_data() {
       'element type' => 'div',
     ),
   );
-
 
   $data['location_instance']['table']['group'] = t('Location', array(), array('context' => 'geolocation'));
 
@@ -401,7 +370,6 @@ function location_views_data() {
       'field' => 'vid',
     ),
   );
-
 
   // Tell the base tables about us.
   $data['node']['table']['join']['location'] = array(
@@ -517,6 +485,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+
     case 'static':
     case 'latlon_gmap':
       // Validate actual values
@@ -525,6 +494,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         $coordinates['longitude'] = (float) $options['longitude'];
       }
       break;
+
     case 'tied':
       if (!empty($view->filter)) {
         foreach ($view->filter as $filter) {
@@ -550,6 +520,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+
     case 'postal':
     case 'postal_default':
       // Force default for country.
@@ -565,6 +536,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+
     case 'php':
       ob_start();
       $result = eval($options['php_code']);
@@ -574,6 +546,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         $coordinates['longitude'] = (float) $result['longitude'];
       }
       break;
+
     case 'nid_arg':
       if ($nodehandler = $view->display_handler->get_handler('argument', $options['nid_arg'])) {
         $nid = $nodehandler->get_value(NULL);
@@ -601,6 +574,7 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+
     case 'uid_arg':
       if ($userhandler = $view->display_handler->get_handler('argument', $options['uid_arg'])) {
         $uid = $userhandler->get_value();
@@ -610,17 +584,20 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       break;
+
     case 'distance_arg':
       foreach ($view->argument as $argument) {
         if ($argument->field == 'distance') {
           list($coords, $search_distance) = explode('_', $view->args[$argument->position]);
           list($lat, $lon) = explode(',', $coords);
           break;
+
         }
       }
       $coordinates['latitude'] = (float) $lat;
       $coordinates['longitude'] = (float) $lon;
       break;
+
     case 'geoip':
       $coordinates['latitude'] = (float) $options['latitude'];
       $coordinates['longitude'] = (float) $options['longitude'];
@@ -634,7 +611,8 @@ function location_views_proximity_get_reference_location($view, $options) {
         }
       }
       elseif (module_exists('geoip')) {
-        if ($geoip_location = geoip_city()) { // intentional assignment of $geoip
+        // Intentional assignment of $geoip.
+        if ($geoip_location = geoip_city()) {
           $coordinates['latitude'] = $geoip_location->latitude;
           $coordinates['longitude'] = $geoip_location->longitude;
         }
