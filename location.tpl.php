@@ -1,3 +1,10 @@
+<?php
+
+/**
+ * @file
+ * Template for displaying single location.
+ */
+?>
 <div class="location vcard">
   <div class="adr">
     <?php if (!empty($name)): ?>
@@ -45,9 +52,13 @@
         <span><?php print $fax; ?></span>
       </div>
     <?php endif; ?>
-    <?php // "Geo" microformat, see http://microformats.org/wiki/geo ?>
+    <?php
+    // "Geo" microformat, see http://microformats.org/wiki/geo.
+    ?>
     <?php if (isset($latitude) && isset($longitude)): ?>
-      <?php // Assume that 0, 0 is invalid. ?>
+      <?php
+      // Assume that 0, 0 is invalid.
+      ?>
       <?php if ($latitude != 0 || $longitude != 0): ?>
         <span class="geo"><abbr class="latitude" title="<?php print $latitude; ?>"><?php print $latitude_dms; ?></abbr>, <abbr
             class="longitude" title="<?php print $longitude; ?>"><?php print $longitude_dms; ?></abbr></span>
