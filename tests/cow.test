@@ -7,21 +7,24 @@
 
 require_once drupal_get_path('module', 'location') . '/tests/location_testcase.test';
 
+/**
+ * Class CowInstanceTest.
+ */
 class CowInstanceTest extends LocationTestCase {
   /**
    * A global administrative user.
    */
-  var $admin_user;
+  public $admin_user;
 
   /**
    * A global normal user.
    */
-  var $normal_user;
+  public $normal_user;
 
   /**
    * Simple content type using defaults.
    */
-  var $content_type;
+  public $content_type;
 
 
   public static function getInfo() {
@@ -32,13 +35,13 @@ class CowInstanceTest extends LocationTestCase {
     );
   }
 
-  function setUp() {
+  public function setUp() {
     parent::setUp('location', 'location_node', 'devel');
     $web_admin = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
     $this->drupalLogin($web_admin);
   }
 
-  function testCreateLocation() {
+  public function testCreateLocation() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
 
@@ -62,7 +65,7 @@ class CowInstanceTest extends LocationTestCase {
     $this->assertEqual($location1_name, $node2->locations[0]['name'], t('Testing basic save/load'));
   }
 
-  function testLocpickOnly() {
+  public function testLocpickOnly() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
 
@@ -89,7 +92,7 @@ class CowInstanceTest extends LocationTestCase {
     $this->assertEqual($node2->locations[0]['latitude'], 44.25, t('Testing coordinate-only save/load'));
   }
 
-  function testMultipleLocationOnSingleNode() {
+  public function testMultipleLocationOnSingleNode() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings, array('multiple' => array('max' => 3, 'add' => 3)));
 
@@ -140,7 +143,7 @@ class CowInstanceTest extends LocationTestCase {
     );
   }
 
-  function testSharedLocation() {
+  public function testSharedLocation() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
 
@@ -202,7 +205,7 @@ class CowInstanceTest extends LocationTestCase {
     }
   }
 
-  function testNodeRevisionCOW() {
+  public function testNodeRevisionCOW() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings, array('multiple' => array('max' => 3, 'add' => 3)));
 
@@ -214,11 +217,13 @@ class CowInstanceTest extends LocationTestCase {
       array(
         'type' => $location_type,
         'locations' => array(
-          0 => array( // First
+          // First.
+          0 => array(
             'name' => $location1_name,
             'location_settings' => $settings,
           ),
-          1 => array( // Second
+          // Second.
+          1 => array(
             'name' => $location2_name,
             'location_settings' => $settings,
           ),
@@ -233,10 +238,12 @@ class CowInstanceTest extends LocationTestCase {
       'revision' => TRUE,
       'log' => $this->randomName(20),
       'locations' => array(
-        0 => array( // Delete First
+        // Delete First.
+        0 => array(
           'delete_location' => TRUE,
         ),
-        2 => array( // Third
+        // Third.
+        2 => array(
           'name' => $location3_name,
         ),
       ),
@@ -277,25 +284,9 @@ class CowInstanceTest extends LocationTestCase {
     );
     $this->assertFalse(node_revision_delete($node1->vid));
 
-// @todo fixme
-    /*    $result = db_query('SELECT * FROM {location} WHERE lid = :lid', array(':lid' => $node1->locations[0]['lid']));
-        if ($row != $result->fetch()) {
-          $this->fail(t('Ensuring location on deleted revision is garbage collected'));
-        }
-        else {
-          $this->pass(t('Ensuring location on deleted revision is garbage collected'));
-        }
-
-        $result = db_query('SELECT * FROM {location} WHERE lid = :lid', array(':lid' => $node1->locations[1]['lid']));
-        if ($row2 != $result->fetch()) {
-          $this->pass(t('Ensuring shared location on deleted revision is NOT garbage collected'));
-        }
-        else {
-          $this->fail(t('Ensuring shared location on deleted revision is NOT garbage collected'));
-        }*/
   }
 
-  function testCOWConservation() {
+  public function testCOWConservation() {
     $settings = array();
     $location_type = $this->addLocationContentType($settings);
 
