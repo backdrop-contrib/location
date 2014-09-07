@@ -1,7 +1,13 @@
 <?php
 
-// Denmark
+/**
+ * @file
+ * Denmark.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_dk() {
   return array(
     'CC' => "Copenhagen (municipality)",
@@ -80,7 +86,7 @@ function location_map_link_dk_rejseplanen($location = array()) {
     }
   }
 
-  // Merge postal code and city if both are available, since they 
+  // Merge postal code and city if both are available, since they,
   // shouldn't be comma separated in Danish addresses.
   if (isset($keys['postal_code']) && isset($keys['city'])) {
     $keys['postal_code'] = $keys['postal_code'] . ' ' . $keys['city'];
@@ -117,7 +123,8 @@ function location_map_link_dk_providers() {
     'rejseplanen' => array(
       'name' => 'Rejseplanen',
       'url' => 'http://www.rejseplanen.dk/',
-      'tos' => 'http://info.rejseplanen.dk/om_rejseplanen', // As close as I could find.
+      // As close as I could find.
+      'tos' => 'http://info.rejseplanen.dk/om_rejseplanen',
     ),
   );
 }

@@ -123,7 +123,7 @@ function location_cck_field_settings($op, $field) {
         'base' => 'location',
         'field' => 'lid',
         'handler' => 'views_handler_relationship',
-        'label' => t('Location', array(), array('context' => 'geolocation')), // @@@ Some sort of better name?
+        'label' => t('Location', array(), array('context' => 'geolocation')),
       );
 
       return $data;
@@ -453,15 +453,13 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
         // If you go back and edit something, and you hadn't set a location the
         // first time, CCK fails to set up the defaults properly!
         // I'm just going to leave it like that for now, because I don't know how
-        // to work around it.
-        $temp = NULL; //content_default_value($form, $form_state, $field, 0);
+        // to work around it.s
+        $temp = NULL;
         if (is_array($temp) && isset($temp[$delta]) && is_array($temp[$delta])) {
           foreach ($temp[$delta] as $k => $v) {
             $settings['form']['fields'][$k]['default'] = $v;
           }
         }
-//      unset($location['location_settings']);
-//      unset($location['locpick']);
       }
       else {
         $location = location_empty_location($settings);

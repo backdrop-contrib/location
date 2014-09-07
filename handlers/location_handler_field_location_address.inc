@@ -4,16 +4,23 @@
  * @file
  * Field handler to display a complete address.
  */
+
 class location_handler_field_location_address extends views_handler_field {
 
-  function option_definition() {
+  /**
+   * {@inheritdoc}
+   */
+  public function option_definition() {
     $options = parent::option_definition();
     $options['hide'] = array('default' => array());
 
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     $form['hide'] = array(
       '#type' => 'checkboxes',
@@ -23,7 +30,10 @@ class location_handler_field_location_address extends views_handler_field {
     );
   }
 
-  function render($values) {
+  /**
+   * {@inheritdoc}
+   */
+  public function render($values) {
     if ($values->{$this->field_alias}) {
       $location = location_load_location($values->{$this->field_alias});
       if ($location['lid']) {

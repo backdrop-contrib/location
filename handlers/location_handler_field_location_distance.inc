@@ -4,9 +4,10 @@
  * @file
  * Coordinates field handler.
  */
+
 class location_handler_field_location_distance extends views_handler_field {
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     $options['origin'] = array('default' => 'user');
     $options['units'] = array('default' => 'km');
@@ -22,11 +23,11 @@ class location_handler_field_location_distance extends views_handler_field {
     return $options;
   }
 
-  function has_extra_options() {
+  public function has_extra_options() {
     return TRUE;
   }
 
-  function extra_options_form(&$form, &$form_state) {
+  public function extra_options_form(&$form, &$form_state) {
     $form['units'] = array(
       '#type' => 'radios',
       '#title' => t('Units'),
@@ -143,7 +144,7 @@ class location_handler_field_location_distance extends views_handler_field {
     );
   }
 
-  function click_sort($order) {
+  public function click_sort($order) {
     $location = location_views_proximity_get_reference_location($this->view, $this->options);
 
     if (!empty($location)) {
@@ -156,7 +157,7 @@ class location_handler_field_location_distance extends views_handler_field {
     }
   }
 
-  function render($values) {
+  public function render($values) {
     if (empty($values->{$this->field_alias}) || $values->{$this->field_alias} == 'Unknown') {
       // Unset location, empty display.
       return;
@@ -174,7 +175,7 @@ class location_handler_field_location_distance extends views_handler_field {
     }
   }
 
-  function query() {
+  public function query() {
     $this->ensure_my_table();
 
     $coordinates = location_views_proximity_get_reference_location($this->view, $this->options);

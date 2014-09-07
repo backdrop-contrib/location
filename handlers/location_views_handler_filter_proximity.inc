@@ -1,13 +1,17 @@
 <?php
 
 /**
+ * @file
  * General proximity filter for location latitude/longitude.
  */
-class location_views_handler_filter_proximity extends views_handler_filter {
-  // This is always multiple, because we can have distance, units etc.
-  var $always_multiple = TRUE;
 
-  function option_definition() {
+class location_views_handler_filter_proximity extends views_handler_filter {
+  /**
+   * This is always multiple, because we can have distance, units etc.
+   */
+  public $always_multiple = TRUE;
+
+  public function option_definition() {
     $options = parent::option_definition();
     $options['operator'] = array('default' => 'mbr');
 
@@ -36,24 +40,24 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     return $options;
   }
 
-  function admin_summary() {
+  public function admin_summary() {
     return '';
   }
 
-  function operator_options() {
+  public function operator_options() {
     return array(
       'mbr' => t('Proximity (Rectangular)'),
       'dist' => t('Proximity (Circular)'),
     );
   }
 
-  function expose_options() {
+  public function expose_options() {
     parent::expose_options();
     $this->options['expose']['gmap_macro'] = array('default' => '[gmap ]');
     $this->options['expose']['user_location_choose'] = array('default' => FALSE);
   }
 
-  function expose_form_left(&$form, &$form_state) {
+  public function expose_form_left(&$form, &$form_state) {
     parent::expose_form_left($form, $form_state);
     // @@@ Todo: autohide this.
     $form['expose']['gmap_macro'] = array(
@@ -74,7 +78,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     );
   }
 
-  function value_form(&$form, &$form_state) {
+  public function value_form(&$form, &$form_state) {
     $form['origin'] = array(
       '#type' => 'select',
       '#title' => t('Origin'),
@@ -237,7 +241,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     );
   }
 
-  function exposed_form(&$form, &$form_state) {
+  public function exposed_form(&$form, &$form_state) {
     parent::exposed_form($form, $form_state);
     $key = $this->options['expose']['identifier'];
     $origin = $this->options['origin'];
@@ -322,7 +326,7 @@ class location_views_handler_filter_proximity extends views_handler_filter {
     unset($form['origin']);
   }
 
-  function query() {
+  public function query() {
     if (empty($this->value)) {
       return;
     }

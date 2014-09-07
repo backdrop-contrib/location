@@ -126,12 +126,15 @@ function google_geocode_location($location = array()) {
   $query = array(
     'region' => $location['country'],
     'address' => _google_geocode_flatten($location),
-    'sensor' => 'false', // Required by TOS.
+    // Required by TOS.
+    'sensor' => 'false',
   );
   if (!empty($location['country'])) {
     // If we have only a country code and nothing else,
     // pass in country component so that google doesn't mistake the country
     // code for some other short code, like administrative area.
+
+    // @codingStandardsIgnoreStart
     $filtered_location = array_filter(
       $location,
       function ($a) {
@@ -144,6 +147,8 @@ function google_geocode_location($location = array()) {
         return is_string($a) ? trim($a) : $a;
       }
     );
+    // @codingStandardsIgnoreEnd
+
     if (count($filtered_location) == 1) {
       $query['components'] = _google_geocode_get_components($filtered_location);
     }

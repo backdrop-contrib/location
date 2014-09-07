@@ -1,7 +1,13 @@
 <?php
 
-// Lebanon
+/**
+ * @file
+ * Lebanon.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_lb() {
   return array();
 }

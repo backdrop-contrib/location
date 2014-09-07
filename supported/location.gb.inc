@@ -1,7 +1,13 @@
 <?php
 
-// Great Britain
+/**
+ * @file
+ * Great Britain.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_gb() {
   return array(
     'ABD' => 'Aberdeenshire',

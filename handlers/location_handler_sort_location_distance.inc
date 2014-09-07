@@ -4,9 +4,10 @@
  * @file
  * Coordinates sort handler.
  */
+
 class location_handler_sort_location_distance extends views_handler_sort {
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     $options['origin'] = array('default' => 'user');
     $options['latitude'] = array('default' => '');
@@ -21,11 +22,11 @@ class location_handler_sort_location_distance extends views_handler_sort {
     return $options;
   }
 
-  function has_extra_options() {
+  public function has_extra_options() {
     return TRUE;
   }
 
-  function extra_options_form(&$form, &$form_state) {
+  public function extra_options_form(&$form, &$form_state) {
     $form['origin'] = array(
       '#type' => 'select',
       '#title' => t('Origin'),
@@ -131,7 +132,7 @@ class location_handler_sort_location_distance extends views_handler_sort {
     );
   }
 
-  function query() {
+  public function query() {
     $coordinates = location_views_proximity_get_reference_location($this->view, $this->options);
 
     $this->ensure_my_table();

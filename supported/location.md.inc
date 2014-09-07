@@ -1,7 +1,13 @@
 <?php
 
-// Moldova, Republic of
+/**
+ * @file
+ * Moldova, Republic of.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_md() {
   return array(
     'C' => "Chișinău",

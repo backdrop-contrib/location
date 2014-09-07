@@ -1,7 +1,13 @@
 <?php
 
-// Switzerland
+/**
+ * @file
+ * Switzerland.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_ch() {
   return array(
     'ZH' => "Zurich",

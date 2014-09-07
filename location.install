@@ -88,7 +88,8 @@ function location_schema() {
         'description' => 'Location latitude (decimal degrees).',
         'type' => 'numeric',
         'precision' => 10,
-        'scale' => 6, // @@@ Shouldn't these all be 7?
+        // @todo Shouldn't these all be 7?
+        'scale' => 6,
         'not null' => TRUE,
         'default' => 0.0,
       ),
@@ -173,7 +174,7 @@ function location_schema() {
         'type' => 'varchar',
         'length' => 16,
         'not null' => TRUE,
-        'default' => '0', // @@@ Why?
+        'default' => '0',
       ),
       'city' => array(
         'description' => 'City.',
@@ -287,7 +288,7 @@ function location_schema() {
     'primary key' => array('cid'),
   );
 
-  //New location country table (needed for sorting
+  // New location country table (needed for sorting).
   $schema['location_country'] = array(
     'description' => 'Country data managed by location.module.',
     'fields' => array(
@@ -316,7 +317,6 @@ function location_schema() {
  * Convert tables to utf8.
  */
 function location_update_1() {
-//  return _system_update_utf8(array('location', 'zipcodes'));
 }
 
 /**
@@ -671,7 +671,8 @@ function location_update_5301() {
   db_drop_field('location', 'eid');
 
   // General cleanup.
-  variable_del('location_user'); // Removed in favor of permission check.
+  // Removed in favor of permission check.
+  variable_del('location_user');
 
   // Variable consolidation (as part of the element based system)
   // We're doing this "raw" so we can be sure we got everything moved over,
@@ -1300,7 +1301,6 @@ function location_update_6304() {
   $tmp['form']['collapased'] = variable_get('location_user_collapsed', TRUE);
   $tmp['form']['fields'] = variable_get('location_user_fields', array());
 
-
   // Pull in node settings.
   $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'location_maxnum_%'");
   foreach ($result as $row) {
@@ -1310,7 +1310,8 @@ function location_update_6304() {
     $variables["location_settings_node_$type"] = $base;
     $tmp = & $variables["location_settings_node_$type"];
 
-    $tmp['multiple']['min'] = 1; // Old behavior was to have the first one be required.
+    // Old behavior was to have the first one be required.
+    $tmp['multiple']['min'] = 1;
     $tmp['multiple']['max'] = variable_get("location_maxnum_$type", 0);
     $tmp['multiple']['add'] = variable_get("location_defaultnum_$type", 3);
     $tmp['form']['weight'] = variable_get("location_weight_$type", 9);
@@ -1335,8 +1336,6 @@ function location_update_6304() {
 
   // Delete old node variables.
   foreach ($todelete as $key) {
-//    variable_del("location_maxnum_$key");
-//    variable_del("location_defaultnum_$key");
     variable_del("location_weight_$key");
     variable_del("location_collapsible_$key");
     variable_del("location_collapsed_$key");
@@ -1451,6 +1450,7 @@ function location_update_6309() {
                 case 'latlon':
                   $origin = 'static';
                   break;
+
                 case 'postal':
                 case 'postal_default':
                 case 'latlon_gmap':

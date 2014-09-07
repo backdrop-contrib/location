@@ -1,7 +1,13 @@
 <?php
 
-// Netherlands
+/**
+ * @file
+ * Netherlands.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_nl() {
   return array(
     'DR' => "Drenthe",

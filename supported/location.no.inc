@@ -1,7 +1,13 @@
 <?php
 
-// Norway
+/**
+ * @file
+ * Norway.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_no() {
   return array(
     'AK' => "Akershus",

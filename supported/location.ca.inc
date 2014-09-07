@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Canada.
+ */
+
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_ca() {
   return array(
     'AB' => 'Alberta',
@@ -255,7 +263,6 @@ function _location_driving_directions_link_ca_yahoo($location_a, $location_b) {
   // link to yahoo directions.  If all of these fields don't have values, then we generate
   // a link to the *form* for Yahoo! driving directions rather than directly to the driving
   // directions themselves.
-
 
   foreach ($location_a as $field => $value) {
     $location_a[$field] = trim($value);

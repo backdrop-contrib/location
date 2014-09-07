@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Administration related forms for the location_search module.
+ * Administration related forms for the location_search module.
  */
 
 /**

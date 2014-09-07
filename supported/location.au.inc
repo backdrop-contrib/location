@@ -1,23 +1,12 @@
 <?php
 
-// Australia
+/**
+ * @file
+ * Australia.
+ */
 
 /**
- * Returns a lat/lon pair of the approximate center of the given postal code in the given country
- *
- * @param $location
- *   An associative array $location where
- *     'street'       => the street portion of the location
- *     'supplemental' => additional street portion of the location
- *     'province'     => the province, state, or territory
- *     'country'      => lower-cased two-letter ISO code (REQUIRED)
- *     'postal_code'  => the international postal code for this location (REQUIRED)
- *
- * @return
- *   An associative array where
- *      'lat' => approximate latitude of the center of the postal code's area
- *      'lon' => approximate longitude of the center of the postal code's area
- *
+ * Returns an associative array of states/territories.
  */
 function location_latlon_rough_au($location = array()) {
   if (!isset($location['postal_code'])) {
@@ -135,7 +124,8 @@ function _location_latlon_exact_au_geocoder($location = array()) {
     ) {
       $location_string = $location['street'] . ', ' . $location['city'] . ', ' . $location['province'];
     }
-    else { // else geocoder.us won't do bidness with you!
+    else {
+      // Else geocoder.us won't do bidness with you.
       return NULL;
     }
   }
@@ -321,7 +311,6 @@ function location_geocode_au_yahoo($location = array()) {
         return NULL;
       }
 
-
       if (preg_match('/<Longitude>(.*)<\/Longitude>/', $http_reply->data, $lon_match)) {
         $latlon['lon'] = $lon_match[1];
 
@@ -375,7 +364,6 @@ function _location_driving_directions_link_au_yahoo($location_a, $location_b) {
   // link to yahoo directions.  If all of these fields don't have values, then we generate
   // a link to the *form* for Yahoo! driving directions rather than directly to the driving
   // directions themselves.
-
 
   foreach ($location_a as $field => $value) {
     $location_a[$field] = trim($value);

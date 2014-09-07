@@ -1,8 +1,13 @@
 ﻿<?php
-// $Id: location.pt.inc,v 1.6 2008/01/24 09:00:03 bdragon Exp $
 
-// Portugal
+/**
+ * @file
+ * Portugal.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_pt() {
   return array(
     'Aveiro' => "Aveiro",

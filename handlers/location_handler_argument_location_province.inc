@@ -1,18 +1,20 @@
 <?php
 
 /**
+ * @file
  * Argument handler to accept a province code or name.
  */
+
 class location_handler_argument_location_province extends views_handler_argument {
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     $options['break_phrase'] = array('default' => FALSE);
 
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
     // allow for , delimited values
@@ -24,7 +26,7 @@ class location_handler_argument_location_province extends views_handler_argument
     );
   }
 
-  function query($group_by = FALSE) {
+  public function query($group_by = FALSE) {
     $this->ensure_my_table();
     if (!empty($this->options['break_phrase'])) {
       if ($this->argument != '') {
@@ -51,7 +53,7 @@ class location_handler_argument_location_province extends views_handler_argument
   /**
    * Override the behavior of title(). Get the province name.
    */
-  function title() {
+  public function title() {
     if (isset($this->view->argument['country'])) {
       $country = $this->view->argument['country']->argument;
     }
@@ -67,7 +69,7 @@ class location_handler_argument_location_province extends views_handler_argument
     return substr($title, 0, -2);
   }
 
-  function summary_name($data) {
+  public function summary_name($data) {
     $value = $data->{$this->name_alias};
     if (empty($value)) {
       return t('Unknown');

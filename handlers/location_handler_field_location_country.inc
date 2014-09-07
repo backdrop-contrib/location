@@ -4,16 +4,17 @@
  * @file
  * Country field handler.
  */
+
 class location_handler_field_location_country extends views_handler_field {
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     $options['style'] = array('default' => 'name');
 
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     $form['style'] = array(
       '#title' => t('Display style'),
@@ -23,7 +24,7 @@ class location_handler_field_location_country extends views_handler_field {
     );
   }
 
-  function render($values) {
+  public function render($values) {
     if ($this->options['style'] == 'name') {
       return check_plain(location_country_name($values->{$this->field_alias}));
     }

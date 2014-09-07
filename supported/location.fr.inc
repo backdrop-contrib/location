@@ -1,7 +1,13 @@
 <?php
 
-// France
+/**
+ * @file
+ * France.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_fr() {
   return array(
     'A01' => "Ain (01) ",

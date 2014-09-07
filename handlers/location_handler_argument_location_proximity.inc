@@ -9,7 +9,7 @@
  * Argument handler to accept proximity
  */
 class location_handler_argument_location_proximity extends views_handler_argument {
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     // As only us and uk use miles, make km the default otherwise.
     $country = variable_get('location_default_country', 'us');
@@ -23,7 +23,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
   /**
    * Add a form elements to select options for this argument.
    */
-  function options_form(&$form, &$form_state) {
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     $form['type'] = array(
       '#title' => t('Coordinate Type'),
@@ -68,7 +68,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
     );
   }
 
-  function calculate_coords() {
+  public function calculate_coords() {
     if (!empty($this->value['latitude']) && !empty($this->value['longitude'])) {
       // If there are already coordinates, there's no work for us.
       return TRUE;
@@ -111,7 +111,7 @@ class location_handler_argument_location_proximity extends views_handler_argumen
    *
    * The argument sent may be found at $this->argument.
    */
-  function query($group_by = FALSE) {
+  public function query($group_by = FALSE) {
     // Get and process argument.
     if ($this->options['type'] == 'postal') {
       foreach ($this->view->argument as $argument) {

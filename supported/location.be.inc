@@ -1,7 +1,13 @@
 <?php
 
-// Belgium
+/**
+ * @file
+ * Belgium.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_be() {
   return array(
     'VAN' => "Antwerpen",

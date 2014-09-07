@@ -1,6 +1,9 @@
 <?php
 
-// New Zealand
+/**
+ * @file
+ * New Zealand.
+ */
 
 /**
  * Returns an associative array of states/territories where
@@ -16,22 +19,38 @@
  */
 function location_province_list_nz() {
   return array(
-    'AUK' => 'Auckland', // 1000-2xxx
-    'BOP' => 'Bay of Plenty', // 3xxx
-    'CAN' => 'Canterbury', // 8xxx
-    'GIS' => 'Gisborne', // 4xxx
-    'HKB' => 'Hawke\'s Bay', // 4xxx
-    'MBH' => 'Marlborough', // 7xxx
-    'MWT' => 'Manawatu-Wanganui', // 4xxx-4xxx
-    'NSN' => 'Nelson', // 7xxx-7xxx
-    'NTL' => 'Northland', // 0000-0999
-    'OTA' => 'Otago', // 9xxx-9xxx
-    'STL' => 'Southland', // 9xxx-9xxx
-    'TAS' => 'Tasman', // 7xxx-7xxx
-    'TKI' => 'Taranaki', // 4xxx-4xxx
-    'WGN' => 'Wellington', // 5000-6999
-    'WKO' => 'Waikato', // 2xxx-3xxx
-    'WTC' => 'West Coast', // 7xxx-7xxx
+    // 1000-2xxx
+    'AUK' => 'Auckland',
+    // 3xxx
+    'BOP' => 'Bay of Plenty',
+    // 8xxx
+    'CAN' => 'Canterbury',
+    // 4xxx
+    'GIS' => 'Gisborne',
+    // 4xxx
+    'HKB' => 'Hawke\'s Bay',
+    // 7xxx
+    'MBH' => 'Marlborough',
+    // 4xxx-4xxx
+    'MWT' => 'Manawatu-Wanganui',
+    // 7xxx-7xxx
+    'NSN' => 'Nelson',
+    // 0000-0999
+    'NTL' => 'Northland',
+    // 9xxx-9xxx
+    'OTA' => 'Otago',
+    // 9xxx-9xxx
+    'STL' => 'Southland',
+    // 7xxx-7xxx
+    'TAS' => 'Tasman',
+    // 4xxx-4xxx
+    'TKI' => 'Taranaki',
+    // 5000-6999
+    'WGN' => 'Wellington',
+    // 2xxx-3xxx
+    'WKO' => 'Waikato',
+    // 7xxx-7xxx
+    'WTC' => 'West Coast',
   );
 }
 
@@ -195,7 +214,7 @@ function _location_latlon_exact_nz_geocoder($location = array()) {
     ) {
       $location_string = $location['street'] . ', ' . $location['city'] . ', ' . $location['province'];
     }
-    else { // else geocoder.us won't do bidness with you!
+    else {
       return NULL;
     }
   }

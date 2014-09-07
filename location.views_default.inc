@@ -200,8 +200,7 @@ function location_views_default_views() {
   );
   $views[$view->name] = $view;
 
-
-  $view = new view;
+  $view = new view();
   $view->name = 'location_directory';
   $view->description = 'Location directory filtered by arguments in the url.';
   $view->tag = '';
@@ -478,8 +477,7 @@ function location_views_default_views() {
   );
   $views[$view->name] = $view;
 
-
-  $view = new view;
+  $view = new view();
   $view->name = 'user_location_table';
   $view->description = 'User location table.';
   $view->tag = '';
@@ -672,7 +670,6 @@ function location_views_default_views() {
     )
   );
   $views[$view->name] = $view;
-
 
   return $views;
 }

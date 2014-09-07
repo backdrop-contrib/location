@@ -53,7 +53,8 @@ function location_addanother_form($form, &$form_state, &$node) {
     '#collapsed' => TRUE,
   );
   $form['location']['nid'] = array(
-    '#type' => 'hidden', // @@@ See if we can get away with value-ing this.
+    // @See if we can get away with value-ing this.
+    '#type' => 'hidden',
     '#value' => $node->nid,
   );
 

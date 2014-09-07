@@ -1,7 +1,13 @@
 <?php
 
-// Czech Republic
+/**
+ * @file
+ * Czech Republic.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_cz() {
   return array(
     'JC' => "South Bohemian Region (Jihocesky kraj)",

@@ -1,7 +1,13 @@
 <?php
 
-// Malaysia
+/**
+ * @file
+ * Malaysia.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_my() {
   return array(
     'JH' => "Johor",

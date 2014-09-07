@@ -1,7 +1,13 @@
 <?php
 
-// China
+/**
+ * @file
+ * China.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_cn() {
   return array(
     '11' => t("Beijing"),

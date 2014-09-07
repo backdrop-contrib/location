@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @defgroup Location Location: An API for working with locations.
- *
+ * @file
  * Public API for the Location module.
+ *
+ * @defgroup Location Location: An API for working with locations.
  */
 
 
@@ -14,7 +15,7 @@
  * some options are configured through an interface provided by location.module.
  */
 
-include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/earth.inc');
+include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/earth.inc';
 
 /**
  * Get a deep-link to a mapping service such as Yahoo! Maps or MapPoint given an location.  The
@@ -533,7 +534,6 @@ function location_latlon_exact($location = array()) {
 function _location_supported_countries() {
   $supported_countries = & drupal_static(__FUNCTION__, array());
 
-
   // If this function has already been called this request, we can avoid a DB hit.
   if (!empty($supported_countries)) {
     return $supported_countries;
@@ -687,7 +687,7 @@ function location_load_country($country) {
 
   $file = DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/supported/location.' . $country . '.inc';
   if (file_exists($file)) {
-    include_once($file);
+    include_once $file;
 
     return TRUE;
   }
@@ -700,7 +700,7 @@ function location_load_country($country) {
  * Load a general geocoding service.
  */
 function location_load_geocoder($geocoder) {
-  include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/geocoding/' . $geocoder . '.inc');
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'location') . '/geocoding/' . $geocoder . '.inc';
 }
 
 /**

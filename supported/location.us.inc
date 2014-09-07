@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * United States.
+ */
+
+/**
  * Returns a lat/lon pair of the approximate center of the given postal code in the given country
  *
  * @param $location
@@ -134,7 +139,8 @@ function _location_latlon_exact_us_geocoder($location = array()) {
     ) {
       $location_string = $location['street'] . ', ' . $location['city'] . ', ' . $location['province'];
     }
-    else { // else geocoder.us won't do bidness with you!
+    else {
+      // Else geocoder.us won't do bidness with you.
       return NULL;
     }
   }

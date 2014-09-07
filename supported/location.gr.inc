@@ -1,7 +1,13 @@
 <?php
 
-// Greece
+/**
+ * @file
+ * Greece.
+ */
 
+/**
+ * Returns an associative array of states/territories.
+ */
 function location_province_list_gr() {
   return array(
     'AT' => "Attica",

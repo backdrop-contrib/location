@@ -64,8 +64,6 @@ function location_admin_settings($form, &$form_state) {
         '@gmap_module_settings' => url('admin/config/content/gmap')
       )
     ),
-// @@@ megapatch This is an idea, but I'd opt more for a warning here...
-//    '#disabled'       => !module_exists('gmap'),
   );
 
   $form['location_locpick_macro'] = array(
