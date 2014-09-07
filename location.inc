@@ -564,28 +564,33 @@ function _location_supported_countries() {
  */
 function location_get_provinces($country = 'us') {
   $provinces = & drupal_static(__FUNCTION__, array());
-  //Current language
+  // Current language.
   $lang_code = $GLOBALS['language']->language;
 
   location_standardize_country_code($country);
-  if (isset($provinces[$country])) {
-    return $provinces[$country];
-  }
-  if ($cache = cache_get("provinces:$country:$lang_code", 'cache_location')) {
-    $provinces[$country] = $cache->data;
-
-    return $provinces[$country];
-  }
-  location_load_country($country);
-  $func = 'location_province_list_' . $country;
-  if (function_exists($func)) {
-    $provinces[$country] = $func();
-    cache_set("provinces:$country:$lang_code", $provinces[$country], 'cache_location');
-
-    return $provinces[$country];
+  if (!isset($provinces[$country])) {
+    if ($cache = cache_get("provinces:$country:$lang_code", 'cache_location')) {
+      $provinces[$country] = $cache->data;
+    }
+    else {
+      location_load_country($country);
+      $func = 'location_province_list_' . $country;
+      if (function_exists($func)) {
+        $provinces[$country] = $func();
+        cache_set("provinces:$country:$lang_code", $provinces[$country], 'cache_location');
+      }
+    }
   }
 
-  return array();
+  // Invoke hook_location_provinces_alter and
+  // hook_location_provinces_COUNTRY_CODE_alter.
+  drupal_alter(
+    array('location_provinces', 'location_provinces_' . $country),
+    $provinces,
+    $country
+  );
+
+  return isset($provinces[$country]) ? $provinces[$country] : array();
 }
 
 // @@@ New in 3.x, document.
