@@ -64,7 +64,7 @@ class location_handler_sort_location_country extends views_handler_sort {
       }
       $join->construct();
 
-      $this->query->add_relationship('country_name', $join, $this->definition['base'], NULL);
+      $this->query->add_relationship('country_name', $join, isset($this->definition['base']) ? $this->definition['base'] : NULL, NULL);
       $this->query->add_orderby('country_name', 'name', $this->options['order'], 'country_sort');
     }
     elseif ($this->options['country_sort'] == 'code') {
