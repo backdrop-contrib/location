@@ -60,5 +60,6 @@ function location_entity_key_map() {
     'country' => array('type' => 'text', 'label' => t('Country')),
     'province_name' => array('type' => 'text', 'label' => t('Province name')),
     'country_name' => array('type' => 'text', 'label' => t('Country name')),
+    'phone' => array('type' => 'text', 'label' => t('Phone number')),
   );
 }
