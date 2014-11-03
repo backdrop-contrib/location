@@ -25,7 +25,7 @@ function location_province_list_my() {
     'TR' => "Terengganu",
     'LB' => "Labuan",
     'SB' => "Sabah",
-    'SR' => "Sarawak"
+    'SR' => "Sarawak",
   );
 }
 
@@ -49,7 +49,7 @@ function location_province_list_numeric_my() {
     '013' => "Sarawak",
     '014' => "Kuala Lumpur",
     '015' => "Labuan",
-    '016' => "Putrajaya"
+    '016' => "Putrajaya",
   );
 }
 
@@ -61,13 +61,13 @@ function location_map_link_my_providers() {
     'google' => array(
       'name' => 'Google Maps',
       'url' => 'http://maps.google.com.my',
-      'tos' => 'http://www.google.com.my/help/terms_maps.html'
+      'tos' => 'http://www.google.com.my/help/terms_maps.html',
     ),
     'mapquest' => array(
       'name' => 'MapQuest',
       'url' => 'http://www.mapquest.com',
-      'tos' => 'http://www.mapquest.com/features/main.adp?page=legal'
-    )
+      'tos' => 'http://www.mapquest.com/features/main.adp?page=legal',
+    ),
   );
 }
 
@@ -113,7 +113,5 @@ function location_map_link_my_mapquest($location = array()) {
   if (location_has_coordinates($location)) {
     return 'http://www.mapquest.com/maps?l=' . urlencode($location['latitude']) . '&amp;g=' . urlencode($location['longitude']);
   }
-  elseif (count($query_params) > 0) {
-    return NULL;
-  }
+  return NULL;
 }
