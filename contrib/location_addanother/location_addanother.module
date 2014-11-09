@@ -49,7 +49,7 @@ function location_addanother_form($form, &$form_state, &$node) {
     '#type' => 'location_element',
     '#title' => t('Add another location'),
     '#default_value' => NULL,
-    '#location_settings' => $settings['form']['fields'],
+    '#location_settings' => $settings,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
