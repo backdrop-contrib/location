@@ -1646,7 +1646,12 @@ function location_update_7302() {
   // Create the new table.
   drupal_load('module', 'location');
   $schema = location_schema();
-  db_create_table('location_country', $schema['location_country']);
+  if (!db_table_exists('location_country')) {
+    db_create_table('location_country', $schema['location_country']);
+  }
+  else {
+    db_truncate('location_country')->execute();
+  }
 
   $countries = location_get_iso3166_list();
   foreach ($countries as $code => $name) {
