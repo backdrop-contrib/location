@@ -3,8 +3,6 @@ package = Location
 description = The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.
 core = 7.x
 configure = admin/config/content/location
-files[] = location.module
-files[] = location.install
 files[] = location.admin.inc
 files[] = location.georss.inc
 files[] = location.inc
@@ -37,4 +35,3 @@ files[] = handlers/location_views_handler_field_longitude.inc
 files[] = handlers/location_views_handler_filter_proximity.inc
 files[] = plugins/contexts/location.inc
 files[] = plugins/relationships/location_from_node.inc
-

@@ -2,7 +2,4 @@ name = Location Entity
 description = Provide information about Location field to Entity module.
 core = 7.x
 package = Location
-
 dependencies[] = location
-
-files[] = location_entity.module

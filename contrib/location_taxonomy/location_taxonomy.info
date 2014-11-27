@@ -4,6 +4,3 @@ dependencies[] = location
 dependencies[] = taxonomy
 package = Location
 core = 7.x
-files[] = location_taxonomy.module
-files[] = location_taxonomy.install
-

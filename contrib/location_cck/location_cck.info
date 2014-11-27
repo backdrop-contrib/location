@@ -3,6 +3,3 @@ description = Defines a Location field type.
 dependencies[] = location
 package = Fields
 core = 7.x
-files[] = location_cck.module
-files[] = location_cck.install
-

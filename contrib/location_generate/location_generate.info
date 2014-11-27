@@ -4,5 +4,3 @@ package = Development
 dependencies[] = devel_generate
 dependencies[] = location
 core = 7.x
-files[] = location_generate.module
-
