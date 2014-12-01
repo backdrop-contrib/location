@@ -9,7 +9,7 @@
  * Implements hook_menu().
  */
 function location_search_menu() {
-  $items['admin/settings/location/search'] = array(
+  $items['admin/config/content/location/search'] = array(
     'title' => 'Search options',
     'description' => 'Settings for Location Search module',
     'page callback' => 'drupal_get_form',
