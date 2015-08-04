@@ -22,7 +22,8 @@ function location_www_schema() {
       'www' => array(
         'description' => 'www adress',
         'type' => 'varchar',
-        'length' => 31,
+        // Maximum URLs length.
+        'length' => 2048,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -109,6 +110,19 @@ function location_www_update_6301() {
     'description' => 'www adress',
     'type' => 'varchar',
     'length' => 31,
+    'not null' => TRUE,
+    'default' => '',
+  ));
+}
+
+/**
+ * Increase the length of www field to maximum URLs length, 2,048 characters.
+ */
+function location_www_update_7001() {
+  db_change_field('location_www', 'www', 'www', array(
+    'description' => 'www adress',
+    'type' => 'varchar',
+    'length' => 2048,
     'not null' => TRUE,
     'default' => '',
   ));
