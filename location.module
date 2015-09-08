@@ -32,7 +32,11 @@ function location_menu() {
     'page callback' => '_location_autocomplete',
     'type' => MENU_CALLBACK,
   );
-
+  $items['location/city/autocomplete'] = array(
+    'access arguments' => array('access content'),
+    'page callback' => '_location_city_autocomplete',
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/config/content/location'] = array(
     'title' => 'Location',
     'description' => 'Settings for Location module',
@@ -841,9 +845,20 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
 
         // @codingStandardsIgnoreStart
         case 'city':
+          drupal_add_js(drupal_get_path('module', 'location') . '/location_autocomplete.js');
+          if (isset($a5['country']) && is_string($a5['country'])) {
+            $country = $a5['country'];
+          }
+          elseif (isset($a5['country']['default']) && is_string($a5['country']['default'])) {
+            $country = $a5['country']['default'];
+          }
+          else {
+            $country = variable_get('site_default_country', 'us');
+          }
           return array(
             '#type' => 'textfield',
             '#title' => t('City'),
+            '#autocomplete_path' => 'location/city/autocomplete/' . $country,
             '#default_value' => $obj,
             '#size' => 64,
             '#maxlength' => 255,
@@ -1076,6 +1091,61 @@ function location_load_locations($id, $key = 'vid') {
   return $locations;
 }
 
+/**
+ * Create a list of City from a given country.
+ *
+ * Outputs a javascript array in json format.
+ * List of cities to return in json format.
+ *
+ * @param string $country
+ *   String. The country code
+ * @param string $string
+ *   String (optional). The city name typed by user
+ */
+function _location_city_autocomplete($country, $string = '') {
+  $string  = strtolower($string);
+  $matches = array();
+
+  if (strpos($country, ',') !== FALSE) {
+    // Multiple countries specified.
+    $country = explode(',', $country);
+    foreach ($country as $c) {
+      $matches = array_merge($matches, location_get_cities($c, $string));
+    }
+  }
+  else {
+    $matches = location_get_cities($country, $string);
+  }
+  drupal_json_output($matches);
+}
+
+/**
+ * @param string $country
+ *   Two letter ISO country code.
+ * @param string $city
+ *   City.
+ *
+ * @return array
+ *   Returns an array of matches.
+ */
+function location_get_cities($country, $city) {
+  $matches = array();
+  $query = db_select('zipcodes', 'z');
+
+  $result = $query->fields('z', array('city'))
+  ->condition(db_and()
+    ->condition('z.city', "%$city%", 'LIKE')
+    ->condition('country', $country, '='))
+  ->range(0, 20)
+  ->execute();
+
+  foreach ($result as $obj) {
+    $matches[$obj->city] = check_plain($obj->city);
+  }
+  return $matches;
+}
+
+/**
 /**
  * Save associated locations.
  *
