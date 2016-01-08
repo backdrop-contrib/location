@@ -380,7 +380,7 @@ function _location_process_location($element, $form_state) {
   if (user_access('submit latitude/longitude') && $fsettings['locpick']['collect']) {
     $element['locpick'] = array('#weight' => $fsettings['locpick']['weight']);
 
-    if (location_has_coordinates($defaults, FALSE)) {
+    if (location_has_coordinates($fdefaults, FALSE)) {
       $element['locpick']['current'] = array(
         '#type' => 'fieldset',
         '#title' => t('Current coordinates'),
@@ -389,15 +389,15 @@ function _location_process_location($element, $form_state) {
       $element['locpick']['current']['current_latitude'] = array(
         '#type' => 'item',
         '#title' => t('Latitude'),
-        '#markup' => $defaults['latitude'],
+        '#markup' => $fdefaults['latitude'],
       );
       $element['locpick']['current']['current_longitude'] = array(
         '#type' => 'item',
         '#title' => t('Longitude'),
-        '#markup' => $defaults['longitude'],
+        '#markup' => $fdefaults['longitude'],
       );
       $source = t('Unknown');
-      switch ($defaults['source']) {
+      switch ($fdefaults['source']) {
         case LOCATION_LATLON_USER_SUBMITTED:
           $source = t('User-submitted');
           break;
