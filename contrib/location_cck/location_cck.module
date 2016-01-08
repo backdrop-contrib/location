@@ -596,7 +596,11 @@ function location_cck_token_info() {
   $info = array();
 
   // Load all available fields.
-  $entities = field_info_field_map();
+  // In Drupal 7.22 the field_info_field_map() function was added, which is more
+  // memory-efficient in certain cases than field_info_fields().
+  // @see https://drupal.org/node/1915646
+  $field_map_available = version_compare(VERSION, '7.22', '>=');
+  $entities = $field_map_available ? field_info_field_map() : field_info_fields();
 
   // Loop through our fields and remove all but location types.
   foreach ($entities as $key => $value) {
@@ -606,13 +610,12 @@ function location_cck_token_info() {
   }
 
   // If we have location fields available, setup our tokens.
-  if (count($entities)) {
+  if (sizeof($entities)) {
     // Get the available location field names.
     $fields = location_field_names(TRUE);
 
     // Loop through the location fields and setup tokens.
     foreach ($entities as $key => $value) {
-
       $info['tokens']['node'][$key] = array(
         'name' => t('Location field: !field', array('!field' => $key)),
         'description' => t(
@@ -637,7 +640,6 @@ function location_cck_token_info() {
           'description' => t($field_value)
         );
       }
-
     }
   }
 
