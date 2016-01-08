@@ -629,7 +629,10 @@ function location_province_name($country = 'us', $province = 'xx') {
     return $provinces[$province];
   }
   else {
-    return '';
+    // If the province value is not indexed, allow pass-through as-is.
+    // This helps with legacy data migration that may not be stored
+    // in the correct provincial code format.
+    return check_plain($province);
   }
 }
 
