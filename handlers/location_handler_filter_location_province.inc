@@ -118,8 +118,8 @@ class location_handler_filter_location_province extends views_handler_filter {
     if (!empty($this->view->filter)) {
       foreach ($this->view->filter as $k => $v) {
         if ($v->table == 'location' && $v->options['relationship'] == $this->options['relationship']) {
-          if ($v->field == 'country' || $v->field == 'distance') {
-            $country = ($v->field == 'distance') ? $v->value['country'] : $v->value;
+          if ($v->field == 'country' || (strpos($v->field, 'distance') && $v->options['origin'] != 'postal_default')) {
+            $country = (strpos($v->field, 'distance')) ? $v->value['country'] : $v->value;
             if (!empty($v->options['expose']['identifier'])) {
               if (isset($this->view->exposed_input[$v->options['expose']['identifier']])) {
                 $country = $this->view->exposed_input[$v->options['expose']['identifier']];
