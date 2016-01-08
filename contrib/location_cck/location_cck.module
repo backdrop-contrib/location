@@ -427,10 +427,13 @@ function location_cck_field_widget_info() {
 function location_cck_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if ($field['type'] == 'location') {
     $settings = isset($field['settings']['location_settings']) ? $field['settings']['location_settings'] : array();
+    if (isset($form_state['values'])) {
+      $form_state_field_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
+    }
 
     // Load location data for existing locations.
-    if ($form_state['rebuild'] && !empty($form_state['values'][$field['field_name']][$langcode][$delta])) {
-      $location = $form_state['values'][$field['field_name']][$langcode][$delta];
+    if ($form_state['rebuild'] && !empty($form_state_field_values[$field['field_name']][$langcode][$delta])) {
+      $location = $form_state_field_values[$field['field_name']][$langcode][$delta];
     }
     elseif (isset($items[$delta]['lid']) && $items[$delta]['lid']) {
       $location = location_load_location($items[$delta]['lid']);

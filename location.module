@@ -956,7 +956,6 @@ function location_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NULL) {
               '#attributes' => array('class' => array('location_auto_country')),
               '#ajax' => array(
                 'callback' => '_location_country_ajax_callback',
-                'path' => 'system/ajax/' . implode('/', $settings['#parents']),
                 'wrapper' => 'location-dropdown-province-wrapper' . $wrapper_suffix,
                 'effect' => 'fade',
               ),
@@ -1331,31 +1330,22 @@ function _location_autocomplete($country, $string = '') {
  * All we do here is select the element of the form that will be rebuilt.
  */
 function _location_country_ajax_callback($form, $form_state) {
-  // The isset() checks, ideally, wouldn't ever have to happen because, ideally,
-  // this code would never get called, because, ideally, we wouldn't add an
-  // ajax call to the country field.  Unfortunately, however, there's no easy
-  // way to check whether or not the province is being collected when putting
-  // together the country form element in location_locationapi() when that
-  // function is called with $op == 'field_expand'
-  if (arg(2) == 'locations' && isset($form['locations'][arg(3)]['province'])) {
-    return $form['locations'][arg(3)]['province'];
-  }
-  elseif (isset($form[arg(2)][arg(3)][arg(4)])) {
-    if (isset($form[arg(2)][arg(3)][arg(4)]['#entity_type']) && $form[arg(2)][arg(3)][arg(
-        4
-      )]['#entity_type'] == 'field_collection_item'
-    ) {
-      $selected_country_value = $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['country']['#value'];
-      $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['province']['#options'] = array(
-          '' => t('Select'),
-          'xx' => t('NOT LISTED')
-        ) + location_get_provinces($selected_country_value);
+  // Country select is the triggering element. Find the province field in the
+  // same location fieldset.
+  $country_field = $form_state['triggering_element'];
+  $location_path = $form_state['triggering_element']['#array_parents'];
+  array_pop($location_path);
+  $location_field = drupal_array_get_nested_value($form, $location_path);
+  if (isset($location_field['province'])) {
+    $province = $location_field['province'];
 
-      return $form[arg(2)][arg(3)][arg(4)][arg(5)][arg(6)][arg(7)]['province'];
-    }
+    // Set new options from triggering element value.
+    $province['#options'] = array('' => t('Select'), 'xx' => t('NOT LISTED')) + location_get_provinces($country_field['#value']);
 
-    return $form[arg(2)][arg(3)][arg(4)]['province'];
+    return $province;
   }
+
+  return array();
 }
 
 /**
