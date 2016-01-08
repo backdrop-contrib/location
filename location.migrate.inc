@@ -123,7 +123,8 @@ class MigrateLocationFieldHandler extends MigrateFieldHandler {
 
         // Only save the location if saved successfully.
         if ($lid = location_save($instance_arguments)) {
-          $return[$language][$delta]['lid'] = $lid;
+          $return[$language][$delta] = array_merge(array('lid' => $lid),
+            $instance_arguments);
         }
       }
     }
