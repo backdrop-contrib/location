@@ -131,7 +131,7 @@ class location_handler_filter_location_province extends views_handler_filter {
       }
     }
 
-    if ($country == '' || $country == 'All' || $country == '  ' || $country == 'xx') {
+    if ($country == '' || $country == 'All' || $country == '  ' || $country == 'xx' || empty($country)) {
       // It's set to something nonsensical, reset to the default to prevent malfunctions.
       $country = variable_get('location_default_country', 'us');
     }
