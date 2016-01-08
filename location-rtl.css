@@ -1,0 +1,15 @@
+/**
+ * @file
+ * Location RTL CSS rules.
+ */
+ 
+.location .form-item label {
+  float: right;
+  text-align: right;
+  padding-right: 0;
+  padding-left: 10px;
+}
+
+.location .form-item label.option {
+  padding-left: 0;
+}
