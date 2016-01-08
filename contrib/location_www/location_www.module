@@ -20,13 +20,26 @@ function location_www_locationapi(&$location, $op, $a3 = NULL, $a4 = NULL) {
 
     case 'field_expand':
       if ($a3 == 'www') {
+        if (is_array($a4)) {
+          $settings = $a4;
+        }
+        else {
+          // On this $op, $a4 is now expected to be an array,
+          // but we make an exception for backwards compatibility.
+          $settings = array(
+            'default' => NULL,
+            'weight' => NULL,
+            'collect' => $a4,
+            'widget' => NULL,
+          );
+        }
         return array(
           '#type' => 'textfield',
           '#title' => t('www adress'),
           '#size' => 31,
           '#maxlength' => 2048,
           '#description' => NULL,
-          '#required' => ($a4 == 2),
+          '#required' => ($settings['collect'] == 2),
           '#default_value' => $location,
         );
       }
