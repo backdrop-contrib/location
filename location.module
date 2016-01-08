@@ -1534,8 +1534,6 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
   if (location_is_empty($location, $filled)) {
     // This location was empty, we don't need to continue.
     $location['lid'] = FALSE;
-
-    return FALSE;
   }
 
   $changed = array();
@@ -1547,8 +1545,6 @@ function location_save(&$location, $cow = TRUE, $criteria = array()) {
     else {
       // Unfilled location (@@@ Then how did we get here?)
       $location['lid'] = FALSE;
-
-      return FALSE;
     }
   }
 
