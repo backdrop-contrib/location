@@ -510,7 +510,7 @@ function _location_process_location($element, $form_state) {
   $element['#process'] = array_merge($element['#process'], $fieldset_info['#process']);
   if (isset($fieldset_info['#process'])) {
     foreach ($fieldset_info['#process'] as $process) {
-      $element = $process($element, $form_state, $form_state['complete form']);
+      $element = $process($element, $form_state, $form_state['complete_form']);
     }
   }
 
