@@ -3,3 +3,4 @@ description = Associate locations with nodes.
 dependencies[] = location
 package = Location
 core = 7.x
+backdrop = 1.x
