@@ -800,7 +800,7 @@ function location_get_general_geocoder_list() {
  * ISO 3166-1 alpha-2
  */
 function location_get_iso3166_list($upper = FALSE) {
-  include_once DRUPAL_ROOT . '/includes/locale.inc';
+  include_once DRUPAL_ROOT . '/core/includes/locale.inc';
 
   // Statically cache a version of the core Drupal list of countries
   // with lower case country codes for use by this module.
