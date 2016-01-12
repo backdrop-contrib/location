@@ -13,7 +13,7 @@
 function location_node_form_node_form_alter(&$form, &$form_state, $form_id) {
   // Add the Location fields on the node edit form.
   $node = $form['#node'];
-  $settings = variable_get('location_settings_node_' . $node->type, array());
+  $settings = config('location.settings', 'settings_node_' . $node->type);
   if (isset($settings['multiple']['max']) && $settings['multiple']['max'] > 0) {
     if (!empty($form_state['rebuild']) && !empty($form_state['values']['locations'])) {
       $locations = $form_state['values']['locations'];
@@ -90,7 +90,8 @@ function location_node_node_update($node) {
  * Implements hook_node_view().
  */
 function location_node_node_view($node, $view_mode) {
-  $settings = variable_get('location_settings_node_' . $node->type, array());
+  $config = config('location.settings');
+  $settings = $config->get('settings_node_' . $node->type) ? $config->get('settings_node_' . $node->type) : array();
 
   if ($view_mode == 'rss') {
     $mode = isset($settings['rss']['mode']) ? $settings['rss']['mode'] : 'simple';
@@ -108,7 +109,8 @@ function location_node_node_view($node, $view_mode) {
     }
   }
   else {
-    if (variable_get('location_display_location', 1) && !empty($node->locations)) {
+    $display_location = $config->get('display_location') ? $config->get('display_location') : 1;
+    if ($display_location && !empty($node->locations)) {
       if (isset($settings['display']['teaser']) && isset($settings['display']['full'])) {
         if (($view_mode == 'teaser' && $settings['display']['teaser']) || (in_array(
               $view_mode,
@@ -148,6 +150,7 @@ function location_node_locationapi(&$obj, $op, $a3 = NULL, $a4 = NULL, $a5 = NUL
  * Alter the node_type_form form.
  */
 function location_node_form_node_type_form_alter(&$form, &$form_state, $form_id) {
+  $config = config('location.settings');
   $type = $form['#node_type']->type;
 
   // Hook the form handlers so we can correctly extract our information;
@@ -155,7 +158,7 @@ function location_node_form_node_type_form_alter(&$form, &$form_state, $form_id)
   array_unshift($form['#validate'], 'location_node_settings_validate');
   array_unshift($form['#submit'], '_location_node_type_save_submit');
 
-  $settings = variable_get('location_settings_node_' . $type, array());
+  $settings = $config->get('settings_node_' . $type) ? $config->get('settings_node_' . $type) : array();
   $form['location_settings'] = location_settings($settings);
   $form['location_settings']['#group'] = 'additional_settings';
 
@@ -241,16 +244,16 @@ function location_node_settings_validate($form, &$form_state) {
  * Custom submit function to save location settings properly.
  */
 function _location_node_type_save_submit($form, &$form_state) {
-  variable_set('location_settings_node_' . $form_state['values']['type'], $form_state['values']['location_settings']);
+  config_set('location.settings', 'settings_node_' . $form_state['values']['type'], $form_state['values']['location_settings']);
 
   // @@@ Backwards compatibility variables.
   // There are a few places in contrib where these variables are checked.
-  variable_set(
-    'location_maxnum_' . $form_state['values']['type'],
+  config_set('location.settings',
+    'maxnum_' . $form_state['values']['type'],
     $form_state['values']['location_settings']['multiple']['max']
   );
-  variable_set(
-    'location_defaultnum_' . $form_state['values']['type'],
+  config_set('location.settings',
+    'defaultnum_' . $form_state['values']['type'],
     $form_state['values']['location_settings']['multiple']['add']
   );
 
@@ -271,7 +274,8 @@ function location_node_form_content_field_overview_form_alter(&$form, &$form_sta
  * For being able to edit location weight in node forms and node view.
  */
 function location_node_content_extra_fields($type_name) {
-  $settings = variable_get('location_settings_node_' . $type_name, array());
+  $config = config('location.settings');
+  $settings = $config->get('settings_node_' . $type_name) ? $config->get('settings_node_' . $type_name) : array();
   if (isset($settings['multiple']) && $settings['multiple']['max'] > 0) {
     $weight = isset($settings['form']['weight']) ? $settings['form']['weight'] : 0;
     $extra['locations'] = array(
@@ -288,14 +292,15 @@ function location_node_content_extra_fields($type_name) {
  * Saving the fields management's weight for location node data in forms and node view.
  */
 function location_node_content_extra_save($form, &$form_state) {
-  $type = $form['#type_name'];
-  // We need to stay in sync with CCK's idea of the weight.
-  $settings = variable_get('location_settings_node_' . $type, array());
-  if (isset($form_state['values']['locations'])) {
-    $settings['form']['weight'] = $form_state['values']['locations']['weight'];
-    $settings['display']['weight'] = $form_state['values']['locations']['weight'];
-  }
-  variable_set('location_settings_node_' . $type, $settings);
+  // @todo Revise this in accord with node settings.
+  // $type = $form['#type_name'];
+  // // We need to stay in sync with CCK's idea of the weight.
+  // $settings = variable_get('location_settings_node_' . $type, array());
+  // if (isset($form_state['values']['locations'])) {
+  //   $settings['form']['weight'] = $form_state['values']['locations']['weight'];
+  //   $settings['display']['weight'] = $form_state['values']['locations']['weight'];
+  // }
+  // config_set('location.settings', 'settings_node_' . $type, $settings);
 }
 
 /**
@@ -313,7 +318,8 @@ function location_node_content_extra_save($form, &$form_state) {
  *   Boolean depending on whether or not node locations are enabled.
  */
 function location_node_node_locations_enabled($type) {
-  $settings = variable_get('location_settings_node_' . $type, array());
+  $config = config('location.settings');
+  $settings = $config->get('settings_node_' . $type) ? $config->get('settings_node_' . $type) : array();
   // If max number of locations is zero it is disabled.
   if (!empty($settings) && isset($settings['multiple']['max']) && !empty($settings['multiple']['max'])) {
     return TRUE;
