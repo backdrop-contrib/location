@@ -234,11 +234,11 @@ function location_geocoding_options_form($form, &$form_state) {
   $config = config('location.settings');
   $form = array();
 
-  $form['location_geocode_google_minimum_accuracy'] = array(
+  $form['geocode_google_minimum_accuracy'] = array(
     '#type' => 'select',
     '#title' => t('Google Maps geocoding minimum accuracy'),
     '#options' => location_google_geocode_accuracy_codes(),
-    '#default_value' => config_get('location.settings', 'geocode_google_minimum_accuracy'),
+    '#default_value' => $config->get('geocode_google_minimum_accuracy'),
     '#description' => t(
       'The Google Maps geocoding API returns results with a given accuracy. Any responses below this minimum accuracy will be ignored. See a !accuracy_values_link.',
       array('!accuracy_values_link' => '<a href="http://code.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy">description of these values</a>')
@@ -299,14 +299,14 @@ function location_geocoding_options_form($form, &$form_state) {
     if (count($geocoding_options)) {
       $geocoding_options = array_merge(array('none' => t('None')), $geocoding_options);
 
-      $form['countries'][$country_iso]['location_geocode_' . $country_iso] = array(
+      $form['countries'][$country_iso]['geocode_' . $country_iso] = array(
         '#type' => 'radios',
         '#default_value' => $config->get('geocode_' . $country_iso) ? $config->get('geocode_' . $country_iso) : 'none',
         '#options' => $geocoding_options,
       );
     }
     else {
-      $form['countries'][$country_iso]['location_geocode_' . $country_iso] = array(
+      $form['countries'][$country_iso]['geocode_' . $country_iso] = array(
         '#type' => 'markup',
         '#markup' => t('None supported.'),
       );
@@ -314,7 +314,7 @@ function location_geocoding_options_form($form, &$form_state) {
 
     $current_value = $config->get('geocode_' . $country_iso) ? $config->get('geocode_' . $country_iso) : 'none';
     if ($current_value == 'none') {
-      $form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso] = array(
+      $form['countries'][$country_iso]['geocode_config_link_' . $country_iso] = array(
         '#type' => 'markup',
         '#markup' => t('No service selected for country.'),
       );
@@ -325,30 +325,35 @@ function location_geocoding_options_form($form, &$form_state) {
       $geocode_settings_form_function_general = $current_value . '_geocode_settings';
 
       if (function_exists($geocode_settings_form_function_specific)) {
-        $form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso] = array(
+        $form['countries'][$country_iso]['geocode_config_link_' . $country_iso] = array(
           '#type' => 'link',
           '#title' => t('Configure parameters'),
           '#href' => 'admin/config/content/location/geocoding/' . $country_iso . '/' . $current_val_chopped,
         );
       }
       elseif (function_exists($geocode_settings_form_function_general)) {
-        $form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso] = array(
+        $form['countries'][$country_iso]['geocode_config_link_' . $country_iso] = array(
           '#type' => 'link',
           '#title' => t('Configure parameters'),
           '#href' => 'admin/config/content/location/geocoding/' . $country_iso . '/' . $current_value,
         );
       }
       else {
-        $form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso] = array(
+        $form['countries'][$country_iso]['geocode_config_link_' . $country_iso] = array(
           '#type' => 'markup',
           '#markup' => t('No configuration necessary for selected service.'),
         );
       }
     }
   }
-  $form = system_settings_form($form);
+
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
   $form['#theme'] = 'location_geocoding_options';
-  array_unshift($form['#submit'], 'location_geocoding_options_form_submit');
 
   return $form;
 }
@@ -357,23 +362,25 @@ function location_geocoding_options_form($form, &$form_state) {
  * Submit callback.
  */
 function location_geocoding_options_form_submit($form, &$form_state) {
+  $config = config('location.settings');
   $general_geocoders = location_get_general_geocoder_list();
   $general_geocoders_in_use = array();
 
   foreach ($form_state['values'] as $key => $value) {
-    if (substr($key, 0, 17) == 'geocode_' && $key != 'geocode_google_minimum_accuracy') {
+    if (substr($key, 0, 8) == 'geocode_' && $key != 'geocode_google_minimum_accuracy') {
       if (in_array($value, $general_geocoders)) {
         $general_geocoders_in_use[$value] = $value;
-        config_set('location.settings', $key, $value);
+        $config->set($key, $value);
       }
     }
   }
 
-  config_set('location.settings',
-    'geocode_google_minimum_accuracy',
-    $form_state['values']['location_geocode_google_minimum_accuracy']
-  );
-  config_set('location.settings', 'general_geocoders_in_use', $general_geocoders_in_use);
+  $config->set('geocode_google_minimum_accuracy', $form_state['values']['geocode_google_minimum_accuracy']);
+  $config->set('general_geocoders_in_use', $general_geocoders_in_use);
+
+  $config->save();
+
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
@@ -409,7 +416,7 @@ function theme_location_map_link_options($variables) {
 function theme_location_geocoding_options($variables) {
   $form = $variables['form'];
 
-  $output = drupal_render($form['location_geocode_google_minimum_accuracy']);
+  $output = drupal_render($form['geocode_google_minimum_accuracy']);
   $header = array(
     array('align' => 'center', 'data' => '<center>' . t('Country') . '</center>'),
     array('align' => 'center', 'data' => '<center>' . t('Options') . '</center>'),
@@ -422,10 +429,10 @@ function theme_location_geocoding_options($variables) {
       'data' => drupal_render($form['countries'][$country_iso]['label_' . $country_iso])
     );
     $row[] = array(
-      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_' . $country_iso])
+      'data' => drupal_render($form['countries'][$country_iso]['geocode_' . $country_iso])
     );
     $row[] = array(
-      'data' => drupal_render($form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso])
+      'data' => drupal_render($form['countries'][$country_iso]['geocode_config_link_' . $country_iso])
     );
     $rows[] = $row;
   }
