@@ -578,7 +578,7 @@ function _location_supported_countries() {
 function location_get_provinces($country = 'us') {
   $provinces = & drupal_static(__FUNCTION__, array());
   // Current language.
-  $lang_code = $GLOBALS['language']->language;
+  $lang_code = $GLOBALS['language']->langcode;
 
   location_standardize_country_code($country);
   if (!isset($provinces[$country])) {
