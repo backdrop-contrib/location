@@ -1045,22 +1045,52 @@ function location_geocoding_parameters_form($form, &$form_state, $country_iso, $
   $geocode_settings_form_function_specific = 'location_geocode_' . $country_iso . '_' . $service . '_settings';
   $geocode_settings_form_function_general = $service . '_geocode_settings';
   if (function_exists($geocode_settings_form_function_specific)) {
-    return system_settings_form($geocode_settings_form_function_specific());
+    $form = $geocode_settings_form_function_specific();
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save configuration'),
+    );
+    return $form;
   }
   location_load_geocoder($service);
   if (function_exists($geocode_settings_form_function_general)) {
-    return system_settings_form($geocode_settings_form_function_general());
+    $form = $geocode_settings_form_function_general();
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save configuration'),
+    );
+    return $form;
   }
   else {
-    return system_settings_form(
-      array(
-        '#type' => 'markup',
-        '#markup' => t(
-          'No configuration parameters are necessary, or a form to take such paramters has not been implemented.'
-        ),
-      )
+    $form = array(
+      '#type' => 'markup',
+      '#markup' => t(
+        'No configuration parameters are necessary, or a form to take such paramters has not been implemented.'
+      ),
     );
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save configuration'),
+    );
+    return $form;
   }
+}
+
+/**
+ * Submit handler for geocoding parameters form.
+ */
+function location_geocoding_parameters_form_submit($form, &$form_state) {
+  $config = config('location.settings');
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'geocode_') !== FALSE) {
+      $config->set($key, $value);
+    }
+  }
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**

@@ -118,14 +118,15 @@ function google_geocode_location($location = array()) {
  * General settings for this geocoder.
  */
 function google_geocode_settings() {
+  $config = config('location.settings');
   $form = array();
 
-  $form['location_geocode_google_apikey'] = array(
+  $form['geocode_google_apikey'] = array(
     '#type' => 'textfield',
     '#title' => t('Google Geocoding API Server Key'),
     '#size' => 64,
     '#maxlength' => 128,
-    '#default_value' => variable_get('location_geocode_google_apikey', ''),
+    '#default_value' => $config->get('geocode_google_apikey'),
     '#description' => t(
       'In order to use the Google Geocoding API web-service, you will need a Google Geocoding API Server Key.  You can obtain one at the !sign_up_link for the !google_maps_api.  Without a key daily requests from a single IP address will be automaticaly limited.  If you do not enter a key here this module will use the Google Maps API Key from gmap if one is present. NOTE: You will <em>not</em> have to re-enter your API key for each country for which you have selected Google Maps for geocoding.  This setting is global.',
       array(
@@ -135,25 +136,23 @@ function google_geocode_settings() {
     ),
   );
 
-  $form['location_geocode_google_delay'] = array(
+  $form['geocode_google_delay'] = array(
     '#type' => 'textfield',
     '#title' => t('Delay between geocoding requests (is milliseconds)'),
     '#description' => t(
       'To avoid a 620 error (denial of service) from Google, you can add a delay between geocoding requests. 200ms is recommended.'
     ),
-    '#default_value' => variable_get('location_geocode_google_delay', 0),
+    '#default_value' => $config->get('geocode_google_delay', 0),
     '#size' => 10,
   );
 
   $country = arg(5);
   if ($country) {
-    $form['location_geocode_' . $country . '_google_accuracy_code'] = array(
+    $config_google_accuracy_code = $config->get('geocode_' . $country . '_google_accuracy_code') ? $config->get('geocode_' . $country . '_google_accuracy_code') : $config->get('geocode_google_minimum_accuracy');
+    $form['geocode_' . $country . '_google_accuracy_code'] = array(
       '#type' => 'select',
       '#title' => t('Google Maps Geocoding Accuracy for %country', array('%country' => $country)),
-      '#default_value' => variable_get(
-        'location_geocode_' . $country . '_google_accuracy_code',
-        variable_get('location_geocode_google_minimum_accuracy', '3')
-      ),
+      '#default_value' => $config_google_accuracy_code,
       '#options' => location_google_geocode_accuracy_codes(),
       '#description' => t('The minimum required accuracy for the geolocation data to be saved.'),
     );

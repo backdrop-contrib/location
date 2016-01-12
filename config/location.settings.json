@@ -8,5 +8,6 @@
   "jit_geocoding": 0,
   "maplink_external": 0,
   "maplink_external_method": "target=\"_blank\"",
-  "geocode_google_minimum_accuracy": 3
+  "geocode_google_minimum_accuracy": 3,
+  "geocode_google_delay": 0
 }
