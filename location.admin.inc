@@ -20,7 +20,7 @@ function location_admin_settings($form, &$form_state) {
   $iso_list_sorted = array_merge(array('' => ''), $iso_list_sorted);
 
   $form = array();
-  $form['location_default_country'] = array(
+  $form['default_country'] = array(
     '#type' => 'select',
     '#title' => t('Default country selection'),
     '#default_value' => config_get('location.settings', 'default_country'),
@@ -29,7 +29,7 @@ function location_admin_settings($form, &$form_state) {
       'This will be the country that is automatically selected when a location form is served for a new location.'
     )
   );
-  $form['location_display_location'] = array(
+  $form['display_location'] = array(
     '#type' => 'radios',
     '#title' => t('Toggle location display'),
     '#default_value' => config_get('location.settings', 'display_location'),
@@ -42,7 +42,7 @@ function location_admin_settings($form, &$form_state) {
     )
   );
 
-  $form['location_use_province_abbreviation'] = array(
+  $form['use_province_abbreviation'] = array(
     '#type' => 'radios',
     '#title' => t('Province display'),
     '#default_value' => config_get('location.settings', 'use_province_abbreviation'),
@@ -52,7 +52,7 @@ function location_admin_settings($form, &$form_state) {
     ),
   );
 
-  $form['location_usegmap'] = array(
+  $form['usegmap'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use a Google Map to set latitude and longitude '),
     '#default_value' => config_get('location.settings', 'usegmap'),
@@ -66,7 +66,7 @@ function location_admin_settings($form, &$form_state) {
     ),
   );
 
-  $form['location_locpick_macro'] = array(
+  $form['locpick_macro'] = array(
     '#type' => 'textfield',
     '#title' => t('Location chooser macro'),
     '#size' => 50,
@@ -77,7 +77,7 @@ function location_admin_settings($form, &$form_state) {
     ),
   );
 
-  $form['location_jit_geocoding'] = array(
+  $form['jit_geocoding'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable JIT geocoding'),
     '#default_value' => config_get('location.settings', 'jit_geocoding'),
@@ -86,17 +86,17 @@ function location_admin_settings($form, &$form_state) {
     ),
   );
 
-  $form['maplink_external'] = array(
+  $form['maplink'] = array(
     '#type' => 'fieldset',
     '#title' => t('Map link'),
   );
-  $form['maplink_external']['location_maplink_external'] = array(
+  $form['maplink']['maplink_external'] = array(
     '#type' => 'checkbox',
     '#title' => t('Open map link in new window'),
     '#default_value' => config_get('location.settings', 'maplink_external'),
     '#description' => t('Select this if you want the map link to open in a separate window'),
   );
-  $form['maplink_external']['location_maplink_external_method'] = array(
+  $form['maplink']['maplink_external_method'] = array(
     '#type' => 'radios',
     '#title' => t('Open in new window method'),
     '#options' => array(
@@ -109,7 +109,30 @@ function location_admin_settings($form, &$form_state) {
     ),
   );
 
-  return system_settings_form($form);
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for location_admin_settings().
+ */
+function location_admin_settings_submit($form, &$form_state) {
+  $config = config('location.settings');
+  $config->set('default_country', $form_state['values']['default_country']);
+  $config->set('display_location', $form_state['values']['display_location']);
+  $config->set('use_province_abbreviation', $form_state['values']['use_province_abbreviation']);
+  $config->set('usegmap', $form_state['values']['usegmap']);
+  $config->set('locpick_macro', $form_state['values']['locpick_macro']);
+  $config->set('jit_geocoding', $form_state['values']['jit_geocoding']);
+  $config->set('maplink_external', $form_state['values']['maplink_external']);
+  $config->set('maplink_external_method', $form_state['values']['maplink_external_method']);
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
