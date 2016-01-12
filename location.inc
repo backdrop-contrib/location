@@ -45,6 +45,8 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
     return '';
   }
 
+  $config = config('location.settings');
+
   location_load_country($location['country']);
 
   $default_func = 'location_map_link_' . $location['country'] . '_default_providers';
@@ -57,10 +59,13 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
   ) : location_map_link_providers();
   // Default providers will be taken from the country specific default providers
   // function if it exists, otherwise it will use the global function.
-  $selected_providers = variable_get(
-    'location_map_link_' . $location['country'],
-    function_exists($default_func) ? $default_func() : location_map_link_default_providers()
-  );
+  $selected_providers = NULL;
+  if ($config->get('map_link_' . $location['country'])) {
+    $config->get('map_link_' . $location['country']);
+  }
+  else {
+    $selected_providers = function_exists($default_func) ? $default_func() : location_map_link_default_providers();
+  }
 
   $links = array();
   foreach ($selected_providers as $mapper) {
@@ -69,10 +74,7 @@ function location_map_link($location = array(), $link_text = 'See map: ') {
     $link_func = function_exists($link_func) ? $link_func : 'location_map_link_' . $mapper;
     if (function_exists($link_func)) {
       if ($link = $link_func($location)) {
-        $links[] = '<a href="' . $link . '"' . (variable_get('location_maplink_external', 0) ? ' ' . variable_get(
-              'location_maplink_external_method',
-              'target="_blank"'
-            ) : '') . '>' . $providers[$mapper]['name'] . '</a>';
+        $links[] = '<a href="' . $link . '"' . ($config->get('maplink_external') ? ' ' . $config->get('maplink_external_method') : '') . '>' . $providers[$mapper]['name'] . '</a>';
       }
     }
   }
@@ -502,7 +504,8 @@ function location_country_bounds($location = array()) {
 function location_latlon_exact($location = array()) {
   $country = $location['country'];
   location_standardize_country_code($country);
-  $service = variable_get('location_geocode_' . $country, 'none');
+  $config = config('location.settings');
+  $service = $config->get('geocode_' . $country) ? $config->get('geocode_' . $country) : 'none';
   if (!empty($country) && $service != 'none') {
     // Figure out what the exact function should be.
     if (strpos($service, '|')) {

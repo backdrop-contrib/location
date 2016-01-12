@@ -23,7 +23,7 @@ function location_admin_settings($form, &$form_state) {
   $form['location_default_country'] = array(
     '#type' => 'select',
     '#title' => t('Default country selection'),
-    '#default_value' => variable_get('location_default_country', 'us'),
+    '#default_value' => config_get('location.settings', 'default_country'),
     '#options' => $iso_list_sorted,
     '#description' => t(
       'This will be the country that is automatically selected when a location form is served for a new location.'
@@ -32,7 +32,7 @@ function location_admin_settings($form, &$form_state) {
   $form['location_display_location'] = array(
     '#type' => 'radios',
     '#title' => t('Toggle location display'),
-    '#default_value' => variable_get('location_display_location', 1),
+    '#default_value' => config_get('location.settings', 'display_location'),
     '#options' => array(
       0 => t('Disable the display of locations.'),
       1 => t('Enable the display of locations.')
@@ -45,7 +45,7 @@ function location_admin_settings($form, &$form_state) {
   $form['location_use_province_abbreviation'] = array(
     '#type' => 'radios',
     '#title' => t('Province display'),
-    '#default_value' => variable_get('location_use_province_abbreviation', 1),
+    '#default_value' => config_get('location.settings', 'use_province_abbreviation'),
     '#options' => array(
       0 => t('Display full province name.'),
       1 => t('Display province/state code.'),
@@ -55,7 +55,7 @@ function location_admin_settings($form, &$form_state) {
   $form['location_usegmap'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use a Google Map to set latitude and longitude '),
-    '#default_value' => variable_get('location_usegmap', FALSE),
+    '#default_value' => config_get('location.settings', 'usegmap'),
     '#description' => t(
       'If the gmap.module is installed and <a href="@enabled">enabled</a>, and this setting is also turned on, users that are allowed to manually enter latitude/longitude coordinates will be able to do so with an interactive Google Map.  You should also make sure you have entered a <a href="@google_maps_api_key">Google Maps API key</a> into your <a href="@gmap_module_settings">gmap module settings</a>.',
       array(
@@ -71,7 +71,7 @@ function location_admin_settings($form, &$form_state) {
     '#title' => t('Location chooser macro'),
     '#size' => 50,
     '#maxlength' => 500,
-    '#default_value' => variable_get('location_locpick_macro', '[gmap]'),
+    '#default_value' => config_get('location.settings', 'locpick_macro'),
     '#description' => t(
       'If you would like to change the macro used to generate the location chooser map, you can do so here. Note: Behaviors <em>locpick</em> and <em>collapsehack</em> are forced to be enabled and cannot be changed.'
     ),
@@ -80,7 +80,7 @@ function location_admin_settings($form, &$form_state) {
   $form['location_jit_geocoding'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable JIT geocoding'),
-    '#default_value' => variable_get('location_jit_geocoding', FALSE),
+    '#default_value' => config_get('location.settings', 'jit_geocoding'),
     '#description' => t(
       'If you are going to be importing locations in bulk directly into the database, you may wish to enable JIT geocoding and load the locations with source set to 4 (LOCATION_LATLON_JIT_GEOCODING). The system will automatically geocode locations as they are loaded.'
     ),
@@ -93,7 +93,7 @@ function location_admin_settings($form, &$form_state) {
   $form['maplink_external']['location_maplink_external'] = array(
     '#type' => 'checkbox',
     '#title' => t('Open map link in new window'),
-    '#default_value' => variable_get('location_maplink_external', 0),
+    '#default_value' => config_get('location.settings', 'maplink_external'),
     '#description' => t('Select this if you want the map link to open in a separate window'),
   );
   $form['maplink_external']['location_maplink_external_method'] = array(
@@ -103,7 +103,7 @@ function location_admin_settings($form, &$form_state) {
       'target="_blank"' => 'target="_blank"',
       'rel="external"' => 'rel="external"',
     ),
-    '#default_value' => variable_get('location_maplink_external_method', 'target="_blank"'),
+    '#default_value' => config_get('location.settings', 'maplink_external_method'),
     '#description' => t(
       'If you have selected to open map in a new window this controls the method used to open in a new window.  target="_blank" will just work but is not XTHML Strict compliant.  rel="external" is XHTML Strict compliant but will not open in a new window unless you add some jQuery to your site to add the target attribute. If you are unsure leave set to target="_blank"'
     ),
@@ -116,6 +116,8 @@ function location_admin_settings($form, &$form_state) {
  * Settings page for map links.
  */
 function location_map_link_options_form($form, &$form_state) {
+  $config = config('location.settings');
+
   $form = array();
 
   $form['countries'] = array(
@@ -143,10 +145,13 @@ function location_map_link_options_form($form, &$form_state) {
 
     // Default providers will be taken from the country specific default providers
     // function if it exists, otherwise it will use the global function.
-    $checked = variable_get(
-      'location_map_link_' . $country_iso,
-      function_exists($default_provider_function) ? $default_provider_function() : location_map_link_default_providers()
-    );
+    $checked = NULL;
+    if ($config->get('map_link_' . $country_iso)) {
+      $checked = $config->get('map_link_' . $country_iso);
+    }
+    else {
+      $checked = function_exists($default_provider_function) ? $default_provider_function() : location_map_link_default_providers();
+    }
 
     // Merge the global providers with country specific ones so that countries
     // can add to or override the defaults.
@@ -184,13 +189,14 @@ function location_map_link_options_form($form, &$form_state) {
  * Options form.
  */
 function location_geocoding_options_form($form, &$form_state) {
+  $config = config('location.settings');
   $form = array();
 
   $form['location_geocode_google_minimum_accuracy'] = array(
     '#type' => 'select',
     '#title' => t('Google Maps geocoding minimum accuracy'),
     '#options' => location_google_geocode_accuracy_codes(),
-    '#default_value' => variable_get('location_geocode_google_minimum_accuracy', '3'),
+    '#default_value' => config_get('location.settings', 'geocode_google_minimum_accuracy'),
     '#description' => t(
       'The Google Maps geocoding API returns results with a given accuracy. Any responses below this minimum accuracy will be ignored. See a !accuracy_values_link.',
       array('!accuracy_values_link' => '<a href="http://code.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy">description of these values</a>')
@@ -253,7 +259,7 @@ function location_geocoding_options_form($form, &$form_state) {
 
       $form['countries'][$country_iso]['location_geocode_' . $country_iso] = array(
         '#type' => 'radios',
-        '#default_value' => variable_get('location_geocode_' . $country_iso, 'none'),
+        '#default_value' => $config->get('geocode_' . $country_iso) ? $config->get('geocode_' . $country_iso) : 'none',
         '#options' => $geocoding_options,
       );
     }
@@ -264,7 +270,7 @@ function location_geocoding_options_form($form, &$form_state) {
       );
     }
 
-    $current_value = variable_get('location_geocode_' . $country_iso, 'none');
+    $current_value = $config->get('geocode_' . $country_iso) ? $config->get('geocode_' . $country_iso) : 'none';
     if ($current_value == 'none') {
       $form['countries'][$country_iso]['location_geocode_config_link_' . $country_iso] = array(
         '#type' => 'markup',
@@ -313,19 +319,19 @@ function location_geocoding_options_form_submit($form, &$form_state) {
   $general_geocoders_in_use = array();
 
   foreach ($form_state['values'] as $key => $value) {
-    if (substr($key, 0, 17) == 'location_geocode_' && $key != 'location_geocode_google_minimum_accuracy') {
+    if (substr($key, 0, 17) == 'geocode_' && $key != 'geocode_google_minimum_accuracy') {
       if (in_array($value, $general_geocoders)) {
         $general_geocoders_in_use[$value] = $value;
-        variable_set($key, $value);
+        config_set('location.settings', $key, $value);
       }
     }
   }
 
-  variable_set(
-    'location_geocode_google_minimum_accuracy',
+  config_set('location.settings',
+    'geocode_google_minimum_accuracy',
     $form_state['values']['location_geocode_google_minimum_accuracy']
   );
-  variable_set('location_general_geocoders_in_use', $general_geocoders_in_use);
+  config_set('location.settings', 'general_geocoders_in_use', $general_geocoders_in_use);
 }
 
 /**

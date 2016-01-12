@@ -518,7 +518,7 @@ function location_views_proximity_get_reference_location($view, $options) {
     case 'postal_default':
       // Force default for country.
       if ($options['origin'] == 'postal_default') {
-        $options['country'] = variable_get('location_default_country', 'us');
+        $options['country'] = config_get('location.settings', 'default_country');
       }
       // Zip code lookup.
       if (!empty($options['postal_code']) && !empty($options['country'])) {
