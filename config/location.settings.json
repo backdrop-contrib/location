@@ -1,0 +1,12 @@
+{
+  "_config_name": "location.settings",
+  "default_country": "us",
+  "display_location": 1,
+  "use_province_abbreviation": 1,
+  "usegmap": 0,
+  "locpick_macro": "[gmap]",
+  "jit_geocoding": 0,
+  "maplink_external": 0,
+  "maplink_external_method": "target=\"_blank\"",
+  "geocode_google_minimum_accuracy": 3
+}
