@@ -22,6 +22,17 @@ define('LOCATION_USER_COLLECT', 1);
 include_once DRUPAL_ROOT . '/' . LOCATION_PATH . '/location.inc';
 
 /**
+ * Implements hook_config_info().
+ */
+function location_config_info() {
+  $prefixes['location.settings'] = array(
+    'label' => t('Location settings'),
+    'group' => t('Location'),
+  );
+  return $prefixes;
+}
+
+/**
  * Implements hook_menu().
  */
 function location_menu() {
