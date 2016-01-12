@@ -1,8 +1,8 @@
 name = Location
 package = Location
 description = The location module allows you to associate a geographic location with content and users. Users can do proximity searches by postal code.  This is useful for organizing communities that have a geographic presence.
-core = 7.x
 backdrop = 1.x
+type = module
 configure = admin/config/content/location
 files[] = location.admin.inc
 files[] = location.georss.inc
