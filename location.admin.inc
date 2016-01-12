@@ -187,7 +187,7 @@ function location_map_link_options_form($form, &$form_state) {
     }
 
     if (count($mapping_options)) {
-      $form['countries'][$country_iso]['location_map_link_' . $country_iso] = array(
+      $form['countries'][$country_iso]['map_link_' . $country_iso] = array(
         '#title' => '',
         '#type' => 'checkboxes',
         '#default_value' => $checked,
@@ -195,17 +195,36 @@ function location_map_link_options_form($form, &$form_state) {
       );
     }
     else {
-      $form['countries'][$country_iso]['location_map_link_' . $country_iso] = array(
+      $form['countries'][$country_iso]['map_link_' . $country_iso] = array(
         '#type' => 'markup',
         '#markup' => t('None supported.'),
       );
     }
   }
 
-  $form = system_settings_form($form);
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
   $form['#theme'] = 'location_map_link_options';
 
   return $form;
+}
+
+/**
+ * Submit handler for location_map_link_options_form().
+ */
+function location_map_link_options_form_submit($form,&$form_state) {
+  $config = config('location.settings');
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'map_link_') !== FALSE) {
+      $config->set($key, $value);
+    }
+  }
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
@@ -374,7 +393,7 @@ function theme_location_map_link_options($variables) {
       'data' => drupal_render($form['countries'][$country_iso]['label_' . $country_iso]),
     );
     $row[] = array(
-      'data' => drupal_render($form['countries'][$country_iso]['location_map_link_' . $country_iso]),
+      'data' => drupal_render($form['countries'][$country_iso]['map_link_' . $country_iso]),
     );
     $rows[] = $row;
   }
