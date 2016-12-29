@@ -6,7 +6,7 @@ Associate real-world geographic locations to Backdrop entities.
 The Location module allows real-world geographic locations to be associated 
 with Backdrop entities, including people, places, and other content. The 
 Location module allows admins to collect addresses, geocode them (translate 
-addresses to lattitude/longitude), and associate locations with Drupal nodes 
+addresses to lattitude/longitude), and associate locations with Backdrop nodes 
 and users. Location data is automatically used to generate GeoRSS within your 
 existing RSS feeds.
 
