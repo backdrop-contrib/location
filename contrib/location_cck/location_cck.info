@@ -2,4 +2,5 @@ name = Location CCK
 description = Defines a Location field type.
 dependencies[] = location
 package = Fields
-core = 7.x
+backdrop = 1.x
+type = module

@@ -428,7 +428,7 @@ function location_cck_field_widget_form(&$form, &$form_state, $field, $instance,
   if ($field['type'] == 'location') {
     $settings = isset($field['settings']['location_settings']) ? $field['settings']['location_settings'] : array();
     if (isset($form_state['values'])) {
-      $form_state_field_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
+      $form_state_field_values = backdrop_array_get_nested_value($form_state['values'], $element['#field_parents']);
     }
 
     // Load location data for existing locations.
@@ -562,7 +562,7 @@ function theme_location_cck_field_map($variables) {
       '#type' => 'gmap',
       '#gmap_settings' => $map,
     );
-    $content = drupal_render($location_map);
+    $content = backdrop_render($location_map);
   }
 
   return $content;
